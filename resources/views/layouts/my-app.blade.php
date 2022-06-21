@@ -21,7 +21,7 @@
     
     @include('layouts.my-header')
    
-    <main id="app" class="mt-5">
+    <main id="app">
         <div class="container pt-5">
 
             @yield('content')
