@@ -18,13 +18,6 @@
                         </div>
                     </div>
 
-                    <div class="card text-center mt-1">
-                        <div class="card-body d-flex justify-content-around align-items-center">
-                            <a href="#" class="btn btn-outline-success" style="width: 50%">Rock</a>
-                            <a href="#" class="btn btn-outline-success" style="width: 50%">Scissors</a>
-                            <a href="#" class="btn btn-outline-success" style="width: 50%">Paper</a>
-                            <a href="#" class="btn btn-outline-success" style="width: 50%">Lizard</a>
-                            <a href="#" class="btn btn-outline-success" style="width: 50%">Spoke</a>
                         </div>
                     </div>
 
