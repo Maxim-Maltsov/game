@@ -18,7 +18,11 @@ mix.webpackConfig({
  |
  */
 
-mix.js('resources/js/app.js', 'public/js').postCss('resources/css/app.css', 'public/css', [
-    require('tailwindcss'),
-    require('autoprefixer'),
-]);
+mix.js('resources/js/app.js', 'public/js')
+    .sourceMaps()
+    .vue()
+    .postCss('resources/css/app.css', 'public/css', [
+        require('tailwindcss'),
+        require('autoprefixer'),
+    ]);
+    
