@@ -34,7 +34,8 @@
                 <div class="card-body bg-dark opacity-75" style="width: 100%; border-radius: 4px">
                     <div class="card text-center mt-1">
                         <div class="card-body d-flex flex-column  align-items-center">
-                        <h6 class="h6 card-title text-secondary">Name: <small class="text-success">free</small></h6>
+                        <h6 class="h6 card-title text-secondary">
+                             Name: <small class="text-success">free</small></h6>
                         <a href="#" class="btn btn-outline-success hover-shadow" style="width: 80%">Play</a>
                         </div>
                     </div>
@@ -94,5 +95,9 @@
 </script>
 
 <style>
+
+
+
+    
     
 </style>

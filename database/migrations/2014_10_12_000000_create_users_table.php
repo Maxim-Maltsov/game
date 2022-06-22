@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->integer('online_status')->default(1);
             $table->integer('game_status')->default(0);
-            $table->timestamp('last_seen')->nullable();
+            $table->timestamp('last_activity')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

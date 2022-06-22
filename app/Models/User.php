@@ -12,6 +12,17 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // Online status.
+    const OFFLINE = 0;
+    const ONLINE = 1;
+
+
+    // Game status.
+    const WAITING_PLAYER = 0;
+    const FREE = 1;
+    const PLAYING = 2;
+
+
     /**
      * The attributes that are mass assignable.
      *
@@ -41,4 +52,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    
+
 }
