@@ -11,6 +11,3 @@ Alpine.start();
 const app = Vue.createApp({});
 
 app.mount('#app')
-
-
-app.component('side-bar', {});
