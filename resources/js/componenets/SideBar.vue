@@ -8,7 +8,7 @@
         <section v-if="errored" class="d-flex flex-column align-items-center">
             <div class="card-info mt-5" style="width: 80%">
                 <div class="alert alert-danger mt-5" role="alert">
-                    <strong>{{ __('Уведомлене! ') }}</strong><div class="text-secondary">{{ __('Не удалось получить данные.') }}</div>
+                    <strong>Уведомлене!</strong><div class="text-secondary">Не удалось получить данные.</div>
                 </div>  
             </div>
         </section>
@@ -17,7 +17,7 @@
         <section v-if="loading">
             <div class="card-info mt-5 d-flex flex-column align-items-center" >
                 <div class="alert alert-warning mt-5" role="alert" style="width: 80%">
-                    <strong>{{ __('Уведомлене! ') }}</strong><div class="text-secondary">{{ __('Данные загружаются...') }}</div>
+                    <strong>Уведомлене! </strong><div class="text-secondary">Данные загружаются...</div>
                 </div>
                 <div class="spinner-border m-3" role="status">
                     <span class="visually-hidden">Загрузка...</span>
@@ -31,18 +31,18 @@
             <div class="cards d-flex flex-column justify-content-center align-items-center shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                     
                 <!-- cards -->
-                <div class="card-body bg-dark opacity-75" style="width: 100%; border-radius: 4px">
-                    <div class="card text-center mt-1">
+                <div  class="card-body bg-dark opacity-75" style="width: 100%; border-radius: 4px">
+                    <div v-for="user of users" :key="user.id" class="card text-center mt-1">
                         <div class="card-body d-flex flex-column  align-items-center">
                         <h6 class="h6 card-title text-secondary">
-                             Name: <small class="text-success">free</small></h6>
+                             {{ user.name }}  <small class="text-success">free</small></h6>
                         <a href="#" class="btn btn-outline-success hover-shadow" style="width: 80%">Play</a>
                         </div>
                     </div>
                 </div>
 
                 <!-- pagination -->
-                <nav aria-label="Page navigation example" class="mt-3">
+                <!-- <nav aria-label="Page navigation example" class="mt-3">
                     <ul class="pagination pagination-lg">
                         <li  class="page-item"  v-on:click.prevent="getUsers(pagination.prev)">
                         <a class="page-link text-success" href="#"> &laquo;  </a>
@@ -56,23 +56,23 @@
                             <a class="page-link text-success"  href="#" > &raquo; </a>
                         </li>
                     </ul>
-                </nav>
+                </nav> -->
 
-                <!-- <nav aria-label="Page navigation example" class="mt-3">
+                <nav aria-label="Page navigation example" class="mt-3">
                     <ul class="pagination pagination-lg">
                         <li  class="page-item" :class="{disabled: !Boolean(pagination.prev)}" v-on:click.prevent="getUsers(pagination.prev)">
                             <a class="page-link text-success" href="#"> &laquo;  </a>
                         </li>
 
                         <li class="page-item" :class="{disabled:true}">
-                            <a class="page-link text-secondary" href="javascript:void(0)"> <span class="text-secondary">@{{pagination.current_page}} из @{{pagination.last_page}}</span> </a>
+                            <a class="page-link text-secondary" href="javascript:void(0)"> <span class="text-secondary">{{pagination.current_page}} из {{pagination.last_page}}</span> </a>
                         </li>
                     
                         <li class="page-item" :class="{disabled: !Boolean(pagination.next)}" v-on:click.prevent="getUsers(pagination.next)">
                             <a class="page-link text-success"  href="#" > &raquo; </a>
                         </li>
                     </ul>
-                </nav> -->
+                </nav>
 
         </div>
     </section>
@@ -86,18 +86,103 @@
 
     export default {
         
-       props: {
+        props: {
 
-            users: Array
-       }
+            token: String,
+            
+        },
+
+        data() {
+
+            return {
+
+                users: [],
+
+                pagination: {},
+                
+                loading: false,
+                errored: false,
+
+            }
+        },
+
+        methods: {
+
+            makePagination(data) {
+
+                let pagination = {
+
+                    current_page: data.meta.current_page,
+                    last_page: data.meta.last_page,
+                    prev: data.links.prev,
+                    next: data.links.next,
+                }
+
+                this.pagination = pagination;
+                console.log(this.pagination);
+            },
+
+            getUsers(page_url) {
+
+                this.loading = true;
+                
+                let url = page_url || 'api/v1/users';
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + token,
+                    }
+                }
+                
+                axios
+                    .get( url , config)
+                    .then( response => {
+                        
+                        // console.log(response.data.data);
+                        this.users = response.data.data;
+                        this.makePagination(response.data);
+                    })
+                    .catch( error => {
+                        
+                        this.errored = true;
+                        console.log(error);
+                    })
+                    .finally(() => (this.loading = false));
+
+        },
+                
+        mounted() {
+
+            //this.getUsers('api/v1/users');
+
+            alert(token);
+
+            this.loading = true;
+
+            alert('maunted');
+            axios.get( 'api/v1/users')
+                .then( response => {
+                    
+                    // console.log(response.data.data);
+                    this.users = response.data.data;
+                    
+                })
+                .catch( error => {
+                    
+                    this.errored = true;
+                    console.log(error);
+                })
+                .finally(() => (this.loading = false));
+        },
     }
+    
+}
 
+            
 </script>
 
 <style>
 
-
-
-    
     
 </style>

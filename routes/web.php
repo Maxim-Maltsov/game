@@ -25,4 +25,4 @@ Route::get('/dashboard', function () {
 require __DIR__.'/auth.php';
 
 
-Route::get('/', [GameController::class, 'index'])->name('home');
+Route::get('/', [GameController::class, 'index'])->middleware('auth')->name('home');

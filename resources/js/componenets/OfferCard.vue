@@ -27,7 +27,28 @@
 <script>
 export default {
 
+    props: {
 
+        
+    },
+
+    data() {
+
+        return {
+
+            offer: false,
+        }
+    },
+
+    methods: {
+
+        
+        },
+
+    mounted() {
+
+    
+    },
 
 }
 </script>

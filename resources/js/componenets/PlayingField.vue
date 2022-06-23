@@ -92,9 +92,29 @@ export default {
 
     props: {
 
-        token: String
-    }
+        // token: String
+    },
+
+    data() {
+
+        return {
+
+            playing: false,
+        }
+    },
+
+    methods: {
+
+        
+        },
+
+    mounted() {
+
+    
+    },
+
 }
+
 </script>
 
 <style>

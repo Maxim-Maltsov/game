@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
-{
+{   
+    protected $namespace = 'App\\Http\\Controllers'; // edited
+
     /**
      * The path to the "home" route for your application.
      *
@@ -17,7 +19,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/dashboard';
+    public const HOME = '/';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.
@@ -30,10 +32,12 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->routes(function () {
             Route::middleware('api')
-                ->prefix('api')
+                ->prefix('api/v1')  // edited
+                ->namespace($this->namespace . '\\Api\\v1') // edited
                 ->group(base_path('routes/api.php'));
 
             Route::middleware('web')
+                ->namespace($this->namespace) // edited
                 ->group(base_path('routes/web.php'));
         });
     }

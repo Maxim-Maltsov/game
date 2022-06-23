@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -9,10 +10,8 @@ class GameController extends Controller
 {
     public function index()
     {
-        
-        dd(Carbon::now()->timestamp);
-        // dd(Carbon::now()->addMinute(1));
-        
-        return view('game');
+        $token = session('API-Token');
+        // dd($token);
+        return view('game', ['token' => $token]);
     }
 }

@@ -13,7 +13,7 @@
                 </ul>
                 <ul>
                     <div class="dropdown">
-                        <a class="btn btn-outline-light dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">Name</a>
+                        <a class="btn btn-outline-light dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">{{ Auth::user()->name }}</a>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             <form method="POST" action="{{ route('logout') }}">
                             @csrf
