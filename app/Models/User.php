@@ -57,9 +57,9 @@ class User extends Authenticatable
 
 
     
-    public static function getAllUsersOnline()
+    public static function getUsersOnline()
     {
-        $users = User::where('online_status', User::ONLINE)->get();
+        $users = User::where('online_status', User::ONLINE)->paginate(5);
 
         return $users;
     }

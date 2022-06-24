@@ -7,20 +7,18 @@
             <section v-if="errored" class="d-flex flex-column align-items-center">
             <div class="card-info mt-5" style="width: 80%">
                 <div class="alert alert-danger mt-5" role="alert">
-                    <strong>{{ __('Уведомлене! ') }}</strong><div class="text-secondary">{{ __('Не удалось получить данные.') }}</div>
+                    <strong>Уведомлене! </strong><div class="text-secondary">Не удалось получить данные. Попробуйте позже...</div>
                 </div>  
             </div>
         </section>
         
-        <!-- alert loading -->
+         <!-- alertloading -->
         <section v-if="loading">
             <div class="card-info mt-5 d-flex flex-column align-items-center" >
-                <div class="alert alert-warning mt-5" role="alert" style="width: 80%">
-                    <strong>{{ __('Уведомлене! ') }}</strong><div class="text-secondary">{{ __('Данные загружаются...') }}</div>
+                <div class="spinner-border m-3" role="status" style="width: 2rem; height: 2rem;" >
+                    <span class="visually-hidden"></span>
                 </div>
-                <div class="spinner-border m-3" role="status">
-                    <span class="visually-hidden">Загрузка...</span>
-                </div>
+                <strong>Загрузка...</strong>
             </div>
         </section>
 
@@ -99,7 +97,10 @@ export default {
 
         return {
 
-            playing: false,
+            playing: true,
+
+            loading: false,
+            errored: false,
         }
     },
 
@@ -110,7 +111,7 @@ export default {
 
     mounted() {
 
-    
+     
     },
 
 }

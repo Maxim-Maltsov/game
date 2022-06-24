@@ -3,6 +3,7 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 import SideBar from './componenets/SideBar.vue';
 import OfferCard from './componenets/OfferCard.vue';
+import ResponseСard from './componenets/ResponseСard.vue';
 import PlayingField from './componenets/PlayingField.vue';
 import {createApp} from 'vue';
 
@@ -15,6 +16,7 @@ const app = createApp({});
 
 app.component('side-bar', SideBar);
 app.component('offer-card', OfferCard);
+app.component('response-card', ResponseСard);
 app.component('playing-field', PlayingField);
 
 

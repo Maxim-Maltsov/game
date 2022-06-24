@@ -22,7 +22,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'online_status' => $this->online_status,
             'game_status' => $this->game_status,
-            // 'can_play' => $this->canPlayGame,
+            'can_play' => $this->canPlayGame(),
             'created_at' => $this->created_at,
         ];
     }

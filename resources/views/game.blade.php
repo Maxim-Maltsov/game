@@ -7,10 +7,11 @@
         
         <side-bar ></side-bar> <!-- SideBar Vue component. -->
         <offer-card></offer-card> <!-- OfferCard Vue component. -->
+        <response-card></response-card> <!-- ResponseCard Vue component. -->
         <playing-field></playing-field> <!-- PlayingField Vue component. -->
 
     </div> <!-- .row -->
     
-    <script> var token = "{{ $token }}"; </script>
-
 @endsection
+
+<script> var token = "{{ $token }}"; </script>

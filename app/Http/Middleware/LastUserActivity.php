@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Events\AmountUsersOnlineChangedEvent;
+use App\Http\Resources\UserCollection;
 use App\Models\User;
 use Carbon\Carbon;
 use Closure;
@@ -21,7 +22,6 @@ class LastUserActivity
      */
     public function handle(Request $request, Closure $next)
     {
-
         if (Auth::check()) {
             
             $expireTime = Carbon::now()->addMinutes(env('EXPIRY_TIME_ONLINE_IN_MINUTES'));
@@ -29,10 +29,13 @@ class LastUserActivity
 
             User::where('id', Auth::id())->update(['last_activity' => Carbon::now(), 'online_status' => User::ONLINE]);
 
-            $users = User::getAllUsersOnline();
-            AmountUsersOnlineChangedEvent::dispatch($users);
-        }
+            $users = User::getUsersOnline();
 
+            if ($users->count() > 0) { 
+
+                AmountUsersOnlineChangedEvent::dispatch(new UserCollection($users));
+            }
+        }
 
         return $next($request);
     }

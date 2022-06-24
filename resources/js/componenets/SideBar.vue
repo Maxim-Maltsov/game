@@ -8,7 +8,7 @@
         <section v-if="errored" class="d-flex flex-column align-items-center">
             <div class="card-info mt-5" style="width: 80%">
                 <div class="alert alert-danger mt-5" role="alert">
-                    <strong>Уведомлене!</strong><div class="text-secondary">Не удалось получить данные.</div>
+                    <strong>Уведомлене!</strong><div class="text-secondary">Не удалось получить данные. Попробуйте позже...</div>
                 </div>  
             </div>
         </section>
@@ -16,13 +16,10 @@
         <!-- alertloading -->
         <section v-if="loading">
             <div class="card-info mt-5 d-flex flex-column align-items-center" >
-                <div class="alert alert-warning mt-5" role="alert" style="width: 80%">
-                    <strong>Уведомлене! </strong><div class="text-secondary">Данные загружаются...</div>
+                <div class="spinner-border m-3" role="status" style="width: 2rem; height: 2rem;" >
+                    <span class="visually-hidden"></span>
                 </div>
-                <div class="spinner-border m-3" role="status">
-                    <span class="visually-hidden">Загрузка...</span>
-                </div>
-                    
+                <strong>Загрузка...</strong>
             </div>
         </section>
 
@@ -102,7 +99,6 @@
                 
                 loading: false,
                 errored: false,
-
             }
         },
 
@@ -119,7 +115,7 @@
                 }
 
                 this.pagination = pagination;
-                console.log(this.pagination);
+                // console.log(this.pagination);
             },
 
             getUsers(page_url) {
@@ -139,7 +135,6 @@
                     .get( url , config)
                     .then( response => {
                         
-                        // console.log(response.data.data);
                         this.users = response.data.data;
                         this.makePagination(response.data);
                     })
@@ -150,36 +145,18 @@
                     })
                     .finally(() => (this.loading = false));
 
+            },
+
         },
                 
         mounted() {
 
-            //this.getUsers('api/v1/users');
+            this.getUsers('api/v1/users');
 
-            alert(token);
-
-            this.loading = true;
-
-            alert('maunted');
-            axios.get( 'api/v1/users')
-                .then( response => {
-                    
-                    // console.log(response.data.data);
-                    this.users = response.data.data;
-                    
-                })
-                .catch( error => {
-                    
-                    this.errored = true;
-                    console.log(error);
-                })
-                .finally(() => (this.loading = false));
         },
-    }
-    
-}
 
-            
+}
+       
 </script>
 
 <style>
