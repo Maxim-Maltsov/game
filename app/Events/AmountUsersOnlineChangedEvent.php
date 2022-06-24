@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\UserCollection;
 use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -23,7 +24,7 @@ class AmountUsersOnlineChangedEvent implements ShouldBroadcastNow
      *
      * @return void
      */
-    public function __construct($users)
+    public function __construct(UserCollection $users)
     {
         $this->users = $users;
     }

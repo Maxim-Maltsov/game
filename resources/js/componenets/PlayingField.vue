@@ -97,7 +97,7 @@ export default {
 
         return {
 
-            playing: true,
+            playing: false,
 
             loading: false,
             errored: false,

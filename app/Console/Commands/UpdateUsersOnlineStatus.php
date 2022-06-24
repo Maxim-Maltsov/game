@@ -42,9 +42,11 @@ class UpdateUsersOnlineStatus extends Command
                 $user->online_status = User::OFFLINE;
                 $user->save();
             }
-
-            AmountUsersOnlineChangedEvent::dispatch(new UserCollection($users));
         }
+
+        $users = User::getOnlineUsersPaginate(4);
+
+        AmountUsersOnlineChangedEvent::dispatch(new UserCollection($users));
 
         
         return 0;

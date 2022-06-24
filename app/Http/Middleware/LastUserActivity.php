@@ -23,13 +23,13 @@ class LastUserActivity
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check()) {
-            
+ 
             $expireTime = Carbon::now()->addMinutes(env('EXPIRY_TIME_ONLINE_IN_MINUTES'));
             Cache::put('online'.Auth::id(), true, $expireTime);
 
             User::where('id', Auth::id())->update(['last_activity' => Carbon::now(), 'online_status' => User::ONLINE]);
 
-            $users = User::getUsersOnline();
+            $users = User::getOnlineUsersPaginate(4);
 
             if ($users->count() > 0) { 
 

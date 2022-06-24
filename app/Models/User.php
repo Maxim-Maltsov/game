@@ -57,15 +57,19 @@ class User extends Authenticatable
 
 
     
-    public static function getUsersOnline()
+    public static function getOnlineUsersPaginate($amount)
     {
-        $users = User::where('online_status', User::ONLINE)->paginate(5);
-
+        $users = User::where('online_status', User::ONLINE)->paginate($amount);
+        
         return $users;
     }
 
     public function canPlayGame()
-    {
+    {   
+        // Проверить учавствует ли пользователь в игре 
+        // вкачестве первого или второго игрока,
+        // если да вернуть false, если нет true
+
         return true;
     }
 

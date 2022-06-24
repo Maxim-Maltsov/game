@@ -39,22 +39,6 @@
                 </div>
 
                 <!-- pagination -->
-                <!-- <nav aria-label="Page navigation example" class="mt-3">
-                    <ul class="pagination pagination-lg">
-                        <li  class="page-item"  v-on:click.prevent="getUsers(pagination.prev)">
-                        <a class="page-link text-success" href="#"> &laquo;  </a>
-                        </li>
-
-                        <li class="page-item" :class="{disabled:true}">
-                            <a class="page-link text-secondary" href="javascript:void(0)">1 <span class="text-secondary">из </span>2 </a>
-                        </li>
-                    
-                        <li class="page-item"  v-on:click.prevent="getUsers(pagination.next)">
-                            <a class="page-link text-success"  href="#" > &raquo; </a>
-                        </li>
-                    </ul>
-                </nav> -->
-
                 <nav aria-label="Page navigation example" class="mt-3">
                     <ul class="pagination pagination-lg">
                         <li  class="page-item" :class="{disabled: !Boolean(pagination.prev)}" v-on:click.prevent="getUsers(pagination.prev)">
@@ -71,8 +55,8 @@
                     </ul>
                 </nav>
 
-        </div>
-    </section>
+            </div>
+        </section>
 
     </div> <!-- .col-4 -->
 
@@ -134,7 +118,7 @@
                 axios
                     .get( url , config)
                     .then( response => {
-                        
+                       
                         this.users = response.data.data;
                         this.makePagination(response.data);
                     })
@@ -147,12 +131,19 @@
 
             },
 
+
+
         },
                 
         mounted() {
-
+            
             this.getUsers('api/v1/users');
 
+            Echo.channel('all-auth-users')
+                        .listen('AmountUsersOnlineChangedEvent', (e) => {
+                            console.log(e.users);
+                            this.users = e.users;
+                        });
         },
 
 }

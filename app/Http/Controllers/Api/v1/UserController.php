@@ -16,7 +16,10 @@ class UserController extends Controller
      */
     public function index()
     {   
-        return new UserCollection(User::paginate(5));
+        
+        $users = User::getOnlineUsersPaginate(4);
+
+        return new UserCollection($users);
     }
 
     /**

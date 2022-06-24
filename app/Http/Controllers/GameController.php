@@ -12,6 +12,7 @@ class GameController extends Controller
 {
     public function index()
     {   
+
         $token = session('API-Token');
         
         return view('game', ['token' => $token]);
