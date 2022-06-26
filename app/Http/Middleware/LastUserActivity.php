@@ -10,6 +10,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class LastUserActivity
 {
@@ -24,10 +25,10 @@ class LastUserActivity
     {
         if (Auth::check()) {
  
-            $expireTime = Carbon::now()->addMinutes(env('EXPIRY_TIME_ONLINE_IN_MINUTES'));
+            $expireTime = Carbon::now()->addMinute();
             Cache::put('online'.Auth::id(), true, $expireTime);
 
-            User::where('id', Auth::id())->update(['last_activity' => Carbon::now(), 'online_status' => User::ONLINE]);
+            User::where('id', Auth::id())->update(['last_activity' => DB::raw('NOW()'), 'online_status' => User::ONLINE]);
 
             $users = User::getOnlineUsersPaginate(4);
 

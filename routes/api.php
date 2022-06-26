@@ -20,7 +20,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::apiResources([
+Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
 
-    'users' => UserController::class,
-]);
+    Route::apiResources([
+
+        'users' => UserController::class,
+    ]);
+
+});
+
+
+

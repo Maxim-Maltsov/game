@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\GameController;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -17,7 +19,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/welcome', function () {
-
     return view('welcome');
 });
 
@@ -28,4 +29,10 @@ Route::get('/dashboard', function () {
 require __DIR__.'/auth.php';
 
 
-Route::get('/', [GameController::class, 'index'])->middleware('auth')->name('home');
+
+Route::middleware(['auth', 'last-activity'])->group(function () {
+
+    Route::get('/', [GameController::class, 'index'])->name('home');
+
+
+});

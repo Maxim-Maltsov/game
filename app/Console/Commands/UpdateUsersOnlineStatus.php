@@ -30,11 +30,9 @@ class UpdateUsersOnlineStatus extends Command
      * @return int
      */
     public function handle()
-    {
-        
-        $users = User::whereRaw(DB::raw("TIMESTAMPDIFF(MINUTE, last_activity, NOW()) >=" . env('EXPIRY_TIME_ONLINE_IN_MINUTES')))->get();
-
-        
+    {   
+        $users = User::whereRaw(DB::raw('TIMESTAMPDIFF(MINUTE, last_activity, NOW()) >= ' . env('EXPIRY_TIME_ONLINE_IN_MINUTES')))->get();
+                    
         if ($users->count() > 0) { 
 
             foreach ($users as $user) {
