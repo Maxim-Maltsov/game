@@ -70,7 +70,7 @@ class GameController extends Controller
      */
     public function show($id)
     {
-        //
+        return new GameResource(Game::findOrFail($id));
     }
 
     /**
