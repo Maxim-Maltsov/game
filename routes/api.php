@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\v1\GameController;
 use App\Http\Controllers\Api\v1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +26,15 @@ Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
     Route::apiResources([
 
         'users' => UserController::class,
+        'games' => GameController::class,
     ]);
+
+});
+
+
+Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
+
+    Route::post('invite-to-play', [GameController::class, 'inviteToPlay']);
 
 });
 

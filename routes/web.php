@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/welcome', function () {
+    $token = session('API-Token');
+    dd($token);
     return view('welcome');
 });
 

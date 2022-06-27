@@ -33,7 +33,7 @@
                         <div class="card-body d-flex flex-column  align-items-center">
                         <h6 class="h6 card-title text-secondary">
                              {{ user.name }}  <small class="text-success">free</small></h6>
-                        <a href="#" class="btn btn-outline-success hover-shadow" style="width: 80%">Play</a>
+                        <button v-on:click="inviteToPlay(user.id)" class="btn btn-outline-success hover-shadow" type="button" style="width: 80%">Play</button>
                         </div>
                     </div>
                 </div>
@@ -83,6 +83,9 @@
                 
                 loading: false,
                 errored: false,
+
+                offer: false,
+                response: false,
             }
         },
 
@@ -131,7 +134,30 @@
 
             },
 
+             inviteToPlay(id) {
+                
+                // alert(id);
+                // let config = {
 
+                //     headers: {
+                //         Authorization: "Bearer " + token,
+                //     }
+                // }
+
+                // axios.post('api/v1/invite-to-play', {
+
+                //     player_2: id,
+                    
+                // }, config)
+                // .then(function (response) {
+                //     console.log(response);
+                // })
+                // .catch(function (error) {
+                //     console.log(error);
+                // });
+                
+                // this.offer = true;
+            },
 
         },
                 
