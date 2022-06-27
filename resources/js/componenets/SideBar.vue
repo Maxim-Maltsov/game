@@ -136,27 +136,27 @@
 
              inviteToPlay(id) {
                 
-                // alert(id);
-                // let config = {
+                alert(id);
+                let config = {
 
-                //     headers: {
-                //         Authorization: "Bearer " + token,
-                //     }
-                // }
+                    headers: {
+                        Authorization: "Bearer " + token,
+                    }
+                }
 
-                // axios.post('api/v1/invite-to-play', {
+                axios.post('api/v1/invite-to-play', {
 
-                //     player_2: id,
+                    player_2: id,
                     
-                // }, config)
-                // .then(function (response) {
-                //     console.log(response);
-                // })
-                // .catch(function (error) {
-                //     console.log(error);
-                // });
+                }, config)
+                .then(function (response) {
+                    console.log(response);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
                 
-                // this.offer = true;
+                this.offer = true;
             },
 
         },

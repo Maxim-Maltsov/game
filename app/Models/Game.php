@@ -17,4 +17,14 @@ class Game extends Model
 
      protected $fillable = [ 'player_2'];
 
+    // 
+    public function player_1()
+    {
+        return $this->belongsTo(User::class, 'player_1', 'id');
+    }
+
+    public function player2()
+    {
+        return $this->belongsTo(User::class, 'player_2', 'id');
+    }
 }

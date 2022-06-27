@@ -19,9 +19,9 @@ class GameController extends Controller
         $player_1 = Auth::user();
         $player_2 = User::where('id', $request->player_2)->first();
 
-        $game = new Game();
+        $game = new Game($request->validated());
         $game->player_1 = Auth::id();
-        $game->player_2 = $request->player_2;
+        // $game->player_2 = $request->player_2;
         $game->status = Game::WAITING_PLAYER;
         $game->save();
 
