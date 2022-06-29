@@ -33,14 +33,14 @@ class InviteToPlayEvent implements ShouldBroadcastNow
         $this->game = $game;
     }
 
-    // public function broadcastWith(): array
-    // {
-    //     return [
-    //         'player_1' => UserResource::make($this->player_1),
-    //         'player_2' => UserResource::make($this->player_2),
-    //         'game' => $this->game
-    //     ];
-    // }
+    public function broadcastWith(): array
+    {
+        return [
+            'player_1' => UserResource::make($this->player_1),
+            'player_2' => UserResource::make($this->player_2),
+            'game' => $this->game
+        ];
+    }
 
     /**
      * Get the channels the event should broadcast on.

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use PhpParser\Node\Expr\Cast\Int_;
 
@@ -64,11 +65,25 @@ class User extends Authenticatable
         return $users;
     }
 
-    public function canPlayGame()
+    public function canPlay()
     {   
         // Проверить учавствует ли пользователь в игре 
         // вкачестве первого или второго игрока,
         // если да вернуть false, если нет true
+
+        // $game = Game::where('player_1', Auth::id())->first();
+        
+        // if ($game instanceof Game) {
+
+        //     return false;
+        // }
+
+        // $game = Game::where('player_2', Auth::id())->first();
+
+        // if ($game instanceof Game) {
+
+        //     return false;
+        // }
 
         return true;
     }

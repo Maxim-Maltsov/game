@@ -32,8 +32,8 @@
                     <div v-for="user of users" :key="user.id" class="card text-center mt-1">
                         <div class="card-body d-flex flex-column  align-items-center">
                         <h6 class="h6 card-title text-secondary">
-                             {{ user.name }}  <small class="text-success">free</small></h6>
-                        <button v-on:click="inviteToPlay(user.id)" class="btn btn-outline-success hover-shadow" type="button" style="width: 80%">Play</button>
+                             {{ user.name }} <small class="text-success">free</small>   </h6>
+                        <button v-on:click="inviteToPlay(user.id)" class="btn btn-outline-success hover-shadow" :class="{ disabled: !user.can_play || (auth_id == user.id)}" type="button" style="width: 80%">Play</button>
                         </div>
                     </div>
                 </div>
@@ -70,6 +70,8 @@
         props: {
 
             token: String,
+
+            auth_id: String,
             
         },
 
@@ -114,7 +116,7 @@
                 let config = {
 
                     headers: {
-                        Authorization: "Bearer " + token,
+                        Authorization: "Bearer " + this.token,
                     }
                 }
                 
@@ -127,7 +129,6 @@
                     })
                     .catch( error => {
                         
-                        this.errored = true;
                         console.log(error);
                     })
                     .finally(() => (this.loading = false));
@@ -136,11 +137,10 @@
 
              inviteToPlay(id) {
                 
-                alert(id);
                 let config = {
 
                     headers: {
-                        Authorization: "Bearer " + token,
+                        Authorization: "Bearer " + this.token,
                     }
                 }
 
@@ -150,13 +150,18 @@
                     
                 }, config)
                 .then(function (response) {
+
+                    // Присвоить значения пользователей
+                    // Показать карточку ожидания игрока
+                    
                     console.log(response);
                 })
                 .catch(function (error) {
+                    alert(response.data.data.error);
                     console.log(error);
                 });
                 
-                this.offer = true;
+                
             },
 
         },
