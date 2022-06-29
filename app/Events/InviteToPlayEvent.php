@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\GameResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -16,9 +17,8 @@ class InviteToPlayEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $player_1 = null;
-    public $player_2 = null;
-    public $game = null;
+    public $id;
+    public $game; 
 
 
     /**
@@ -26,22 +26,13 @@ class InviteToPlayEvent implements ShouldBroadcastNow
      *
      * @return void
      */
-    public function __construct($player_1, $player_2, $game)
+    public function __construct(int $id, $game)
     {
-        $this->player_1 = $player_1;
-        $this->player_2 = $player_2;
+        $this->id = $id;
         $this->game = $game;
     }
 
-    public function broadcastWith(): array
-    {
-        return [
-            'player_1' => UserResource::make($this->player_1),
-            'player_2' => UserResource::make($this->player_2),
-            'game' => $this->game
-        ];
-    }
-
+   
     /**
      * Get the channels the event should broadcast on.
      *
@@ -49,6 +40,6 @@ class InviteToPlayEvent implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('privateMessageFor.' . $this->player_2->id);
+        return new PrivateChannel('privateChannelFor.' . $this->id);
     }
 }

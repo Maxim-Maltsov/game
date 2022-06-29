@@ -36,6 +36,6 @@ class AmountUsersOnlineChangedEvent implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new Channel('all-auth-users');
+        return new Channel('allAuthUsers');
     }
 }

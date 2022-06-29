@@ -8,7 +8,9 @@ use App\Http\Requests\GameRequest;
 use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Models\User;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Auth;
 
 class GameController extends Controller
@@ -19,85 +21,48 @@ class GameController extends Controller
         $player_1 = Auth::user();
         $player_2 = User::where('id', $request->player_2)->first();
 
-
-        if ($player_1 === null) {
-
-            return response()->json([ 'data' => [
-
-                'error' => "User not found.",
-            ]]);
-
-        }
-
-        if ($player_2 === null) {
-
-            return response()->json([ 'data' => [
-
-                'error' => "User Two not found.",
-            ]]);
-        }
-
+        
         if ($player_1->id == $player_2->id) {
 
             return response()->json([ 'data' => [
 
-                'error' => "You can't invite yourself",
+                'message' => "You can't invite yourself",
+                'exception' => true,
             ]]);
         }
         
 
-        $game = Game::where('player_1', $player_1->id)->first();
+        $game = Game::where('player_1',  $player_1->id)->whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])->first();
         
         if ($game instanceof Game) {
 
             return response()->json([ 'data' => [
 
-                'error' => "You're already playing " . $player_2->name ,
+                'message' => "You have already offered to play to another player. Wait for a response or cancel the game with " . $game->secondPlayer->name . ".",
+                'exception' => true,
             ]]);
         }
 
-        // $game = Game::whereIn('player_2', [$player_1->id, $player_2->id])->first();
-        
-        // if ($game instanceof Game) {
 
-        //     return response()->json([ 'data' => [
+        $game = Game::where('player_2', $player_1->id)->whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])->first();
 
-        //         'error' => "You're already playing ",
-        //     ]]);
-        // }
-
-        $game = Game::whereIn('player_1', [$player_1->id, $player_2->id])
-                    ->whereIn('player_2', [$player_2->id, $player_1->id])
-                    ->whereIn('status', [Game::IN_PROCESS, Game::WAITING_PLAYER])
-                    ->first();
-
-        
         if ($game instanceof Game) {
 
-            if ($game->status == Game::WAITING_PLAYER) {
+            return response()->json([ 'data' => [
 
-                return response()->json([ 'data' => [
-
-                    'error' => "Waiting for start game with " . $player_2->name ,
-                ]]);
-             }
-
-             if ($game->status == Game::IN_PROCESS) {
-
-                return response()->json([ 'data' => [
-
-                    'error' => "The game in process" ,
-                ]]); 
-             }
+                
+                'message' => "You have already been offered to play. Accept the offer or refuse the offer. " . "Offer from ". $game->firstPlayer->name . ".",
+                'exception' => true,
+            ]]);
         }
-    
+          
 
-        $game = new Game($request->validated());  // $request->validated(), присваивает значение - $game->player_2 = $request->player_2;
+        $game = new Game($request->validated()); 
         $game->player_1 = Auth::id();
         $game->status = Game::WAITING_PLAYER;
         $game->save();
 
-        // InviteToPlayEvent::dispatch($player_1, $player_2, $game);
+        InviteToPlayEvent::dispatch( $player_2->id, GameResource::make($game));
 
         return new GameResource($game);
     }
@@ -163,8 +128,12 @@ class GameController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Game $game)
     {
-        //
+        $game->delete();
+
+        // Создать событие удаления игры для приватного канала . При удалении скрывать блок с предложение принять участие в игре.
+
+        return response(null, HttpResponse::HTTP_NO_CONTENT);
     }
 }

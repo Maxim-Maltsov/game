@@ -26,15 +26,15 @@ class Game extends Model
      protected $fillable = [ 'player_2'];
 
     
-    public function player_1()
+    public function firstPlayer()
     {
-        return $this->belongsTo(User::class, 'player_1', 'id');
+        return $this->belongsTo(User::class, 'player_1');
     }
 
     
-    public function player2()
+    public function  secondPlayer()
     {
-        return $this->belongsTo(User::class, 'player_2', 'id');
+        return $this->belongsTo(User::class, 'player_2');
     }
 
     

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\GameController;
+use App\Models\Game;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -20,8 +21,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/welcome', function () {
 
-    // $token = session('API-Token');
-    // dd( $token);
+    $token = session('API-Token');
+    dd($token);
 
     return view('welcome');
 });

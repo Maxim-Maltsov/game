@@ -8,18 +8,18 @@
         <section v-if="errored" class="d-flex flex-column align-items-center">
             <div class="card-info mt-5" style="width: 80%">
                 <div class="alert alert-danger mt-5" role="alert">
-                    <strong>Уведомлене!</strong><div class="text-secondary">Не удалось получить данные. Попробуйте позже...</div>
+                    <strong>Notification!</strong><div class="text-secondary">Data could not be retrieved. Try again later...</div>
                 </div>  
             </div>
         </section>
-
-        <!-- alertloading -->
+        
+        <!-- alert loading -->
         <section v-if="loading">
             <div class="card-info mt-5 d-flex flex-column align-items-center" >
                 <div class="spinner-border m-3" role="status" style="width: 2rem; height: 2rem;" >
                     <span class="visually-hidden"></span>
                 </div>
-                <strong>Загрузка...</strong>
+                <strong>Loading...</strong>
             </div>
         </section>
 
@@ -61,7 +61,6 @@
     </div> <!-- .col-4 -->
 
     <div  class="col-8 text-center flex-column justify-content-center align-items-center">
-
         
         <!-- offer card -->
         <section v-if="offer" class="d-flex flex-column align-items-center">
@@ -70,7 +69,7 @@
 
                     <div class="offer-card" style="width: 100%">
                         <div class="alert alert-light m-0" role="alert">
-                            <h6 class="h6" ><i class="text-success"> Player one</i> offers to play the game!</h6>
+                            <h6 class="h6" ><i class="text-success"> {{ game.player_1.name }} </i> offers to play the game!</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
                                 <a href="#" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</a>
                                 <a href="#" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</a>
@@ -83,15 +82,15 @@
         </section>
 
         <!-- response card -->
-         <section v-if="response" class="d-flex flex-column align-items-center">
+         <section v-if="waiting" class="d-flex flex-column align-items-center">
             <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                 <div class="card-body bg-dark opacity-75" style="border-radius: 4px">
 
                     <div class="offer-card" style="width: 100%">
                         <div class="alert alert-light m-0" role="alert">
-                            <h6 class="h6" > Waiting for a response from<i class="text-success"> Player two...</i></h6>
+                            <h6 class="h6" > Waiting for a response from <i class="text-success"> {{ game.player_2.name }}</i> ...</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
-                                <a href="#" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</a>
+                                <button v-on:click=" destroyGame(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
                         </div>  
                     </div>
@@ -100,15 +99,24 @@
             </div>
         </section>
 
+         <!-- alert exception -->
+        <section v-if="exception" class="d-flex flex-column align-items-center">
+            <div class="card-info shadow" style="width: 100%">
+                <div class="alert alert-warning mb-0 p-y-1" role="alert">
+                    <div class="text-secondary"> Warning... {{ message }} </div>
+                </div>  
+            </div>
+        </section>
 
-
+        
+        
         <section v-show="play" id="playing-field">
 
             <!-- alert error -->
             <section v-if="errored" class="d-flex flex-column align-items-center">
                 <div class="card-info mt-5" style="width: 80%">
                     <div class="alert alert-danger mt-5" role="alert">
-                        <strong>Уведомлене! </strong><div class="text-secondary">Не удалось получить данные. Попробуйте позже...</div>
+                        <strong>Notification!</strong><div class="text-secondary">Data could not be retrieved. Try again later...</div>
                     </div>  
                 </div>
             </section>
@@ -119,7 +127,7 @@
                     <div class="spinner-border m-3" role="status" style="width: 2rem; height: 2rem;" >
                         <span class="visually-hidden"></span>
                     </div>
-                    <strong>Загрузка...</strong>
+                    <strong>Loading...</strong>
                 </div>
             </section>
 
@@ -219,8 +227,12 @@
                 errored: false,
 
                 offer:    false,
-                response: false,
+                waiting: false,
                 play:     false,
+
+                
+                message: '',
+                exception: false,
             }
         },
 
@@ -279,22 +291,66 @@
 
                 axios.post('api/v1/invite-to-play', {
 
-                    player_2: id,
+                   player_2: id,
                     
                 }, config)
-                .then(function (response) {
+                .then( response => {
 
-                    // Присвоить значения пользователей
-                    // Показать карточку ожидания игрока
+                    this.exception = (response.data.data.exception)? response.data.data.exception : false;
+
+                    if (this.exception) {
+
+                        this.message = response.data.data.message;
+                        // console.log(this.message);
+                        // console.log(this.exception);
+                    }
+                    else {
+
+                        this.game = response.data.data;
+                        // this.player_1 = response.data.data.player_1
+                        // this.player_2 = response.data.data.player_2
+
+                        this.waiting = true;
+
+                        // console.log(this.exception);
+                        console.log(this.game);
+                        // console.log(this.player_1.name);
+                        // console.log(this.player_2.name);
+                    }
                     
-                    console.log(response);
                 })
-                .catch(function (error) {
-                    alert(response.data.data.error);
+                .catch( error => {
+
                     console.log(error);
                 });
-                
-                
+            },
+
+            destroyGame(id) {
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+
+                axios.post(`api/v1/games/${id}`, {
+
+                  _method: 'DELETE'
+                    
+                }, config)
+                .then( response => {
+                    
+                    if (confirm('Вы точно хотите отменить игру?')) {
+
+                         this.game = {};
+                         this.waiting = false;
+                    }
+                })
+                .catch( error => {
+
+                    console.log(error);
+                });
             },
 
         },
@@ -303,21 +359,26 @@
             
             this.getUsers('api/v1/users');
 
-            Echo.channel('all-auth-users')
+            Echo.channel('allAuthUsers')
                 .listen('AmountUsersOnlineChangedEvent', (e) => {
                     
                     this.users = e.users;
-                    console.log(e.users);
+                    // console.log(e.users);
                 });
-                                          // ${this.user.id}
-            // Echo.private(`privateMessageFor.${window.user_id}`)
-            //     .listen('InviteToPlayEvent', (e) => {
+                                          
+            Echo.private(`privateChannelFor.${this.auth_id}`)
+                .listen('InviteToPlayEvent', (e) => {
                     
-            //         console.log(e);
-            //         this.player_1 = e.player_1;
-            //         this.player_2 = e.player_2;
-            //         this.offer = true;
-            //     }),
+                    this.game = e.game;
+                    // this.player_1 = e.game.player_1;
+                    // this.player_2 = e.game.player_2;
+
+                    this.offer = true;
+
+                    // console.log( e.game.player_1.name);
+                    // console.log( e.game.player_2.name);
+                    // console.log( e.game);
+                });
 
 
 
@@ -333,5 +394,6 @@
         
         box-shadow:0 .5rem 1rem rgba(0,0,0,.15);
     }
+
     
 </style>
