@@ -71,8 +71,8 @@
                         <div class="alert alert-light m-0" role="alert">
                             <h6 class="h6" ><i class="text-success"> {{ game.player_1.name }} </i> offers to play the game!</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
-                                <a href="#" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</a>
-                                <a href="#" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</a>
+                                <button class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
+                                <button v-on:click="deleteGame(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
                         </div>  
                     </div> 
@@ -90,7 +90,7 @@
                         <div class="alert alert-light m-0" role="alert">
                             <h6 class="h6" > Waiting for a response from <i class="text-success"> {{ game.player_2.name }}</i> ...</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
-                                <button v-on:click=" destroyGame(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
+                                <button v-on:click="deleteGame(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
                         </div>  
                     </div>
@@ -289,7 +289,7 @@
                     }
                 }
 
-                axios.post('api/v1/invite-to-play', {
+                axios.post('api/v1/invite', {
 
                    player_2: id,
                     
@@ -302,20 +302,12 @@
 
                         this.message = response.data.data.message;
                         // console.log(this.message);
-                        // console.log(this.exception);
                     }
                     else {
 
                         this.game = response.data.data;
-                        // this.player_1 = response.data.data.player_1
-                        // this.player_2 = response.data.data.player_2
-
                         this.waiting = true;
-
-                        // console.log(this.exception);
                         console.log(this.game);
-                        // console.log(this.player_1.name);
-                        // console.log(this.player_2.name);
                     }
                     
                 })
@@ -325,7 +317,7 @@
                 });
             },
 
-            destroyGame(id) {
+            deleteGame(id) {
 
                 if (!confirm('Are you sure you want to cancel the game?')) {
 
@@ -344,13 +336,6 @@
                   _method: 'DELETE'
                     
                 }, config)
-                .then( response => {
-                    
-                    // Обнуляем данные игры у первого игрока, скрытие карточки ожидания и предупреждений.
-                    this.game = {};
-                    this.waiting = false;
-                    this.exception = false;
-                })
                 .catch( error => {
 
                     console.log(error);
@@ -374,16 +359,22 @@
                 .listen('InviteToPlayEvent', (e) => {
                     
                     this.game = e.game;
-                    // this.player_1 = e.game.player_1;
-                    // this.player_2 = e.game.player_2;
-
                     this.offer = true;
-
-                    // console.log( e.game.player_1.name);
-                    // console.log( e.game.player_2.name);
                     // console.log( e.game);
-                });
+                })
+                .listen('FirstPlayerGameDeleteEvent', (e) => {
 
+                    this.game = {};
+                    this.waiting = false;
+                    this.exception = false;
+                })
+                .listen('SecondPlayerGameDeleteEvent', (e) => {
+
+                    this.game = {};
+                    this.offer = false;
+                    this.exception = false;
+                });
+                
 
 
         },

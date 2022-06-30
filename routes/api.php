@@ -34,7 +34,7 @@ Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
 
 Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
 
-    Route::post('invite-to-play', [GameController::class, 'inviteToPlay']);
+    Route::post('invite', [GameController::class, 'inviteToPlay'])->name('invite');
 });
 
 

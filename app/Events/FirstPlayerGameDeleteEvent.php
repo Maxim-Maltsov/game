@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Http\Resources\GameResource;
-use App\Http\Resources\UserResource;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -13,13 +12,14 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class InviteToPlayEvent implements ShouldBroadcastNow
+class FirstPlayerGameDeleteEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $player_2;
+    // ОТПРАВЛЯЕТСЯ ПЕРВОМУ ИГРОКУ - СРАБАТЫВАЕ ПРИ УДАЛЕНИИ ИГРЫ ВТОРЫМ ИГРОКОМ!!!!
+    
+    public $recipient;
     public $game; 
-
 
     /**
      * Create a new event instance.
@@ -28,11 +28,10 @@ class InviteToPlayEvent implements ShouldBroadcastNow
      */
     public function __construct(GameResource $game)
     {
-        $this->player_2 = $game->secondPlayer;
+        $this->recipient = $game->firstPlayer;
         $this->game = $game;
     }
-    
-   
+
     /**
      * Get the channels the event should broadcast on.
      *
@@ -40,6 +39,6 @@ class InviteToPlayEvent implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('privateChannelFor.' . $this->player_2->id);
+        return new PrivateChannel('privateChannelFor.' . $this->recipient->id);
     }
 }

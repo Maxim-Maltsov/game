@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Events\FirstPlayerGameDeleteEvent;
 use App\Events\InviteToPlayEvent;
+use App\Events\SecondPlayerGameDeleteEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GameRequest;
 use App\Http\Resources\GameResource;
@@ -21,7 +23,7 @@ class GameController extends Controller
         $player_1 = Auth::user();
         $player_2 = User::where('id', $request->player_2)->first();
 
-        
+
         if ($player_1->id == $player_2->id) {
 
             return response()->json([ 'data' => [
@@ -62,11 +64,11 @@ class GameController extends Controller
         $game->status = Game::WAITING_PLAYER;
         $game->save();
 
-        InviteToPlayEvent::dispatch(GameResource::make($game));
+        InviteToPlayEvent::dispatch( GameResource::make($game));
 
         return new GameResource($game);
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -132,8 +134,10 @@ class GameController extends Controller
     {
         $game->delete();
 
-        // Создать событие удаления игры для приватного канала . При удалении скрывать блок с предложение принять участие в игре.
+        FirstPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+        SecondPlayerGameDeleteEvent::dispatch(GameResource::make($game));
 
         return response(null, HttpResponse::HTTP_NO_CONTENT);
     }
+
 }
