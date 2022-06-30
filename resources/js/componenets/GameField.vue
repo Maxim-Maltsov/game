@@ -103,7 +103,7 @@
         <section v-if="exception" class="d-flex flex-column align-items-center">
             <div class="card-info shadow" style="width: 100%">
                 <div class="alert alert-warning mb-0 p-y-1" role="alert">
-                    <div class="text-secondary"> Warning... {{ message }} </div>
+                    <div class="text-secondary"> {{ message }} </div>
                 </div>  
             </div>
         </section>
@@ -327,6 +327,11 @@
 
             destroyGame(id) {
 
+                if (!confirm('Are you sure you want to cancel the game?')) {
+
+                    return false;
+                }
+
                 let config = {
 
                     headers: {
@@ -341,11 +346,10 @@
                 }, config)
                 .then( response => {
                     
-                    if (confirm('Вы точно хотите отменить игру?')) {
-
-                         this.game = {};
-                         this.waiting = false;
-                    }
+                    // Обнуляем данные игры у первого игрока, скрытие карточки ожидания и предупреждений.
+                    this.game = {};
+                    this.waiting = false;
+                    this.exception = false;
                 })
                 .catch( error => {
 
