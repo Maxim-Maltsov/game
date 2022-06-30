@@ -69,6 +69,12 @@ class GameController extends Controller
         return new GameResource($game);
     }
 
+
+    public function acceptInvite($id) {
+
+        //
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -87,18 +93,7 @@ class GameController extends Controller
      */
     public function store(GameRequest $request)
     {   
-        // $player_1 = Auth::user();
-        // $player_2 = User::where('id', $request->id)->first();
-
-        // $game = new Game();
-        // $game->player_1 = Auth::id();
-        // $game->player_2 = $request->id;
-        // $game->status = Game::WAITING_PLAYER;
-        // $game->save();
-
-        // InviteToPlayEvent::dispatch($player_1, $player_2, $game);
-
-        // return new GameResource($game);
+       //
     }
 
     /**

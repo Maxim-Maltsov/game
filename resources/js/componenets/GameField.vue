@@ -71,7 +71,7 @@
                         <div class="alert alert-light m-0" role="alert">
                             <h6 class="h6" ><i class="text-success"> {{ game.player_1.name }} </i> offers to play the game!</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
-                                <button class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
+                                <button v-on:click="acceptInvite(game.id)" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
                                 <button v-on:click="deleteGame(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
                         </div>  
@@ -280,7 +280,7 @@
 
             },
 
-             inviteToPlay(id) {
+            inviteToPlay(id) {
                 
                 let config = {
 
@@ -310,6 +310,31 @@
                         console.log(this.game);
                     }
                     
+                })
+                .catch( error => {
+
+                    console.log(error);
+                });
+            },
+
+            acceptInvite(id) {
+
+                alert('accept Invitation');
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+
+                axios.post('api/v1/accept', {
+
+                    
+                }, config)
+                .then( response => {
+
+              
                 })
                 .catch( error => {
 
