@@ -17,7 +17,7 @@ class InviteToPlayEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $id;
+    public $player_2;
     public $game; 
 
 
@@ -26,9 +26,9 @@ class InviteToPlayEvent implements ShouldBroadcastNow
      *
      * @return void
      */
-    public function __construct(int $id, $game)
+    public function __construct($game)
     {
-        $this->id = $id;
+        $this->player_2 = $game->secondPlayer;
         $this->game = $game;
     }
 
@@ -40,6 +40,6 @@ class InviteToPlayEvent implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('privateChannelFor.' . $this->id);
+        return new PrivateChannel('privateChannelFor.' . $this->player_2->id);
     }
 }

@@ -62,7 +62,7 @@ class GameController extends Controller
         $game->status = Game::WAITING_PLAYER;
         $game->save();
 
-        InviteToPlayEvent::dispatch( $player_2->id, GameResource::make($game));
+        InviteToPlayEvent::dispatch(GameResource::make($game));
 
         return new GameResource($game);
     }
