@@ -20,6 +20,7 @@ class GameResource extends JsonResource
             'id' => $this->id,
             'player_1' => UserResource::make($this->firstPlayer),
             'player_2' => UserResource::make($this->secondPlayer),
+            'status' => $this->status,
             'start' => $this->start,
             'end' => $this->end,
             'winner' => $this->winner,

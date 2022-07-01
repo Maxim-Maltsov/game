@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Events\FirstPlayerGameDeleteEvent;
+use App\Events\GameStartEvent;
 use App\Events\InviteToPlayEvent;
 use App\Events\SecondPlayerGameDeleteEvent;
 use App\Http\Controllers\Controller;
@@ -10,6 +11,7 @@ use App\Http\Requests\GameRequest;
 use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Models\User;
+use Carbon\Carbon;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -70,9 +72,36 @@ class GameController extends Controller
     }
 
 
-    public function acceptInvite($id) {
+    public function cancelInvite(Game $game)
+    {   
+        $game->delete();
+        
+        FirstPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+        // SecondPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+        
+        return response(null, HttpResponse::HTTP_NO_CONTENT);
+    }
 
-        //
+
+    public function acceptInvite( Game $game) {
+
+        $game->status = Game::IN_PROCESS;
+        $game->start = Carbon::now();
+        $game->save();
+
+        GameStartEvent::dispatch(GameResource::make($game));
+
+        return new GameResource($game);
+    }
+    
+    public function rejectInvite(Game $game)
+    {
+        $game->delete();
+        
+        // FirstPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+        SecondPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+
+        return response(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
     /**
@@ -102,9 +131,9 @@ class GameController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Game $game)
     {
-        return new GameResource(Game::findOrFail($id));
+        return new GameResource($game);
     }
 
     /**
@@ -114,9 +143,15 @@ class GameController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Game $game)
     {
-        //
+        // $game->status = Game::IN_PROCESS;
+        // $game->start = Carbon::now();
+        // $game->save();
+
+        // // Событие Запуска Игры GameStartedEvent::dispatch();
+
+        // return new GameResource($game);
     }
 
     /**
@@ -125,14 +160,15 @@ class GameController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Game $game)
-    {
-        $game->delete();
+    // public function destroy(Game $game)
+    // {
+    //     $game->delete();
 
-        FirstPlayerGameDeleteEvent::dispatch(GameResource::make($game));
-        SecondPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+    //     FirstPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+    //     SecondPlayerGameDeleteEvent::dispatch(GameResource::make($game));
 
-        return response(null, HttpResponse::HTTP_NO_CONTENT);
-    }
+    //     return response(null, HttpResponse::HTTP_NO_CONTENT);
+    // }
 
+   
 }

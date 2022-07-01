@@ -34,9 +34,10 @@ Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
 
 Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
 
-    Route::post('invite', [GameController::class, 'inviteToPlay'])->name('invite');
-    Route::post('accept', [GameController::class, 'acceptInvite'])->name('accept');
+    Route::post('invite-play', [GameController::class, 'inviteToPlay'])->name('invite-play');
+    Route::delete('cancel-invite/{game}', [GameController::class, 'cancelInvite'])->name('cancel-invite');
+
+    Route::put('accept-invite/{game}', [GameController::class, 'acceptInvite'])->name('accept-invite');
+    Route::delete('reject-invite/{game}', [GameController::class, 'rejectInvite'])->name('reject-invite');
+    
 });
-
-
-

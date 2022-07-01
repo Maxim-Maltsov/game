@@ -28,8 +28,23 @@ class FirstPlayerGameDeleteEvent implements ShouldBroadcastNow
      */
     public function __construct(GameResource $game)
     {
-        $this->recipient = $game->firstPlayer;
+        $this->recipient = $game->secondPlayer;
         $this->game = $game;
+    }
+
+        /**
+     * Get the data to broadcast.
+     *
+     * @return array
+     */
+    public function broadcastWith()
+    {   
+        
+        return [
+            
+            'message' => $this->game->firstPlayer->name . " canceled the game.",
+            'info' => true,
+        ];
     }
 
     /**

@@ -54,8 +54,14 @@
                         </li>
                     </ul>
                 </nav>
-
             </div>
+
+            <div v-if="leave" class="cards d-flex flex-column justify-content-center align-items-center shadow mb-5 bg-body rounded" style="width: 100%">
+                <div class="btn-group p-3" role="group" aria-label="Figures" style="width: 100%;">
+                    <button href="#" class="btn btn-outline-danger hover-shadow" style="width: 50%;">Leave Game</button>
+                </div>
+            </div>
+
         </section>
 
     </div> <!-- .col-4 -->
@@ -69,10 +75,10 @@
 
                     <div class="offer-card" style="width: 100%">
                         <div class="alert alert-light m-0" role="alert">
-                            <h6 class="h6" ><i class="text-success"> {{ game.player_1.name }} </i> offers to play the game!</h6>
+                            <h6 class="h6" ><i class="text-success"> {{ /* game.player_1.name */ }} name 1 </i> offers to play the game!</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
                                 <button v-on:click="acceptInvite(game.id)" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
-                                <button v-on:click="deleteGame(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
+                                <button v-on:click="rejectInvite(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
                         </div>  
                     </div> 
@@ -88,9 +94,9 @@
 
                     <div class="offer-card" style="width: 100%">
                         <div class="alert alert-light m-0" role="alert">
-                            <h6 class="h6" > Waiting for a response from <i class="text-success"> {{ game.player_2.name }}</i> ...</h6>
+                            <h6 class="h6" > Waiting for a response from <i class="text-success"> {{ /* game.player_2.name */}} name 2</i> ...</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
-                                <button v-on:click="deleteGame(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
+                                <button v-on:click="cancelInvite(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
                         </div>  
                     </div>
@@ -99,16 +105,23 @@
             </div>
         </section>
 
-         <!-- alert exception -->
+        <!-- alert exception -->
         <section v-if="exception" class="d-flex flex-column align-items-center">
-            <div class="card-info shadow" style="width: 100%">
+            <div class="card-exception shadow" style="width: 100%">
                 <div class="alert alert-warning mb-0 p-y-1" role="alert">
                     <div class="text-secondary"> {{ message }} </div>
                 </div>  
             </div>
         </section>
 
-        
+         <!-- alert info -->
+        <section v-if="info" class="d-flex flex-column align-items-center">
+            <div class="card-info shadow" style="width: 100%">
+                <div class="alert alert-success mb-0 p-y-1" role="alert">
+                    <div class="text-secondary"> {{ message }} </div>
+                </div>  
+            </div>
+        </section>
         
         <section v-show="play" id="playing-field">
 
@@ -218,21 +231,19 @@
 
                 game: {},
 
-                player_1: {},
-                player_2: {},
-
                 pagination: {},
                 
                 loading: false,
                 errored: false,
 
                 offer:    false,
-                waiting: false,
+                waiting:  false,
                 play:     false,
+                leave:    false,
 
-                
                 message: '',
                 exception: false,
+                info: false,
             }
         },
 
@@ -289,14 +300,16 @@
                     }
                 }
 
-                axios.post('api/v1/invite', {
+                axios.post('api/v1/invite-play', {
 
                    player_2: id,
                     
                 }, config)
                 .then( response => {
 
+                    
                     this.exception = (response.data.data.exception)? response.data.data.exception : false;
+                    this.info = false;
 
                     if (this.exception) {
 
@@ -307,7 +320,7 @@
 
                         this.game = response.data.data;
                         this.waiting = true;
-                        console.log(this.game);
+                        // console.log(this.game);
                     }
                     
                 })
@@ -317,9 +330,68 @@
                 });
             },
 
+
             acceptInvite(id) {
 
-                alert('accept Invitation');
+                alert(id);
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+                // `api/v1/games/${id}` // По этому маршруту работает стандартный метод update
+                axios.post(`api/v1/accept-invite/${id}`, {
+
+                    _method: 'PUT'
+
+                }, config)
+                .then( response => {
+
+                    this.exception = false;
+                    this.offer = false;
+                    this.play = true;
+                    this.leave = true;
+                })
+                .catch( error => {
+
+                    console.log(error);
+                });
+            },
+
+            // deleteGame(id) {
+
+            //     if (!confirm('Are you sure you want to cancel the game?')) {
+
+            //         return false;
+            //     }
+
+            //     let config = {
+
+            //         headers: {
+            //             Authorization: "Bearer " + this.token,
+            //         }
+            //     }
+
+            //     axios.post(`api/v1/games/${id}`, {
+
+            //       _method: 'DELETE'
+                    
+            //     }, config)
+            //     .catch( error => {
+
+            //         console.log(error);
+            //     });
+            // },
+
+
+            cancelInvite(id) {
+                
+                if (!confirm('Are you sure you want to cancel the game?')) {
+
+                    return false;
+                }
 
                 let config = {
 
@@ -328,13 +400,14 @@
                     }
                 }
 
-                axios.post('api/v1/accept', {
+                axios.post(`api/v1/reject-invite/${id}`, {
 
+                  _method: 'DELETE'
                     
                 }, config)
                 .then( response => {
 
-              
+                    this.waiting = false;
                 })
                 .catch( error => {
 
@@ -342,7 +415,7 @@
                 });
             },
 
-            deleteGame(id) {
+            rejectInvite(id) {
 
                 if (!confirm('Are you sure you want to cancel the game?')) {
 
@@ -356,11 +429,15 @@
                     }
                 }
 
-                axios.post(`api/v1/games/${id}`, {
+                axios.post(`api/v1/reject-invite/${id}`, {
 
                   _method: 'DELETE'
                     
                 }, config)
+                .then( response => {
+
+                    this.offer = false;
+                })
                 .catch( error => {
 
                     console.log(error);
@@ -385,19 +462,43 @@
                     
                     this.game = e.game;
                     this.offer = true;
+                    this.info = false;
                     // console.log( e.game);
                 })
-                .listen('FirstPlayerGameDeleteEvent', (e) => {
-
-                    this.game = {};
+                .listen('SecondPlayerGameDeleteEvent', (e) => {
+                    
+                    alert("Второй игрок удалил игру!");
+                    
                     this.waiting = false;
                     this.exception = false;
-                })
-                .listen('SecondPlayerGameDeleteEvent', (e) => {
-
                     this.game = {};
+
+                    this.message = e.message;
+                    this.info = true;
+                })
+                .listen('FirstPlayerGameDeleteEvent', (e) => {
+                    
+                    alert("Первый игрок удалил игру!");
+                
                     this.offer = false;
                     this.exception = false;
+                    this.game = {};
+
+                    this.message = e.message;
+                    this.info = true;
+
+                })
+                .listen('GameStartEvent', (e) => {
+
+                    this.game = e.game;
+                    this.message = e.message;
+
+                    this.exception = false;
+                    this.waiting = false;
+                    this.info = true;
+                    this.play = true;
+                    this.leave = true;
+                    
                 });
                 
 

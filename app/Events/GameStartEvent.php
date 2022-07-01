@@ -12,15 +12,12 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class SecondPlayerGameDeleteEvent implements ShouldBroadcastNow
+class GameStartEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // ОТПРАВЛЯЕТСЯ ВТОРОМУ ИГРОКУ - СРАБАТЫВАЕ ПРИ УДАЛЕНИИ ИГРЫ ПЕРВЫМ ИГРОКОМ!!!!
-    
     public $recipient;
     public $game;
-
     /**
      * Create a new event instance.
      *
@@ -32,17 +29,11 @@ class SecondPlayerGameDeleteEvent implements ShouldBroadcastNow
         $this->game = $game;
     }
 
-        /**
-     * Get the data to broadcast.
-     *
-     * @return array
-     */
     public function broadcastWith()
     {   
-        
         return [
             
-            'message' => $this->game->secondPlayer->name . " canceled the game.",
+            'message' => $this->game->secondPlayer->name . " accept the game.",
             'info' => true,
         ];
     }
@@ -54,6 +45,6 @@ class SecondPlayerGameDeleteEvent implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('privateChannelFor.' . $this->recipient->id); 
+        return new PrivateChannel('privateChannelFor.' . $this->recipient->id);
     }
 }

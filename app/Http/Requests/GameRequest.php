@@ -25,7 +25,7 @@ class GameRequest extends FormRequest
     {
         return [
             
-            'player_2' => 'required|numeric',
+            'player_2' => 'numeric|nullable',
         ];
     }
 }
