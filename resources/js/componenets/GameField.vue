@@ -5,16 +5,16 @@
     <div id="side-bar" class="col-4">
 
         <!-- alert error -->
-        <section v-if="errored" class="d-flex flex-column align-items-center">
-            <div class="card-info mt-5" style="width: 80%">
-                <div class="alert alert-danger mt-5" role="alert">
-                    <strong>Notification!</strong><div class="text-secondary">Data could not be retrieved. Try again later...</div>
+        <section v-if="errored_users" class="d-flex flex-column align-items-center">
+            <div class="card-info" style="width: 80%">
+                <div class="alert  text-center" role="alert">
+                    <strong class="text-secondary">Error!</strong><div class="text-secondary">Data could not be retrieved. Try again later...</div>
                 </div>  
             </div>
         </section>
         
         <!-- alert loading -->
-        <section v-if="loading">
+        <section v-if="loading_users">
             <div class="card-info mt-5 d-flex flex-column align-items-center" >
                 <div class="spinner-border m-3" role="status" style="width: 2rem; height: 2rem;" >
                     <span class="visually-hidden"></span>
@@ -26,7 +26,7 @@
         <!-- users cards -->
         <section v-else >
             <div class="cards d-flex flex-column justify-content-center align-items-center shadow p-3 mb-5 bg-body rounded" style="width: 100%">
-                    
+                
                 <!-- cards -->
                 <div  class="card-body bg-dark opacity-75" style="width: 100%; border-radius: 4px">
                     <div v-for="user of users" :key="user.id" class="card text-center mt-1">
@@ -75,7 +75,7 @@
 
                     <div class="offer-card" style="width: 100%">
                         <div class="alert alert-light m-0" role="alert">
-                            <h6 class="h6" ><i class="text-success"> {{ /* game.player_1.name */ }} name 1 </i> offers to play the game!</h6>
+                            <h6 class="h6" ><i class="text-success"> {{  game.player_1.name  }} </i> offers to play the game!</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
                                 <button v-on:click="acceptInvite(game.id)" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
                                 <button v-on:click="rejectInvite(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
@@ -94,7 +94,7 @@
 
                     <div class="offer-card" style="width: 100%">
                         <div class="alert alert-light m-0" role="alert">
-                            <h6 class="h6" > Waiting for a response from <i class="text-success"> {{ /* game.player_2.name */}} name 2</i> ...</h6>
+                            <h6 class="h6" > Waiting for a response from <i class="text-success"> {{  game.player_2.name }} </i> ...</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
                                 <button v-on:click="cancelInvite(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
@@ -127,9 +127,9 @@
 
             <!-- alert error -->
             <section v-if="errored" class="d-flex flex-column align-items-center">
-                <div class="card-info mt-5" style="width: 80%">
-                    <div class="alert alert-danger mt-5" role="alert">
-                        <strong>Notification!</strong><div class="text-secondary">Data could not be retrieved. Try again later...</div>
+                <div class="card-info" style="width: 80%">
+                    <div class="alert  text-center" role="alert">
+                        <strong class="text-secondary">Error!</strong><div class="text-secondary">Data could not be retrieved. Try again later...</div>
                     </div>  
                 </div>
             </section>
@@ -236,6 +236,9 @@
                 loading: false,
                 errored: false,
 
+                loading_users: false,
+                errored_users: false,
+
                 offer:    false,
                 waiting:  false,
                 play:     false,
@@ -265,7 +268,7 @@
 
             getUsers(page_url) {
 
-                this.loading = true;
+                this.loading_users = true;
                 
                 let url = page_url || 'api/v1/users';
 
@@ -282,12 +285,20 @@
                        
                         this.users = response.data.data;
                         this.makePagination(response.data);
+
+                         if (this.errored_users) {
+                             this.errored_users = false;
+                        }
                     })
                     .catch( error => {
                         
+                        this.errored_users = true;
                         console.log(error);
                     })
-                    .finally(() => (this.loading = false));
+                    .finally(() => { 
+                        
+                        this.loading_users = false;
+                    });
 
             },
 
