@@ -12,14 +12,12 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class FirstPlayerGameDeleteEvent implements ShouldBroadcastNow
+class FirstPlayerLeavedGameEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // ОТПРАВЛЯЕТСЯ ПЕРВОМУ ИГРОКУ - СРАБАТЫВАЕ ПРИ УДАЛЕНИИ ИГРЫ ВТОРЫМ ИГРОКОМ!!!!
-    
     public $recipient;
-    public $game; 
+    public $game;
 
     /**
      * Create a new event instance.
@@ -32,18 +30,11 @@ class FirstPlayerGameDeleteEvent implements ShouldBroadcastNow
         $this->game = $game;
     }
 
-        /**
-     * Get the data to broadcast.
-     *
-     * @return array
-     */
     public function broadcastWith()
     {   
-        
         return [
             
-            'message' => $this->game->firstPlayer->name . " canceled the game.",
-            'info' => true,
+            'message' => $this->game->firstPlayer->name . ' leaved the game.',
         ];
     }
 

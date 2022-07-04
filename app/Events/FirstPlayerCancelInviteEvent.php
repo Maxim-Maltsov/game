@@ -12,14 +12,14 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class SecondPlayerGameDeleteEvent implements ShouldBroadcastNow
+class FirstPlayerCancelInviteEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // ОТПРАВЛЯЕТСЯ ВТОРОМУ ИГРОКУ - СРАБАТЫВАЕ ПРИ УДАЛЕНИИ ИГРЫ ПЕРВЫМ ИГРОКОМ!!!!
+    // ОТПРАВЛЯЕТСЯ ПЕРВОМУ ИГРОКУ - СРАБАТЫВАЕ ПРИ УДАЛЕНИИ ИГРЫ ВТОРЫМ ИГРОКОМ!!!!
     
     public $recipient;
-    public $game;
+    public $game; 
 
     /**
      * Create a new event instance.
@@ -28,7 +28,7 @@ class SecondPlayerGameDeleteEvent implements ShouldBroadcastNow
      */
     public function __construct(GameResource $game)
     {
-        $this->recipient = $game->firstPlayer;
+        $this->recipient = $game->secondPlayer;
         $this->game = $game;
     }
 
@@ -42,8 +42,7 @@ class SecondPlayerGameDeleteEvent implements ShouldBroadcastNow
         
         return [
             
-            'message' => $this->game->secondPlayer->name . " canceled the game.",
-            'info' => true,
+            'message' => $this->game->firstPlayer->name . ' canceled invite the game.',
         ];
     }
 
@@ -54,6 +53,6 @@ class SecondPlayerGameDeleteEvent implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('privateChannelFor.' . $this->recipient->id); 
+        return new PrivateChannel('privateChannelFor.' . $this->recipient->id);
     }
 }

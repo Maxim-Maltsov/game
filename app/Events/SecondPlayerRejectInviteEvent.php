@@ -12,12 +12,15 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class GameStartEvent implements ShouldBroadcastNow
+class SecondPlayerRejectInviteEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    // ОТПРАВЛЯЕТСЯ ВТОРОМУ ИГРОКУ - СРАБАТЫВАЕ ПРИ УДАЛЕНИИ ИГРЫ ПЕРВЫМ ИГРОКОМ!!!!
+    
     public $recipient;
     public $game;
+
     /**
      * Create a new event instance.
      *
@@ -29,13 +32,17 @@ class GameStartEvent implements ShouldBroadcastNow
         $this->game = $game;
     }
 
+        /**
+     * Get the data to broadcast.
+     *
+     * @return array
+     */
     public function broadcastWith()
     {   
+        
         return [
             
-            'game' => $this->game,
-            'message' => $this->game->secondPlayer->name . " accept invite in the game.",
-            'info' => true,
+            'message' => $this->game->secondPlayer->name . " rejected invite in the game.",
         ];
     }
 
@@ -47,6 +54,5 @@ class GameStartEvent implements ShouldBroadcastNow
     public function broadcastOn()
     {
         return new PrivateChannel('privateChannelFor.' . $this->recipient->id);
-        
     }
 }

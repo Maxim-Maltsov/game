@@ -21,8 +21,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/welcome', function () {
 
+
+    $game = Game::getGame();
+
     $token = session('API-Token');
-    dd($token);
+    dd($game);
 
     return view('welcome');
 });
@@ -38,6 +41,4 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth', 'last-activity'])->group(function () {
 
     Route::get('/', [GameController::class, 'index'])->name('home');
-
-
 });

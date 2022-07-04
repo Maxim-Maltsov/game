@@ -58,7 +58,7 @@
 
             <div v-if="leave" class="cards d-flex flex-column justify-content-center align-items-center shadow mb-5 bg-body rounded" style="width: 100%">
                 <div class="btn-group p-3" role="group" aria-label="Figures" style="width: 100%;">
-                    <button href="#" class="btn btn-outline-danger hover-shadow" style="width: 50%;">Leave Game</button>
+                    <button v-on:click="leaveGame(game)" class="btn btn-outline-danger hover-shadow" style="width: 50%;">Leave Game</button>
                 </div>
             </div>
 
@@ -77,8 +77,8 @@
                         <div class="alert alert-light m-0" role="alert">
                             <h6 class="h6" ><i class="text-success"> {{  game.player_1.name  }} </i> offers to play the game!</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
-                                <button v-on:click="acceptInvite(game.id)" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
-                                <button v-on:click="rejectInvite(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
+                                <button v-on:click="acceptInvite(game)" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
+                                <button v-on:click="rejectInvite(game)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
                         </div>  
                     </div> 
@@ -96,7 +96,7 @@
                         <div class="alert alert-light m-0" role="alert">
                             <h6 class="h6" > Waiting for a response from <i class="text-success"> {{  game.player_2.name }} </i> ...</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
-                                <button v-on:click="cancelInvite(game.id)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
+                                <button v-on:click="cancelInvite(game)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
                         </div>  
                     </div>
@@ -302,6 +302,36 @@
 
             },
 
+            initGame() {
+
+                this.loading = true;
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+                
+                axios
+                    .get( 'api/v1/init-game', config)
+                    .then( response => {
+                       
+                       this.game = response.data.data;
+                       console.log(response.data.data)
+                    })
+                    .catch( error => {
+                        
+                        this.errored = true;
+                        console.log(error);
+                    })
+                    .finally(() => { 
+                        
+                        this.loading = false;
+                    });
+
+            },
+
             inviteToPlay(id) {
                 
                 let config = {
@@ -342,9 +372,7 @@
             },
 
 
-            acceptInvite(id) {
-
-                alert(id);
+            acceptInvite(game) {
 
                 let config = {
 
@@ -353,13 +381,14 @@
                     }
                 }
                 // `api/v1/games/${id}` // По этому маршруту работает стандартный метод update
-                axios.post(`api/v1/accept-invite/${id}`, {
+                axios.post(`api/v1/accept-invite/${game.id}`, {
 
-                    _method: 'PUT'
-
+                    _method: 'PUT',
+                   
                 }, config)
                 .then( response => {
 
+                    this.game = response.data.data;
                     this.exception = false;
                     this.offer = false;
                     this.play = true;
@@ -371,6 +400,99 @@
                 });
             },
 
+            
+            cancelInvite(game) {
+                
+                if (!confirm('Are you sure you want to cancel the game?')) {
+
+                    return false;
+                }
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+
+                axios.post(`api/v1/cancel-invite/${game.id}`, {
+
+                  _method: 'DELETE'
+                    
+                }, config)
+                .then( response => {
+
+                    this.message = 'You canceled invite the game';
+                    this.info = true;
+
+                    this.waiting = false;
+                    this.exception = false;
+                })
+                .catch( error => {
+
+                    console.log(error);
+                });
+            },
+
+            rejectInvite(game) {
+
+                if (!confirm('Are you sure you want to cancel the game?')) {
+
+                    return false;
+                }
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+
+                axios.post(`api/v1/reject-invite/${game.id}`, {
+
+                  _method: 'DELETE'
+                    
+                }, config)
+                .then( response => {
+
+                    this.message = 'You rejected invite in the game.';
+                    this.info = true;
+
+                    this.offer = false;
+                    this.exception = false;
+                })
+                .catch( error => {
+
+                    console.log(error);
+                });
+            },
+
+            leaveGame(game) {
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+
+                axios.post(`api/v1/leave-game/${game.id}`, {
+
+                  _method: 'DELETE'
+                    
+                }, config)
+                .then( response => {
+
+                    this.message = 'You leaved the game!';
+                })
+                .catch( error => {
+
+                    console.log(error);
+                });
+            },
+
+            
+            
             // deleteGame(id) {
 
             //     if (!confirm('Are you sure you want to cancel the game?')) {
@@ -396,70 +518,12 @@
             //     });
             // },
 
-
-            cancelInvite(id) {
-                
-                if (!confirm('Are you sure you want to cancel the game?')) {
-
-                    return false;
-                }
-
-                let config = {
-
-                    headers: {
-                        Authorization: "Bearer " + this.token,
-                    }
-                }
-
-                axios.post(`api/v1/reject-invite/${id}`, {
-
-                  _method: 'DELETE'
-                    
-                }, config)
-                .then( response => {
-
-                    this.waiting = false;
-                })
-                .catch( error => {
-
-                    console.log(error);
-                });
-            },
-
-            rejectInvite(id) {
-
-                if (!confirm('Are you sure you want to cancel the game?')) {
-
-                    return false;
-                }
-
-                let config = {
-
-                    headers: {
-                        Authorization: "Bearer " + this.token,
-                    }
-                }
-
-                axios.post(`api/v1/reject-invite/${id}`, {
-
-                  _method: 'DELETE'
-                    
-                }, config)
-                .then( response => {
-
-                    this.offer = false;
-                })
-                .catch( error => {
-
-                    console.log(error);
-                });
-            },
-
         },
                 
         mounted() {
             
-            this.getUsers('api/v1/users');
+            this.getUsers();
+            this.initGame();
 
             Echo.channel('allAuthUsers')
                 .listen('AmountUsersOnlineChangedEvent', (e) => {
@@ -476,44 +540,63 @@
                     this.info = false;
                     // console.log( e.game);
                 })
-                .listen('SecondPlayerGameDeleteEvent', (e) => {
+                .listen('FirstPlayerCancelInviteEvent', (e) => {
                     
-                    alert("Второй игрок удалил игру!");
-                    
-                    this.waiting = false;
-                    this.exception = false;
-                    this.game = {};
-
+                    // alert("Первый игрок отменил приглашение в игру!");
                     this.message = e.message;
                     this.info = true;
-                })
-                .listen('FirstPlayerGameDeleteEvent', (e) => {
-                    
-                    alert("Первый игрок удалил игру!");
-                
+
                     this.offer = false;
                     this.exception = false;
                     this.game = {};
-
+                })
+                .listen('SecondPlayerRejectInviteEvent', (e) => {
+                    
+                    // alert("Второй игрок отказался от приглашения в игру!");
                     this.message = e.message;
                     this.info = true;
 
+                    this.waiting = false;
+                    this.exception = false;
+                    this.game = {};
                 })
                 .listen('GameStartEvent', (e) => {
 
+                    // alert("Второй игрок принял приглашение в игру!");
                     this.game = e.game;
                     this.message = e.message;
-
-                    this.exception = false;
-                    this.waiting = false;
                     this.info = true;
                     this.play = true;
                     this.leave = true;
+
+                    // console.log(this.game);
+
+                    this.exception = false;
+                    this.waiting = false;
+                })
+                .listen('FirstPlayerLeavedGameEvent', (e) => {
                     
+                    // alert('Первый игрок покинул игру.');
+                    this.message = e.message;
+                    this.info = true;
+
+                    this.play = false;
+                    this.leave = false;
+                    this.exception = false;
+                    this.game = {};
+                })
+                .listen('SecondPlayerLeavedGameEvent', (e) => {
+                    
+                    // alert('Второй игрок покинул игру.');
+                    this.message = e.message;
+                    this.info = true;
+
+                    this.play = false;
+                    this.leave = false;
+                    this.exception = false;
+                    this.game = {};
                 });
                 
-
-
         },
 
 }

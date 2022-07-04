@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Events\FirstPlayerGameDeleteEvent;
+use App\Events\FirstPlayerCancelInviteEvent;
+use App\Events\FirstPlayerLeavedGameEvent;
 use App\Events\GameStartEvent;
 use App\Events\InviteToPlayEvent;
-use App\Events\SecondPlayerGameDeleteEvent;
+use App\Events\NewEvent;
+use App\Events\SecondPlayerLeavedGameEvent;
+use App\Events\SecondPlayerRejectInviteEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GameRequest;
 use App\Http\Resources\GameResource;
@@ -60,7 +63,6 @@ class GameController extends Controller
             ]]);
         }
           
-
         $game = new Game($request->validated()); 
         $game->player_1 = Auth::id();
         $game->status = Game::WAITING_PLAYER;
@@ -73,17 +75,16 @@ class GameController extends Controller
 
 
     public function cancelInvite(Game $game)
-    {   
+    {  
         $game->delete();
         
-        FirstPlayerGameDeleteEvent::dispatch(GameResource::make($game));
-        // SecondPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+        FirstPlayerCancelInviteEvent::dispatch(GameResource::make($game));
         
         return response(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
 
-    public function acceptInvite( Game $game) {
+    public function acceptInvite(Game $game) {
 
         $game->status = Game::IN_PROCESS;
         $game->start = Carbon::now();
@@ -98,10 +99,26 @@ class GameController extends Controller
     {
         $game->delete();
         
-        // FirstPlayerGameDeleteEvent::dispatch(GameResource::make($game));
-        SecondPlayerGameDeleteEvent::dispatch(GameResource::make($game));
+        SecondPlayerRejectInviteEvent::dispatch(GameResource::make($game));
+        
+        return response(null, HttpResponse::HTTP_NO_CONTENT);
+    }
+
+
+     public function leaveGame(Game $game)
+    {
+        $game->delete();
+
+        FirstPlayerLeavedGameEvent::dispatch(GameResource::make($game));
+        SecondPlayerLeavedGameEvent::dispatch(GameResource::make($game));
 
         return response(null, HttpResponse::HTTP_NO_CONTENT);
+    }
+
+
+    public function initGame()
+    {
+        //
     }
 
     /**
