@@ -93,8 +93,6 @@ class Game extends Model
 
     public static function init()
     {   
-
-
         $game = Game::whereIn('status',[Game::WAITING_PLAYER, Game::IN_PROCESS])
                     ->where(function ($query)  {
                         $query->where('player_1', '=', Auth::id());
@@ -117,7 +115,6 @@ class Game extends Model
             'offer' => Game::showOfferBlock(),
             'play' => Game::showGameplayBlock(),
             'leave' => Game::showGameplayBlock(),
-            'playing' => User::canPlay(Auth::id()),
         ]]);
     }
 

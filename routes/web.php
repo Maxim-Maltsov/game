@@ -25,12 +25,20 @@ Route::get('/welcome', function () {
     $user =  User::where('id', Auth::id())->first();
     $userResource = UserResource::make($user);
 
+    $users = User::all();
 
+    foreach($users as $user) {
 
+        print_r($user->id . "  " . " " . $user->canPlay() . "</br>");
+
+    }
+
+    exit();
+    
     $play = Game::showGameplayBlock();
     $offer = Game::showOfferBlock();
     $waiting = Game::showWaitingBlock();
-    $can_play = User::canPlay($user->id);
+    $can_play = $user->canPlay();
 
     $token = session('API-Token');
     dd($play, $offer, $waiting, $token, $can_play, $userResource);

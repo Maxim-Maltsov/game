@@ -22,7 +22,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'online_status' => $this->online_status,
             'game_status' => $this->game_status,
-            'can_play' => User::canPlay($this->id),
+            'can_play' => $this->canPlay(),
             'created_at' => $this->created_at,
             
         ];

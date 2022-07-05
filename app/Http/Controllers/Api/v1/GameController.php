@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Events\AmountUsersOnlineChangedEvent;
 use App\Events\FirstPlayerCancelInviteEvent;
 use App\Events\FirstPlayerLeavedGameEvent;
 use App\Events\GameStartEvent;
@@ -12,6 +13,8 @@ use App\Events\SecondPlayerRejectInviteEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GameRequest;
 use App\Http\Resources\GameResource;
+use App\Http\Resources\UserCollection;
+use App\Http\Resources\UserResource;
 use App\Models\Game;
 use App\Models\User;
 use Carbon\Carbon;
@@ -27,8 +30,7 @@ class GameController extends Controller
     {   
         $player_1 = Auth::user();
         $player_2 = User::where('id', $request->player_2)->first();
-
-
+        
         if ($player_1->id == $player_2->id) {
 
             return response()->json([ 'data' => [
@@ -38,8 +40,6 @@ class GameController extends Controller
             ]]);
         }
         
-
-        // $game = Game::where('player_1',  $player_1->id)->whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])->first();
 
         $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
                     ->where('player_1', $player_1->id)
@@ -72,12 +72,15 @@ class GameController extends Controller
         }
           
         $game = new Game($request->validated()); 
-        $game->player_1 = Auth::id();
+        $game->player_1 = $player_1->id;
         $game->status = Game::WAITING_PLAYER;
         $game->save();
 
         InviteToPlayEvent::dispatch( GameResource::make($game));
 
+        $users = User::getOnlineUsersPaginate(4);
+        // AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        
         return new GameResource($game);
     }
 

@@ -53,6 +53,8 @@ class AuthenticatedSessionController extends Controller
         // Sunctum. Autorization token.
         Auth::user()->tokens()->delete();
 
+        // Вызвать событие AmountUsersOnlineChangedEven. Для обновления списка поьзователей у других игроков при выходе из системы. Аргументом передать пользователей онлай.
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

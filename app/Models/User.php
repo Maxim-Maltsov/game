@@ -59,21 +59,20 @@ class User extends Authenticatable
 
     
     public static function getOnlineUsersPaginate($amount)
-    {
+    {   
         $users = User::where('online_status', User::ONLINE)->paginate($amount);
         
         return $users;
     }
 
-    public static function canPlay($id)
+    public function canPlay()
     {   
         
         $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
-                    ->where(function ($query) use ($id) {
-                        $query->where('player_1', '=', $id);
-                        $query->orWhere('player_2', '=', $id );
+                    ->where(function ($query) {
+                        $query->where('player_1', $this->id);
+                        $query->orWhere('player_2', $this->id);
                     })->first();
-    
         
         if ($game instanceof Game) {
 
