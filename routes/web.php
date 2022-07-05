@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\GameController;
+use App\Http\Resources\UserResource;
 use App\Models\Game;
 use App\Models\User;
 use Carbon\Carbon;
@@ -21,11 +22,18 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/welcome', function () {
 
+    $user =  User::where('id', Auth::id())->first();
+    $userResource = UserResource::make($user);
 
-    $game = Game::getGame();
+
+
+    $play = Game::showGameplayBlock();
+    $offer = Game::showOfferBlock();
+    $waiting = Game::showWaitingBlock();
+    $can_play = User::canPlay($user->id);
 
     $token = session('API-Token');
-    dd($game);
+    dd($play, $offer, $waiting, $token, $can_play, $userResource);
 
     return view('welcome');
 });

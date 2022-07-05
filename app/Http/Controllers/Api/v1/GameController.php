@@ -39,7 +39,11 @@ class GameController extends Controller
         }
         
 
-        $game = Game::where('player_1',  $player_1->id)->whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])->first();
+        // $game = Game::where('player_1',  $player_1->id)->whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])->first();
+
+        $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
+                    ->where('player_1', $player_1->id)
+                    ->first();
         
         if ($game instanceof Game) {
 
@@ -47,11 +51,14 @@ class GameController extends Controller
 
                 'message' => "You have already offered to play to another player. Wait for a response or cancel the game with " . $game->secondPlayer->name . ".",
                 'exception' => true,
+                'playing' => true,
             ]]);
         }
 
 
-        $game = Game::where('player_2', $player_1->id)->whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])->first();
+        $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
+                    ->where('player_2', $player_1->id)
+                    ->first();
 
         if ($game instanceof Game) {
 
@@ -60,6 +67,7 @@ class GameController extends Controller
                 
                 'message' => "You have already been offered to play. Accept the offer or refuse the offer. " . "Offer from ". $game->firstPlayer->name . ".",
                 'exception' => true,
+                'playing' => true,
             ]]);
         }
           
@@ -118,7 +126,7 @@ class GameController extends Controller
 
     public function initGame()
     {
-        //
+        return Game::init();
     }
 
     /**

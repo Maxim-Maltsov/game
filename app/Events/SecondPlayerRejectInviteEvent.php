@@ -16,8 +16,6 @@ class SecondPlayerRejectInviteEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // ОТПРАВЛЯЕТСЯ ВТОРОМУ ИГРОКУ - СРАБАТЫВАЕ ПРИ УДАЛЕНИИ ИГРЫ ПЕРВЫМ ИГРОКОМ!!!!
-    
     public $recipient;
     public $game;
 

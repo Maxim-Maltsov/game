@@ -2,7 +2,7 @@
 <template>
     
     <!-- /// Side Bar /// --> 
-    <div id="side-bar" class="col-4">
+    <div id="side-bar" class="col-4 position-relative">
 
         <!-- alert error -->
         <section v-if="errored_users" class="d-flex flex-column align-items-center">
@@ -33,7 +33,7 @@
                         <div class="card-body d-flex flex-column  align-items-center">
                         <h6 class="h6 card-title text-secondary">
                              {{ user.name }} <small class="text-success">free</small>   </h6>
-                        <button v-on:click="inviteToPlay(user.id)" class="btn btn-outline-success hover-shadow" :class="{ disabled: /*!user.can_play  || */ (auth_id == user.id) }" type="button" style="width: 80%">Play</button>
+                        <button disabled="playing" v-on:click="inviteToPlay(user.id)" class="btn btn-outline-success hover-shadow" :class="{ disabled: !user.can_play || (auth_id == user.id) }" type="button" style="width: 80%">Play</button>
                         </div>
                     </div>
                 </div>
@@ -55,8 +55,8 @@
                     </ul>
                 </nav>
             </div>
-
-            <div v-if="leave" class="cards d-flex flex-column justify-content-center align-items-center shadow mb-5 bg-body rounded" style="width: 100%">
+            
+            <div v-if="leave" class="card d-flex flex-column justify-content-center align-items-center shadow mb-5 bg-body rounded" style="width: 100%">
                 <div class="btn-group p-3" role="group" aria-label="Figures" style="width: 100%;">
                     <button v-on:click="leaveGame(game)" class="btn btn-outline-danger hover-shadow" style="width: 50%;">Leave Game</button>
                 </div>
@@ -144,7 +144,7 @@
                 </div>
             </section>
 
-            <!-- playing field cards -->
+            <!--playing field cards -->
             <section v-else >
                 <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                     <div class="card-body bg-dark opacity-75" style="border-radius: 4px">
@@ -159,11 +159,11 @@
                         <!-- figures -->
                         <div class="card text-center mt-1">
                             <div class="btn-group p-3" role="group" aria-label="Figures" style="width: 100%">
-                                <a href="#" class="btn btn-outline-success hover-shadow" style="width: 50%">Rock</a>
-                                <a href="#" class="btn btn-outline-success hover-shadow" style="width: 50%">Scissors</a>
-                                <a href="#" class="btn btn-outline-success hover-shadow" style="width: 50%">Paper</a>
-                                <a href="#" class="btn btn-outline-success hover-shadow" style="width: 50%">Lizard</a>
-                                <a href="#" class="btn btn-outline-success hover-shadow" style="width: 50%">Spoke</a>
+                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Rock</button>
+                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Scissors</button>
+                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Paper</button>
+                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Lizard</button>
+                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Spoke</button>
                             </div>
                         </div>
 
@@ -247,6 +247,8 @@
                 message: '',
                 exception: false,
                 info: false,
+
+    
             }
         },
 
@@ -309,6 +311,7 @@
                 let config = {
 
                     headers: {
+                        
                         Authorization: "Bearer " + this.token,
                     }
                 }
@@ -316,19 +319,28 @@
                 axios
                     .get( 'api/v1/init-game', config)
                     .then( response => {
-                       
-                       this.game = response.data.data;
-                       console.log(response.data.data)
+
+                        if (response.data.data.exception) {
+
+                            console.log(response.data.data.message);
+                            // this.message = response.data.data.message;
+                            // this.exception = true;
+                        }
+                        else {
+
+                            this.game = response.data.data.game;
+                            this.waiting = response.data.data.waiting;
+                            this.offer = response.data.data.offer;
+                            this.play = response.data.data.play;
+                            this.leave = response.data.data.leave;
+                            // console.log(response.data.data.game);
+                        }
                     })
                     .catch( error => {
                         
-                        this.errored = true;
                         console.log(error);
                     })
-                    .finally(() => { 
-                        
-                        this.loading = false;
-                    });
+                    .finally(() => this.loading = false );
 
             },
 
@@ -349,18 +361,20 @@
                 .then( response => {
 
                     
-                    this.exception = (response.data.data.exception)? response.data.data.exception : false;
+                    // this.exception = (response.data.data.exception)? response.data.data.exception : false;
                     this.info = false;
 
-                    if (this.exception) {
+                    if (response.data.data.exception) {
 
                         this.message = response.data.data.message;
+                        this.exception = true;
                         // console.log(this.message);
                     }
                     else {
 
                         this.game = response.data.data;
                         this.waiting = true;
+                        
                         // console.log(this.game);
                     }
                     
@@ -538,6 +552,7 @@
                     this.game = e.game;
                     this.offer = true;
                     this.info = false;
+                    
                     // console.log( e.game);
                 })
                 .listen('FirstPlayerCancelInviteEvent', (e) => {
@@ -605,7 +620,7 @@
 
 <style>
 
-     .hover-shadow:hover {
+    .hover-shadow:hover {
         
         box-shadow:0 .5rem 1rem rgba(0,0,0,.15);
     }

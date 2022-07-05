@@ -65,25 +65,20 @@ class User extends Authenticatable
         return $users;
     }
 
-    public function canPlay()
+    public static function canPlay($id)
     {   
-        // Проверить учавствует ли пользователь в игре 
-        // вкачестве первого или второго игрока,
-        // если да вернуть false, если нет true
-
-        // $game = Game::where('player_1', Auth::id())->first();
         
-        // if ($game instanceof Game) {
+        $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
+                    ->where(function ($query) use ($id) {
+                        $query->where('player_1', '=', $id);
+                        $query->orWhere('player_2', '=', $id );
+                    })->first();
+    
+        
+        if ($game instanceof Game) {
 
-        //     return false;
-        // }
-
-        // $game = Game::where('player_2', Auth::id())->first();
-
-        // if ($game instanceof Game) {
-
-        //     return false;
-        // }
+            return false;
+        }
 
         return true;
     }
