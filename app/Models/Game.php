@@ -9,6 +9,7 @@ use App\Events\GameStartEvent;
 use App\Events\InviteToPlayEvent;
 use App\Events\SecondPlayerLeavedGameEvent;
 use App\Events\SecondPlayerRejectInviteEvent;
+use App\Exceptions\GameNotFoundException;
 use App\Exceptions\PlayerNotFoundException;
 use App\Exceptions\UserNotFoundException;
 use App\Exceptions\YouCannotInviteYourselfException;
@@ -202,7 +203,6 @@ class Game extends Model
                         $query->orWhere('player_2', '=', Auth::id());
                     })->first();
                 
-       
         if ($game instanceof Game) {
 
             return true;
@@ -216,17 +216,14 @@ class Game extends Model
     {   
         $game = Game::whereIn('status',[Game::WAITING_PLAYER, Game::IN_PROCESS])
                     ->where(function ($query)  {
-                        $query->where('player_1', '=', Auth::id());
-                        $query->orWhere('player_2', '=', Auth::id());
+                        $query->where('player_1', Auth::id());
+                        $query->orWhere('player_2', Auth::id());
                     })->first();
         
 
         if ( $game == null) {
 
-            return response()->json([ 'data' => [
-
-                'message' => 'The Game Was Not Found! Start the game!',
-            ]]);
+            throw new GameNotFoundException('The Game Was Not Found! Start the game!');
         }
     
         return response()->json([ 'data' => [

@@ -32,7 +32,7 @@
                     <div v-for="user of users" :key="user.id" class="card text-center mt-1">
                         <div class="card-body d-flex flex-column  align-items-center">
                         <h6 class="h6 card-title text-secondary">
-                             {{ user.name }} <small class="text-success">free</small>   </h6>
+                             {{ user.name }} <small v-show="user.can_play" class="text-success">free</small> <small v-show="!user.can_play" class="text-danger">is playing</small>  </h6>
                         <button v-on:click="inviteToPlay(user.id)" class="btn btn-outline-success hover-shadow" :class="{ disabled: !user.can_play || (auth_id == user.id) }" type="button" style="width: 80%">Play</button>
                         </div>
                     </div>
@@ -248,7 +248,11 @@
                 exception: false,
                 info: false,
 
-    
+                timerText: "00:00",
+                totalSeconds: 0,
+                intervalId: 0,
+                minutes: 0,
+                seconds: 0,
             }
         },
 
@@ -321,8 +325,8 @@
                     .then( response => {
 
                         if (response.data.data.exception) {
-
-                            console.log(response.data.data.message);
+                            
+                            // console.log(response.data.data.message);
                             // this.message = response.data.data.message;
                             // this.exception = true;
                         }
@@ -360,7 +364,6 @@
                 }, config)
                 .then( response => {
 
-                    
                     // this.exception = (response.data.data.exception)? response.data.data.exception : false;
                     this.info = false;
 
@@ -374,10 +377,8 @@
 
                         this.game = response.data.data;
                         this.waiting = true;
-                        
                         // console.log(this.game);
-                    }
-                    
+                    }  
                 })
                 .catch( error => {
 

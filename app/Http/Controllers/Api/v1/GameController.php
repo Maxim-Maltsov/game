@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\v1;
 
 use App\Events\AmountUsersOnlineChangedEvent;
 use App\Events\InviteToPlayEvent;
+use App\Exceptions\GameNotFoundException;
 use App\Exceptions\PlayerNotFoundException;
 use App\Exceptions\YouCannotInviteYourselfException;
 use App\Exceptions\YouСannotAgreeTwoGamesAtOnceException;
@@ -29,7 +30,7 @@ class GameController extends Controller
 
             return Game::invite($request);
         }
-        catch( PlayerNotFoundException $e) {
+        catch (PlayerNotFoundException $e) {
 
             Log::info($e->getMessage());
 
@@ -39,7 +40,7 @@ class GameController extends Controller
                 'exception' => true,
             ]]);
         }
-        catch( YouCannotInviteYourselfException $e) {
+        catch (YouCannotInviteYourselfException $e) {
 
             return response()->json([ 'data' => [
 
@@ -47,7 +48,7 @@ class GameController extends Controller
                 'exception' => true,
             ]]);
         }
-        catch( YouСannotOfferTwoGamesAtOnceException $e) {
+        catch (YouСannotOfferTwoGamesAtOnceException $e) {
 
             return response()->json([ 'data' => [
 
@@ -55,7 +56,7 @@ class GameController extends Controller
                 'exception' => true,
             ]]);
         }
-        catch( YouСannotAgreeTwoGamesAtOnceException $e) {
+        catch (YouСannotAgreeTwoGamesAtOnceException $e) {
 
             return response()->json([ 'data' => [
 
@@ -63,60 +64,6 @@ class GameController extends Controller
                 'exception' => true,
             ]]);
         }
-
-        // $player_1 = Auth::user();
-        // $player_2 = User::where('id', $request->player_2)->first();
-        
-        // if ($player_1->id == $player_2->id) {
-
-        //     return response()->json([ 'data' => [
-
-        //         'message' => "You can't invite yourself",
-        //         'exception' => true,
-        //     ]]);
-        // }
-        
-
-        // $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
-        //             ->where('player_1', $player_1->id)
-        //             ->first();
-        
-        // if ($game instanceof Game) {
-
-        //     return response()->json([ 'data' => [
-
-        //         'message' => "You have already offered to play to another player. Wait for a response or cancel the game with " . $game->secondPlayer->name . ".",
-        //         'exception' => true,
-        //         'playing' => true,
-        //     ]]);
-        // }
-
-
-        // $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
-        //             ->where('player_2', $player_1->id)
-        //             ->first();
-
-        // if ($game instanceof Game) {
-
-        //     return response()->json([ 'data' => [
-
-        //         'message' => "You have already been offered to play. Accept the offer or refuse the offer. " . "Offer from ". $game->firstPlayer->name . ".",
-        //         'exception' => true,
-        //         'playing' => true,
-        //     ]]);
-        // }
-          
-        // $game = new Game($request->validated()); 
-        // $game->player_1 = $player_1->id;
-        // $game->status = Game::WAITING_PLAYER;
-        // $game->save();
-
-        // InviteToPlayEvent::dispatch( GameResource::make($game));
-
-        // $users = User::getOnlineUsersPaginate(4);
-        // AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
-        
-        // return new GameResource($game);
     }
 
 
@@ -145,8 +92,19 @@ class GameController extends Controller
 
 
     public function initGame()
-    {
-        return Game::init();
+    {   
+        try {
+
+            return Game::init();
+        }
+        catch (GameNotFoundException $e) {
+
+            return response()->json([ 'data' => [
+
+                'message' => $e->getMessage(),
+                'exception' => true,
+            ]]);
+        }
     }
 
 
