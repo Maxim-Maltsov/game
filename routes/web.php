@@ -1,6 +1,8 @@
 <?php
 
+use App\Events\AmountUsersOnlineChangedEvent;
 use App\Http\Controllers\GameController;
+use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\Game;
 use App\Models\User;
@@ -22,9 +24,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/welcome', function () {
 
-    $user =  User::where('id', Auth::id())->first();
-    $userResource = UserResource::make($user);
-
     $users = User::all();
 
     foreach($users as $user) {
@@ -35,13 +34,13 @@ Route::get('/welcome', function () {
 
     exit();
     
-    $play = Game::showGameplayBlock();
-    $offer = Game::showOfferBlock();
-    $waiting = Game::showWaitingBlock();
-    $can_play = $user->canPlay();
+    // $play = Game::showGameplayBlock();
+    // $offer = Game::showOfferBlock();
+    // $waiting = Game::showWaitingBlock();
+    // $can_play = $user->canPlay();
 
-    $token = session('API-Token');
-    dd($play, $offer, $waiting, $token, $can_play, $userResource);
+    // $token = session('API-Token');
+    // dd($play, $offer, $waiting, $token, $can_play);
 
     return view('welcome');
 });
