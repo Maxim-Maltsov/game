@@ -64,7 +64,6 @@ class GameController extends Controller
 
             return response()->json([ 'data' => [
 
-                
                 'message' => "You have already been offered to play. Accept the offer or refuse the offer. " . "Offer from ". $game->firstPlayer->name . ".",
                 'exception' => true,
                 'playing' => true,
@@ -79,7 +78,7 @@ class GameController extends Controller
         InviteToPlayEvent::dispatch( GameResource::make($game));
 
         $users = User::getOnlineUsersPaginate(4);
-        // AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
         
         return new GameResource($game);
     }
