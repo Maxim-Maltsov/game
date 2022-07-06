@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\ApiTokenServisece;
+use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,7 +54,9 @@ class AuthenticatedSessionController extends Controller
         // Sunctum. Autorization token.
         Auth::user()->tokens()->delete();
 
-        // Вызвать событие AmountUsersOnlineChangedEven. Для обновления списка поьзователей у других игроков при выходе из системы. Аргументом передать пользователей онлай.
+        // Обновляет Онлайн-Статус и Вызвает событие AmountUsersOnlineChangedEven.
+        User::updateOnlineStatus(Auth::id());
+
 
         Auth::guard('web')->logout();
 

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Events\AmountUsersOnlineChangedEvent;
+use App\Http\Resources\UserCollection;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,9 +67,9 @@ class User extends Authenticatable
         return $users;
     }
 
-    public function canPlay()
+
+    public function canPlay(): bool
     {   
-        
         $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
                     ->where(function ($query) {
                         $query->where('player_1', $this->id);
@@ -81,5 +83,19 @@ class User extends Authenticatable
 
         return true;
     }
+
+    
+    public static function updateOnlineStatus($id): void
+    {
+        $user =  User::where('id', $id)->first();
+    
+        $user->online_status = User::OFFLINE;
+        $user->save();
+
+        $users = User::getOnlineUsersPaginate(4);
+
+        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+    }
+
 
 }
