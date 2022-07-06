@@ -394,7 +394,7 @@
                         Authorization: "Bearer " + this.token,
                     }
                 }
-                // `api/v1/games/${id}` // По этому маршруту работает стандартный метод update
+               
                 axios.post(`api/v1/accept-invite/${game.id}`, {
 
                     _method: 'PUT',
@@ -450,7 +450,7 @@
 
             rejectInvite(game) {
 
-                if (!confirm('Are you sure you want to cancel the game?')) {
+                if (!confirm('Are you sure you want to reject the game?')) {
 
                     return false;
                 }
@@ -483,6 +483,11 @@
 
             leaveGame(game) {
 
+                if (!confirm('Are you sure you want to leave the game?')) {
+
+                    return false;
+                }
+
                 let config = {
 
                     headers: {
@@ -504,33 +509,6 @@
                     console.log(error);
                 });
             },
-
-            
-            
-            // deleteGame(id) {
-
-            //     if (!confirm('Are you sure you want to cancel the game?')) {
-
-            //         return false;
-            //     }
-
-            //     let config = {
-
-            //         headers: {
-            //             Authorization: "Bearer " + this.token,
-            //         }
-            //     }
-
-            //     axios.post(`api/v1/games/${id}`, {
-
-            //       _method: 'DELETE'
-                    
-            //     }, config)
-            //     .catch( error => {
-
-            //         console.log(error);
-            //     });
-            // },
 
         },
                 

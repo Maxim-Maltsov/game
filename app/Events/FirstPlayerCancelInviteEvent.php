@@ -16,8 +16,6 @@ class FirstPlayerCancelInviteEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // ОТПРАВЛЯЕТСЯ ПЕРВОМУ ИГРОКУ - СРАБАТЫВАЕ ПРИ УДАЛЕНИИ ИГРЫ ВТОРЫМ ИГРОКОМ!!!!
-    
     public $recipient;
     public $game; 
 

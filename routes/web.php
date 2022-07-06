@@ -24,23 +24,24 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/welcome', function () {
 
-    $users = User::all();
+    // $users = User::all();
 
-    foreach($users as $user) {
+    // foreach($users as $user) {
 
-        print_r($user->id . "  " . " " . $user->canPlay() . "</br>");
+    //     print_r($user->id . "  " . " " . $user->canPlay() . "</br>");
+    // }
 
-    }
+    // exit();
 
-    exit();
+    $user = User::where('id', Auth::id())->first();
     
-    // $play = Game::showGameplayBlock();
-    // $offer = Game::showOfferBlock();
-    // $waiting = Game::showWaitingBlock();
-    // $can_play = $user->canPlay();
+    $play = Game::showGameplayBlock();
+    $offer = Game::showOfferBlock();
+    $waiting = Game::showWaitingBlock();
+    $can_play = $user->canPlay();
 
-    // $token = session('API-Token');
-    // dd($play, $offer, $waiting, $token, $can_play);
+    $token = session('API-Token');
+    dd($play, $offer, $waiting, $token, $can_play);
 
     return view('welcome');
 });
