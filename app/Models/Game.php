@@ -55,15 +55,30 @@ class Game extends Model
         return $this->belongsTo(User::class, 'player_1');
     }
 
-    
-    public function  secondPlayer()
+    public function secondPlayer()
     {
         return $this->belongsTo(User::class, 'player_2');
     }
 
+    public function winnedPlayer()
+    {
+        return $this->belongsTo(User::class, 'winned_player');
+    }
+
+    public function leavingPlayer()
+    {
+        return $this->belongsTo(User::class, 'leaving_player');
+    }
+
+    public function rounds()
+    {
+        return $this->hasMany(Round::class);
+    }
+
+
     // Methods.
 
-    public static function invite(GameRequest $request)
+    public static function invite(GameRequest $request): GameResource
     {
 
         $player_1 = Auth::user();
@@ -109,7 +124,7 @@ class Game extends Model
         $users = User::getOnlineUsersPaginate(4);
         AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
         
-        return new GameResource($game);
+        return GameResource::make($game);
     }
 
 
@@ -151,9 +166,14 @@ class Game extends Model
     }
 
 
-    public static function leave(Game $game): HttpResponse | ResponseFactory
+    public static function leave(Game $game): GameResource
     {
-        $game->delete();
+        $game->status = Game::FINISHED;
+        $game->end = Carbon::now();
+        $game->leaving_player = Auth::id();
+        $game->save();
+
+
 
         FirstPlayerLeavedGameEvent::dispatch(GameResource::make($game));
         SecondPlayerLeavedGameEvent::dispatch(GameResource::make($game));
@@ -161,7 +181,7 @@ class Game extends Model
         $users = User::getOnlineUsersPaginate(4);
         AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
 
-        return response(null, HttpResponse::HTTP_NO_CONTENT);
+        return GameResource::make($game);
     }
 
 
@@ -199,8 +219,8 @@ class Game extends Model
     {
         $game = Game::where('status', [Game::IN_PROCESS])
                     ->where(function ($query)  {
-                        $query->where('player_1', '=', Auth::id());
-                        $query->orWhere('player_2', '=', Auth::id());
+                        $query->where('player_1', Auth::id());
+                        $query->orWhere('player_2', Auth::id());
                     })->first();
                 
         if ($game instanceof Game) {

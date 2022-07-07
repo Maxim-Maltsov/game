@@ -59,6 +59,15 @@ class User extends Authenticatable
     ];
 
 
+    // Relationship.
+
+    public function rounds()
+    {
+        return $this->hasMany(Rounds::class);
+    }
+
+
+    // Methods.
     
     public static function getOnlineUsersPaginate($amount)
     {   

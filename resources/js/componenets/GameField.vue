@@ -231,6 +231,8 @@
 
                 game: {},
 
+                round: 0,
+
                 pagination: {},
                 
                 loading: false,
@@ -498,7 +500,7 @@
 
                 axios.post(`api/v1/leave-game/${game.id}`, {
 
-                  _method: 'DELETE'
+                  _method: 'PUT'
                     
                 }, config)
                 .then( response => {
