@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Round extends Model
+class Move extends Model
 {
     use HasFactory;
+
+    protected $fillable = [ 'game_id', 'round', 'figure'];
 
     // Relationship.
 

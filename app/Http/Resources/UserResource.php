@@ -24,7 +24,6 @@ class UserResource extends JsonResource
             'game_status' => $this->game_status,
             'can_play' => $this->canPlay(),
             'created_at' => $this->created_at,
-            
         ];
     }
 }

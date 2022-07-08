@@ -10,6 +10,7 @@ use App\Events\InviteToPlayEvent;
 use App\Events\SecondPlayerLeavedGameEvent;
 use App\Events\SecondPlayerRejectInviteEvent;
 use App\Exceptions\GameNotFoundException;
+use App\Exceptions\MoveAlreadyMadeException;
 use App\Exceptions\PlayerNotFoundException;
 use App\Exceptions\UserNotFoundException;
 use App\Exceptions\YouCannotInviteYourselfException;
@@ -17,6 +18,7 @@ use App\Exceptions\YouСannotAgreeTwoGamesAtOnceException;
 use App\Exceptions\YouСannotOfferTwoGamesAtOnceException;
 use App\Http\Requests\GameRequest;
 use App\Http\Resources\GameResource;
+use App\Http\Resources\MoveResource;
 use App\Http\Resources\UserCollection;
 use Carbon\Carbon;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -30,23 +32,23 @@ class Game extends Model
 {
     use HasFactory;
 
-     // Game status.
+    // Game status.
 
-     const WAITING_PLAYER = 0;
-     const IN_PROCESS  = 1;
-     const FINISHED  = 2;
+    const WAITING_PLAYER = 0;
+    const IN_PROCESS  = 1;
+    const FINISHED  = 2;
 
     // Game figure.
 
-     const FIGURE_NONE = 0;
-     const FIGURE_STONE = 1;
-     const FIGURE_SCISSORS = 2;
-     const FIGURE_PAPER = 3;
-     const FIGURE_LIZARD = 4;
-     const FIGURE_SPOCK = 5;
+    const FIGURE_ROCK = 1;
+    const FIGURE_NONE = 0;
+    const FIGURE_SCISSORS = 2;
+    const FIGURE_PAPER = 3;
+    const FIGURE_LIZARD = 4;
+    const FIGURE_SPOCK = 5;
  
 
-     protected $fillable = [ 'player_2'];
+    protected $fillable = [ 'player_2'];
 
     // Relationship.
 
@@ -70,9 +72,9 @@ class Game extends Model
         return $this->belongsTo(User::class, 'leaving_player');
     }
 
-    public function rounds()
+    public function moves()
     {
-        return $this->hasMany(Round::class);
+        return $this->hasMany(Move::class);
     }
 
 
@@ -114,7 +116,7 @@ class Game extends Model
             throw new YouСannotAgreeTwoGamesAtOnceException('You have already been offered to play. Accept the offer or refuse the offer. ' . 'Offer from '. $game->firstPlayer->name . '.');
         }
           
-        $game = new Game($request->validated()); 
+        $game = new Game($request->validated()); // $request->validated() -  saving in game 'id' second player.
         $game->player_1 = $player_1->id;
         $game->status = Game::WAITING_PLAYER;
         $game->save();
@@ -167,13 +169,15 @@ class Game extends Model
 
 
     public static function leave(Game $game): GameResource
-    {
+    {   
+        $leaving_player = Auth::id();
+        $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
+
         $game->status = Game::FINISHED;
         $game->end = Carbon::now();
-        $game->leaving_player = Auth::id();
+        $game->leaving_player = $leaving_player;
+        $game->winned_player = $winned_player;
         $game->save();
-
-
 
         FirstPlayerLeavedGameEvent::dispatch(GameResource::make($game));
         SecondPlayerLeavedGameEvent::dispatch(GameResource::make($game));
@@ -182,6 +186,25 @@ class Game extends Model
         AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
 
         return GameResource::make($game);
+    }
+
+
+    public static function move($request)
+    {   
+        $player = Auth::user();
+        
+        $move = Move::where('game_id', $request->game_id)->where('player_id', $player->id )->first();
+
+        if ($move instanceof Move) {
+
+          throw new MoveAlreadyMadeException('You have already made a move in this round.');
+        }
+
+        $move = new Move($request->validated()); // $request->validated() -  saving in move 'game_id', 'round' and 'figure'.
+        $move->player_id = $player->id;
+        $move->save();
+
+        return MoveResource::make($move);
     }
 
 
@@ -255,6 +278,5 @@ class Game extends Model
             'leave' => Game::showGameplayBlock(),
         ]]);
     }
-
     
 }

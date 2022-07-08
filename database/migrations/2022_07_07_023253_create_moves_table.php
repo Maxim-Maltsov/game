@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('rounds', function (Blueprint $table) {
+        Schema::create('moves', function (Blueprint $table) {
             
             $table->id();
             $table->foreignId('game_id')
-                  ->constrained()
+                  ->constrained('games')
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
             $table->foreignId('player_id')
@@ -40,6 +40,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('rounds');
+        Schema::dropIfExists('moves');
     }
 };

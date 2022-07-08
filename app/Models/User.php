@@ -93,7 +93,7 @@ class User extends Authenticatable
         return true;
     }
 
-    
+
     public static function updateOnlineStatus($id): void
     {
         $user =  User::where('id', $id)->first();
@@ -105,6 +105,7 @@ class User extends Authenticatable
 
         AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
     }
+
 
 
 }

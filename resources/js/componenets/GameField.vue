@@ -8,7 +8,7 @@
         <section v-if="errored_users" class="d-flex flex-column align-items-center">
             <div class="card-info" style="width: 80%">
                 <div class="alert  text-center" role="alert">
-                    <strong class="text-secondary">Error!</strong><div class="text-secondary">Data could not be retrieved. Try again later...</div>
+                    <strong class="text-secondary">Error!</strong><div class="text-secondary">Users data could not be retrieved. Try again later...</div>
                 </div>  
             </div>
         </section>
@@ -24,7 +24,7 @@
         </section>
 
         <!-- users cards -->
-        <section v-else >
+        <section v-else>
             <div class="cards d-flex flex-column justify-content-center align-items-center shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                 
                 <!-- cards -->
@@ -152,18 +152,18 @@
                         <!-- timer -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex justify-content-between align-items-center">
-                            <h6 class="h6 card-title text-secondary"><i class="text-success"> Round Time:</i> 30 sec. </h6>
+                            <h6 class="h6 card-title text-secondary"><i class="text-success"> Round Time:</i> {{timer.display}} sec. </h6>
                             </div>
                         </div>
 
                         <!-- figures -->
                         <div class="card text-center mt-1">
                             <div class="btn-group p-3" role="group" aria-label="Figures" style="width: 100%">
-                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Rock</button>
-                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Scissors</button>
-                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Paper</button>
-                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Lizard</button>
-                                <button class="btn btn-outline-success hover-shadow" style="width: 50%">Spoke</button>
+                                <button v-on:click="makeMove(ROCK)" class="btn btn-outline-success hover-shadow" style="width: 50%">Rock</button>
+                                <button v-on:click="makeMove(SCISSORS)" class="btn btn-outline-success hover-shadow" style="width: 50%">Scissors</button>
+                                <button v-on:click="makeMove(PAPER)" class="btn btn-outline-success hover-shadow" style="width: 50%">Paper</button>
+                                <button v-on:click="makeMove(LIZARD)" class="btn btn-outline-success hover-shadow" style="width: 50%">Lizard</button>
+                                <button v-on:click="makeMove(SPOCK)" class="btn btn-outline-success hover-shadow" style="width: 50%">Spoke</button>
                             </div>
                         </div>
 
@@ -231,7 +231,14 @@
 
                 game: {},
 
-                round: 0,
+                timer: {
+
+                    display: '00:00',
+                    totalSeconds: 30,
+                    intervalId: 0,
+                    minutes: 0,
+                    seconds: 0,
+                },
 
                 pagination: {},
                 
@@ -250,11 +257,14 @@
                 exception: false,
                 info: false,
 
-                timerText: "00:00",
-                totalSeconds: 0,
-                intervalId: 0,
-                minutes: 0,
-                seconds: 0,
+                NONE: 0,
+                ROCK: 1,
+                SCISSORS: 2,
+                PAPER: 3,
+                LIZARD: 4,
+                SPOCK: 5,
+
+                round: 1,
             }
         },
 
@@ -273,6 +283,7 @@
                 this.pagination = pagination;
                 // console.log(this.pagination);
             },
+
 
             getUsers(page_url) {
 
@@ -309,6 +320,7 @@
                     });
 
             },
+
 
             initGame() {
 
@@ -350,6 +362,7 @@
 
             },
 
+
             inviteToPlay(id) {
                 
                 let config = {
@@ -389,35 +402,6 @@
             },
 
 
-            acceptInvite(game) {
-
-                let config = {
-
-                    headers: {
-                        Authorization: "Bearer " + this.token,
-                    }
-                }
-               
-                axios.post(`api/v1/accept-invite/${game.id}`, {
-
-                    _method: 'PUT',
-                   
-                }, config)
-                .then( response => {
-
-                    this.game = response.data.data;
-                    this.exception = false;
-                    this.offer = false;
-                    this.play = true;
-                    this.leave = true;
-                })
-                .catch( error => {
-
-                    console.log(error);
-                });
-            },
-
-            
             cancelInvite(game) {
                 
                 if (!confirm('Are you sure you want to cancel the game?')) {
@@ -450,6 +434,37 @@
                     console.log(error);
                 });
             },
+
+
+            acceptInvite(game) {
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+               
+                axios.post(`api/v1/accept-invite/${game.id}`, {
+
+                    _method: 'PUT',
+                   
+                }, config)
+                .then( response => {
+
+                    this.game = response.data.data;
+                    this.exception = false;
+                    this.offer = false;
+                    this.play = true;
+                    this.leave = true;
+                    this.startTimer();
+                })
+                .catch( error => {
+
+                    console.log(error);
+                });
+            },
+
 
             rejectInvite(game) {
 
@@ -484,6 +499,7 @@
                 });
             },
 
+
             leaveGame(game) {
 
                 if (!confirm('Are you sure you want to leave the game?')) {
@@ -513,12 +529,91 @@
                 });
             },
 
+
+            makeMove(figure) {
+
+                alert('makeMove: ' + figure);
+
+                let config = {
+
+                    headers: {
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+
+                axios.post('api/v1/make-move', {
+
+                    game_id: this.game.id,
+                    round: this.round,
+                    figure: figure,
+                    
+                }, config)
+                .then( response => {
+
+                    if (response.data.data.exception) {
+
+                        this.message = response.data.data.message;
+                        this.exception = true;
+                        // console.log(this.message);
+                    }
+                    // else {
+
+                    //     // this.game = response.data.data.game_id;
+                    //     // console.log(this.game);
+                    // }
+
+                     console.log(response.data.data.game_id);
+                })
+                .catch( error => {
+
+                    console.log(error);
+                });
+            },
+
+
+            startTimer() {
+
+                this.timer.intervalId = setInterval(() => {
+                
+                    this.timer.minutes = parseInt(this.timer.totalSeconds / 60, 10);
+                    this.timer.seconds = parseInt(this.timer.totalSeconds % 60, 10);
+
+                    this.timer.minutes = this.timer.minutes < 10 ? '0' + this.timer.minutes : this.timer.minutes;
+                    this.timer.seconds = this.timer.seconds < 10 ? '0' + this.timer.seconds : this.timer.seconds;
+                    this.timer.display = this.timer.minutes + ":" + this.timer.seconds;
+                    --this.timer.totalSeconds;
+
+                    if ( this.timer.totalSeconds <= 0) {
+
+                        this.stopTimer();
+                    }
+                    
+                }, 1000);
+            },
+
+
+            clearTimer() {
+
+                this.timer.display = '00:00';
+                this.timer.totalSeconds = 0;
+                this.timer.intervalId = 0;
+            },
+
+
+            stopTimer() {
+
+                clearInterval(this.timer.intervalId);
+                this.clearTimer();
+            }
+            
+
         },
                 
         mounted() {
             
             this.getUsers();
             this.initGame();
+
 
             Echo.channel('allAuthUsers')
                 .listen('AmountUsersOnlineChangedEvent', (e) => {
@@ -565,6 +660,7 @@
                     this.info = true;
                     this.play = true;
                     this.leave = true;
+                    this.startTimer();
 
                     // console.log(this.game);
 
