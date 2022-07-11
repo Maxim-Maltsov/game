@@ -2,9 +2,11 @@
 
 use App\Events\AmountUsersOnlineChangedEvent;
 use App\Http\Controllers\GameController;
+use App\Http\Resources\GameResource;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\Game;
+use App\Models\Move;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +35,10 @@ Route::get('/welcome', function () {
 
     // exit();
 
+
+    $game = Game::first();
+    $firstPlayer = $game->firstPlayer;
+
     $user = User::where('id', Auth::id())->first();
     
     $play = Game::showGameplayBlock();
@@ -41,7 +47,7 @@ Route::get('/welcome', function () {
     $can_play = $user->canPlay();
 
     $token = session('API-Token');
-    dd($play, $offer, $waiting, $token, $can_play);
+    dd($play, $offer, $waiting, $token, $can_play, $game, $firstPlayer);
 
     return view('welcome');
 });

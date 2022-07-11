@@ -17,7 +17,7 @@ class  MoveResource extends JsonResource
         return [
 
             'id'=> $this->id,
-            'game_id' => GameResource::make($this->game),
+            'game_id' => $this->game_id, 
             'player_id' => UserResource::make($this->player),
             'round' => $this->round,
             'figure' => $this->figure,

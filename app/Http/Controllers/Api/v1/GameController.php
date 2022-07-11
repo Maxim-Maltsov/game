@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Events\AmountUsersOnlineChangedEvent;
-use App\Events\InviteToPlayEvent;
 use App\Exceptions\GameNotFoundException;
 use App\Exceptions\MoveAlreadyMadeException;
 use App\Exceptions\PlayerNotFoundException;
@@ -14,7 +12,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GameRequest;
 use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
-use App\Http\Resources\UserCollection;
 use App\Models\Game;
 use App\Models\User;
 use GuzzleHttp\Psr7\Response;
@@ -30,7 +27,7 @@ class GameController extends Controller
 
         try {
 
-            return Game::invite($request);
+            return User::invite($request);
         }
         catch (PlayerNotFoundException $e) {
 
@@ -71,33 +68,33 @@ class GameController extends Controller
 
     public function cancelInvite(Game $game)
     {  
-        return Game::cancel($game);
+        return User::cancel($game);
     }
 
 
     public function acceptInvite(Game $game) {
 
-       return Game::play($game);
+       return User::play($game);
     }
     
 
     public function rejectInvite(Game $game)
     {
-       return Game::reject($game);
+       return User::reject($game);
     }
 
 
      public function leaveGame(Game $game)
     {
-       return Game::leave($game);
+       return User::leave($game);
     }
 
 
     public static function makeMove(MoveRequest $request)
-    {
+    {  
         try {
 
-            return Game::move($request);
+            return User::move($request);
         }
         catch (MoveAlreadyMadeException $e){
 
@@ -106,8 +103,7 @@ class GameController extends Controller
                 'message' => $e->getMessage(),
                 'exception' => true,
             ]]);
-        }
-            
+        }   
     }
 
 

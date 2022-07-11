@@ -25,7 +25,9 @@ return new class extends Migration
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
             $table->integer('round')->unsigned()->default(0);
-            $table->integer('figure')->unsigned()->default(0);
+            $table->integer('figure')->unsigned()->default(0)
+                  ->comment('NONE = 0; ROCK = 1; SCISSORS = 2;
+                             PAPER = 3; LIZARD = 4; SPOCK = 5;');
             $table->boolean('winner')->default(false);
             $table->boolean('draw')->default(false);
             $table->boolean('finished')->default(false);

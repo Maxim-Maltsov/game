@@ -14,11 +14,12 @@ return new class extends Migration
     public function up()
     {
         Schema::create('users', function (Blueprint $table) {
+            
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->integer('online_status')->default(1);
-            $table->integer('game_status')->default(0);
+            $table->integer('online_status')->default(1)->comment('OFFLINE = 0; ONLINE = 1;');
+            $table->integer('game_status')->default(2)->comment('WAITING_PLAYER = 0; PLAYING = 1; FREE = 2;');
             $table->timestamp('last_activity')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

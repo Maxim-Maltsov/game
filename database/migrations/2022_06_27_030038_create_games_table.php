@@ -20,7 +20,7 @@ return new class extends Migration
             $table->bigInteger('player_1')->unsigned();
             $table->bigInteger('player_2')->unsigned();
 
-            $table->integer('status')->default(0);
+            $table->integer('status')->default(0)->comment('WAITING_PLAYER = 0; IN_PROCESS = 1; FINISHED = 2;');
             $table->timestamp('start')->nullable();
             $table->timestamp('end')->nullable();
             

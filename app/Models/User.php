@@ -3,8 +3,26 @@
 namespace App\Models;
 
 use App\Events\AmountUsersOnlineChangedEvent;
+use App\Events\FirstPlayerCancelInviteEvent;
+use App\Events\FirstPlayerLeavedGameEvent;
+use App\Events\FirstPlayerMadeMoveEvent;
+use App\Events\GameStartEvent;
+use App\Events\InviteToPlayEvent;
+use App\Events\SecondPlayerLeavedGameEvent;
+use App\Events\SecondPlayerMadeMoveEvent;
+use App\Events\SecondPlayerRejectInviteEvent;
+use App\Exceptions\MoveAlreadyMadeException;
+use App\Exceptions\PlayerNotFoundException;
+use App\Exceptions\YouCannotInviteYourselfException;
+use App\Exceptions\YouСannotAgreeTwoGamesAtOnceException;
+use App\Exceptions\YouСannotOfferTwoGamesAtOnceException;
+use App\Http\Requests\GameRequest;
+use App\Http\Resources\GameResource;
+use App\Http\Resources\MoveResource;
 use App\Http\Resources\UserCollection;
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,6 +30,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use PhpParser\Node\Expr\Cast\Int_;
+use Illuminate\Http\Response as HttpResponse;
+
 
 class User extends Authenticatable
 {
@@ -24,8 +44,8 @@ class User extends Authenticatable
 
     // Game status.
     const WAITING_PLAYER = 0;
-    const FREE = 1;
-    const PLAYING = 2;
+    const PLAYING = 1;
+    const FREE = 2;
 
 
     /**
@@ -107,5 +127,161 @@ class User extends Authenticatable
     }
 
 
+    public static function invite(GameRequest $request): GameResource
+    {
+        $firstPlayer = User::where('id', Auth::id())->first();
+        $secondPlayer = User::where('id', $request->player_2)->first();
 
+        if ($firstPlayer == null || $secondPlayer == null)
+        {   
+            throw new PlayerNotFoundException('Player not found.');
+        }
+        
+        if ($firstPlayer->id == $secondPlayer->id) {
+
+            throw new YouCannotInviteYourselfException('You cannot invite yourself.');
+        }
+        
+
+        $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
+                    ->where('player_1', $firstPlayer->id)
+                    ->first();
+        
+        if ($game instanceof Game) {
+
+            throw new YouСannotOfferTwoGamesAtOnceException('You have already offered to play to another player. Wait for a response or cancel the game with ' . $game->secondPlayer->name . '.');
+        }
+
+
+        $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
+                    ->where('player_2', $firstPlayer->id)
+                    ->first();
+
+        if ($game instanceof Game) {
+
+            throw new YouСannotAgreeTwoGamesAtOnceException('You have already been offered to play. Accept the offer or refuse the offer. ' . 'Offer from '. $game->firstPlayer->name . '.');
+        }
+
+        $firstPlayer->game_status = User::WAITING_PLAYER;
+        $firstPlayer->save();
+          
+        $game = new Game($request->validated()); // $request->validated() -  saving in game 'id' second player.
+        $game->player_1 = $firstPlayer->id;
+        $game->status = Game::WAITING_PLAYER;
+        $game->save();
+
+        InviteToPlayEvent::dispatch( GameResource::make($game));
+
+        $users = User::getOnlineUsersPaginate(4);
+        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        
+        return GameResource::make($game);
+    }
+
+
+    public static function cancel(Game $game): HttpResponse | ResponseFactory
+    {
+        $firstPlayer = $game->firstPlayer;
+        $firstPlayer->game_status = User::FREE;
+        $firstPlayer->save();
+
+        $game->delete();
+        
+        FirstPlayerCancelInviteEvent::dispatch(GameResource::make($game));
+        
+        $users = User::getOnlineUsersPaginate(4);
+        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        
+        return response(null, HttpResponse::HTTP_NO_CONTENT);
+    }
+
+
+    public static function play(Game $game): GameResource
+    {
+        $firstPlayer = $game->firstPlayer;
+        $firstPlayer->game_status = User::PLAYING;
+        $firstPlayer->save();
+
+        $secondPlayer = $game->secondPlayer;
+        $secondPlayer->game_status = User::PLAYING;
+        $secondPlayer->save();
+
+        $game->status = Game::IN_PROCESS;
+        $game->start = Carbon::now();
+        $game->save();
+
+        GameStartEvent::dispatch(GameResource::make($game));
+
+        return new GameResource($game);
+    }
+
+
+    public static function reject(Game $game): HttpResponse | ResponseFactory
+    {   
+        $firstPlayer = $game->firstPlayer;
+        $firstPlayer->game_status = User::FREE;
+        $firstPlayer->save();
+
+        $game->delete();
+        
+        SecondPlayerRejectInviteEvent::dispatch(GameResource::make($game));
+        
+        $users = User::getOnlineUsersPaginate(4);
+        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+
+        return response(null, HttpResponse::HTTP_NO_CONTENT);
+    }
+
+
+    public static function leave(Game $game): GameResource
+    {   
+        $firstPlayer = $game->firstPlayer;
+        $firstPlayer->game_status = User::FREE;
+        $firstPlayer->save();
+
+        $secondPlayer = $game->secondPlayer;
+        $secondPlayer->game_status = User::FREE;
+        $secondPlayer->save();
+
+        $leaving_player = Auth::id();
+        $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
+
+        $game->status = Game::FINISHED;
+        $game->end = Carbon::now();
+        $game->leaving_player = $leaving_player;
+        $game->winned_player = $winned_player;
+        $game->save();
+
+        FirstPlayerLeavedGameEvent::dispatch(GameResource::make($game));
+        SecondPlayerLeavedGameEvent::dispatch(GameResource::make($game));
+
+        $users = User::getOnlineUsersPaginate(4);
+        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+
+        return GameResource::make($game);
+    }
+
+
+    public static function move($request)
+    {   
+        $player = Auth::user();
+        
+        $move = Move::where('game_id', $request->game_id)->where('player_id', $player->id )->first();
+
+        if ($move instanceof Move) {
+
+          throw new MoveAlreadyMadeException('You have already made a move in this round.');
+        }
+
+        $move = new Move($request->validated()); // $request->validated() -  saving in table moves 'game_id', 'round' and 'figure'.
+        $move->player_id = $player->id;
+        $move->save();
+
+        $game = $move->game;
+
+        FirstPlayerMadeMoveEvent::dispatch(GameResource::make($game));
+        SecondPlayerMadeMoveEvent::dispatch(GameResource::make($game));
+
+        return MoveResource::make($move);
+    }
 }

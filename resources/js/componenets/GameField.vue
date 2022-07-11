@@ -532,8 +532,6 @@
 
             makeMove(figure) {
 
-                alert('makeMove: ' + figure);
-
                 let config = {
 
                     headers: {
@@ -554,15 +552,13 @@
 
                         this.message = response.data.data.message;
                         this.exception = true;
+                        this.info = false;
                         // console.log(this.message);
                     }
-                    // else {
+                    else {
 
-                    //     // this.game = response.data.data.game_id;
-                    //     // console.log(this.game);
-                    // }
-
-                     console.log(response.data.data.game_id);
+                        this.message = 'You made a move.';
+                    }
                 })
                 .catch( error => {
 
@@ -628,8 +624,6 @@
                     this.game = e.game;
                     this.offer = true;
                     this.info = false;
-
-                    
                     // console.log( e.game);
                 })
                 .listen('FirstPlayerCancelInviteEvent', (e) => {
@@ -688,6 +682,26 @@
                     this.leave = false;
                     this.exception = false;
                     this.game = {};
+                })
+                .listen('FirstPlayerMadeMoveEvent', (e) => {
+                    
+                    // alert('Первый игрок сделал ход.');
+                    this.message = e.message;
+                    this.info = true;
+                    this.exception = false;
+
+                    this.game = e.game;
+                    console.log(e.game);
+                })
+                 .listen('SecondPlayerMadeMoveEvent', (e) => {
+                    
+                    // alert('Второй игрок сделал ход.');
+                    this.message = e.message;
+                    this.info = true;
+                    this.exception = false;
+
+                    this.game = e.game;
+                    console.log(e.game);
                 });
                 
         },
