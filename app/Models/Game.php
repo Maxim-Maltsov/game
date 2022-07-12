@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Exceptions\GameNotFoundException;
+use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -134,22 +136,148 @@ class Game extends Model
     }
 
 
-    public static function getTotalSeconds()
+    public function getTotalSeconds()
     {
         //
     }
 
 
-    public static function movesMade()
+    public function getMovesOfRound(MoveRequest $round)
     {
-        // Проверить оба игрока сделали ход.
+        $moves = Move::where('game_id', $this->id)
+                     ->where('round', $round)
+                     ->where('finished', 0)
+                     ->get();
+
+        return $moves;
     }
 
 
-    public static function defineWinner()
+    public function defineWinner(Move $move_1, Move $move_2): int
     {
+        $figure_1 = $move_1->figure;
+        $figure_2 = $move_2->figure;
 
-        // 
+        if ($figure_1 == Game::FIGURE_NONE) {
+            
+            switch ($figure_2) {
+                
+                case Game::FIGURE_NONE:
+                    return 0;
+
+                case Game::FIGURE_ROCK:
+                case Game::FIGURE_SCISSORS:
+                case Game::FIGURE_PAPER:
+                case Game::FIGURE_LIZARD:
+                case Game::FIGURE_SPOCK:
+                    return $move_2->player_id;
+            }
+
+        } elseif ($figure_1 == Game::FIGURE_ROCK) {
+
+            switch ($figure_2) {
+                
+                case Game::FIGURE_ROCK:
+                    return 0;
+
+                case Game::FIGURE_NONE:
+                case Game::FIGURE_SCISSORS:
+                case Game::FIGURE_LIZARD:
+                    return $move_1->player_id;
+
+                case Game::FIGURE_PAPER:
+                case Game::FIGURE_SPOCK:
+                    return $move_2->player_id;
+            }
+
+        } elseif ($figure_1 == Game::FIGURE_SCISSORS) {
+
+            switch ($figure_2) {
+                
+                case Game::FIGURE_SCISSORS:
+                    return 0;
+
+                case Game::FIGURE_NONE:
+                case Game::FIGURE_PAPER:
+                case Game::FIGURE_LIZARD:
+                    return $move_1->player_id;
+
+                case Game::FIGURE_ROCK:
+                case Game::FIGURE_SPOCK:
+                    return $move_2->player_id;
+            }
+
+        } elseif ($figure_1 == Game::FIGURE_PAPER) {
+
+            switch ($figure_2) {
+
+                case Game::FIGURE_PAPER:
+                    return 0;
+
+                case Game::FIGURE_NONE:
+                case Game::FIGURE_ROCK:
+                case Game::FIGURE_SPOCK:
+                    return $move_1->player_id;
+
+                case Game::FIGURE_SCISSORS:
+                case Game::FIGURE_LIZARD:
+                    return $move_2->player_id;
+            }
+
+        } elseif ($figure_1 == Game::FIGURE_LIZARD) {
+
+            switch ($figure_2) {
+        
+                case Game::FIGURE_LIZARD:
+                    return 0;
+
+                case Game::FIGURE_NONE:
+                case Game::FIGURE_PAPER:
+                case Game::FIGURE_SPOCK:
+                    return $move_1->player_id;
+
+                case Game::FIGURE_ROCK:
+                case Game::FIGURE_SCISSORS:
+                    return $move_2->player_id;
+            }
+
+        } elseif ($figure_1 == Game::FIGURE_SPOCK) {
+
+            switch ($figure_2) {
+                
+                case Game::FIGURE_SPOCK:
+                    return 0;
+
+                case Game::FIGURE_NONE:
+                case Game::FIGURE_ROCK:
+                case Game::FIGURE_SCISSORS:
+                    return $move_1->player_id;
+
+                case Game::FIGURE_PAPER:
+                case Game::FIGURE_LIZARD:
+                    return $move_2->player_id;
+            }
+        }
+          
+        // return 0;
     }
     
+
+    public function finishRoundIsNeeded(MoveRequest $request)
+    {  
+        $moves = $this->getMovesOfRound($request['round']);
+
+        if ($moves->count() == 2) {
+
+            $moves = $moves->all();
+
+            $winner = $this->defineWinner($moves[0], $moves[1]);
+
+            // $draw = Определить была ли ничья.
+
+            // Перебрать ходы циклом и присвоить результирующие значения, каждому ходу.
+        }
+    }
+
+
 }

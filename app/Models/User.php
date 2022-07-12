@@ -17,6 +17,7 @@ use App\Exceptions\YouCannotInviteYourselfException;
 use App\Exceptions\YouСannotAgreeTwoGamesAtOnceException;
 use App\Exceptions\YouСannotOfferTwoGamesAtOnceException;
 use App\Http\Requests\GameRequest;
+use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
 use App\Http\Resources\MoveResource;
 use App\Http\Resources\UserCollection;
@@ -262,7 +263,7 @@ class User extends Authenticatable
     }
 
 
-    public static function move($request)
+    public static function move(MoveRequest $request)
     {   
         $player = Auth::user();
         
@@ -281,6 +282,8 @@ class User extends Authenticatable
 
         FirstPlayerMadeMoveEvent::dispatch(GameResource::make($game));
         SecondPlayerMadeMoveEvent::dispatch(GameResource::make($game));
+
+        $game->finishRoundIsNeeded($request->validated());
 
         return MoveResource::make($move);
     }

@@ -36,17 +36,19 @@ Route::get('/welcome', function () {
     // exit();
 
 
-    $game = Game::first();
+    $game = Game::where('id', 20)->first();
+    
     $firstPlayer = $game->firstPlayer;
 
-    $user = User::where('id', Auth::id())->first();
-    
     $play = Game::showGameplayBlock();
     $offer = Game::showOfferBlock();
     $waiting = Game::showWaitingBlock();
+
+    $user = User::where('id', Auth::id())->first();
     $can_play = $user->canPlay();
 
     $token = session('API-Token');
+    
     dd($play, $offer, $waiting, $token, $can_play, $game, $firstPlayer);
 
     return view('welcome');
