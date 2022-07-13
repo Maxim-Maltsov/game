@@ -234,7 +234,7 @@
                 timer: {
 
                     display: '00:00',
-                    totalSeconds: 30,
+                    totalSeconds: 0,
                     intervalId: 0,
                     minutes: 0,
                     seconds: 0,
@@ -339,8 +339,7 @@
                     .then( response => {
 
                         if (response.data.data.exception) {
-                            
-                            // console.log(response.data.data.message);
+                        
                             // this.message = response.data.data.message;
                             // this.exception = true;
                         }
@@ -351,7 +350,11 @@
                             this.offer = response.data.data.offer;
                             this.play = response.data.data.play;
                             this.leave = response.data.data.leave;
-                            // console.log(response.data.data.game);
+                            // this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
+                            this.timer.totalSeconds = 40;
+                            console.log(response.data.data.game.remainingTimeOfRound);
+                            console.log(this.timer);
+                            alert(55);
                         }
                     })
                     .catch( error => {
@@ -453,6 +456,13 @@
                 .then( response => {
 
                     this.game = response.data.data;
+
+                    this.timer.totalSeconds = response.data.data.remainingTimeOfRound;
+
+                    // alert('Ты принял игру');
+                    console.log(response.data.data.remainingTimeOfRound);
+                    console.log(this.timer);
+
                     this.exception = false;
                     this.offer = false;
                     this.play = true;
@@ -650,6 +660,11 @@
 
                     // alert("Второй игрок принял приглашение в игру!");
                     this.game = e.game;
+                    this.timer.totalSeconds = e.game.remainingTimeOfRound;
+
+                    // alert('Сообщение первому игроку. Второй игрок нажал accept')
+                    console.log(e.game.remainingTimeOfRound);
+
                     this.message = e.message;
                     this.info = true;
                     this.play = true;
@@ -691,7 +706,7 @@
                     this.exception = false;
 
                     this.game = e.game;
-                    console.log(e.game);
+                    // console.log(e.game);
                 })
                  .listen('SecondPlayerMadeMoveEvent', (e) => {
                     
@@ -701,7 +716,7 @@
                     this.exception = false;
 
                     this.game = e.game;
-                    console.log(e.game);
+                    // console.log(e.game);
                 });
                 
         },

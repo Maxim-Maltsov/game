@@ -209,6 +209,7 @@ class User extends Authenticatable
 
         $game->status = Game::IN_PROCESS;
         $game->start = Carbon::now();
+        $game->last_round_start = Carbon::now();
         $game->save();
 
         GameStartEvent::dispatch(GameResource::make($game));
@@ -283,7 +284,7 @@ class User extends Authenticatable
         FirstPlayerMadeMoveEvent::dispatch(GameResource::make($game));
         SecondPlayerMadeMoveEvent::dispatch(GameResource::make($game));
 
-        $game->finishRoundIsNeeded($request->validated());
+        $game->finishRoundIsNeeded($request);
 
         return MoveResource::make($move);
     }

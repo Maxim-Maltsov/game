@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Events\GameRoundFinishedEvent;
 use App\Exceptions\GameNotFoundException;
 use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +31,12 @@ class Game extends Model
     const FIGURE_PAPER = 3;
     const FIGURE_LIZARD = 4;
     const FIGURE_SPOCK = 5;
+
+    // Boolean value.
+    const YES = 1;
+    const NO = 0;
+
+    const NO_WINNER = 0;
  
 
     protected $fillable = [ 'player_2'];
@@ -131,18 +139,24 @@ class Game extends Model
             'offer' => Game::showOfferBlock(),
             'play' => Game::showGameplayBlock(),
             'leave' => Game::showGameplayBlock(),
-            // 'totalSeconds' => Game::getTotalSeconds(),
         ]]);
     }
 
 
-    public function getTotalSeconds()
+    public function getRemainingTimeOfRound():int               
     {
-        //
+        $nowTime = Carbon::now();
+        $roundTime = Carbon::createFromTimestampUTC($this->last_round_start)->addSeconds(env('ROUND_TIME'));
+
+        $remainingTime = $nowTime->diffInSeconds($roundTime, false);
+
+        $remainingTime = Carbon::createFromTimestampUTC($remainingTime)->secondsSinceMidnight();
+    
+        return $remainingTime;
     }
 
 
-    public function getMovesOfRound(MoveRequest $round)
+    public function getMovesOfRound(int $round)
     {
         $moves = Move::where('game_id', $this->id)
                      ->where('round', $round)
@@ -150,6 +164,29 @@ class Game extends Model
                      ->get();
 
         return $moves;
+    }
+
+
+    public function finishRoundIsNeeded(MoveRequest $request)
+    {   
+        $moves = $this->getMovesOfRound($request->validated(['round']));
+
+        if ($moves->count() == 2) {
+
+            $roundMoves = $moves->all();
+            $winner_id = $this->defineWinner($roundMoves[0], $roundMoves[1]);
+            
+            foreach ($moves as $move) {
+
+                $move->winner = ($winner_id == $moves->player_id)? Game::YES : Game::NO;
+                $move->draw = ($winner_id == Game::NO_WINNER)? Game::YES : Game::NO;
+                $move->finished = Game::YES;
+                $move->save();
+            }
+
+            // Событие завершение раунда.
+            // GameRoundFinishedEvent::dispatch();
+        }
     }
 
 
@@ -260,23 +297,6 @@ class Game extends Model
         }
           
         // return 0;
-    }
-    
-
-    public function finishRoundIsNeeded(MoveRequest $request)
-    {  
-        $moves = $this->getMovesOfRound($request['round']);
-
-        if ($moves->count() == 2) {
-
-            $moves = $moves->all();
-
-            $winner = $this->defineWinner($moves[0], $moves[1]);
-
-            // $draw = Определить была ли ничья.
-
-            // Перебрать ходы циклом и присвоить результирующие значения, каждому ходу.
-        }
     }
 
 

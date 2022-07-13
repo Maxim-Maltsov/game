@@ -36,8 +36,15 @@ Route::get('/welcome', function () {
     // exit();
 
 
-    $game = Game::where('id', 20)->first();
+    $game = Game::where('id', 1)->first();
+
+    // $game->getRemainingTimeOfRound();
+    // $last = $game->last_round_start->addSeconds(env('ROUND_TIME'));
+
+    $gameResurce = GameResource::make($game);
+
     
+
     $firstPlayer = $game->firstPlayer;
 
     $play = Game::showGameplayBlock();
@@ -49,7 +56,7 @@ Route::get('/welcome', function () {
 
     $token = session('API-Token');
     
-    dd($play, $offer, $waiting, $token, $can_play, $game, $firstPlayer);
+    dd( $gameResurce, $play, $offer, $waiting, $token, $can_play, $game, $firstPlayer);
 
     return view('welcome');
 });

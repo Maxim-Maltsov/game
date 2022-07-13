@@ -52,6 +52,8 @@ return new class extends Migration
                   ->onDelete('cascade')
                   ->onUpdate('cascade');
 
+            $table->timestamp('last_round_start')->nullable();
+
             $table->timestamps();
 
         });
