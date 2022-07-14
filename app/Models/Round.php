@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Round extends Model
+{
+    use HasFactory;
+
+    // Relationship.
+
+    public function game() // Получаем игру к которой принадлежит раунд.
+    {
+        return $this->belongsTo(Game::class); 
+    }
+
+    public function moves()  // Получаем все ходы данного раунда.
+    {
+        return $this->hasMany(Moves::class);
+    }
+
+    public function moveFirstPlayer()  // Получаем ход первого игрока в данном раунде.
+    {
+        return $this->hasOne(Moves::class, 'move_player_1');
+    }
+
+    public function moveSecondPlayer() // Получаем ход второго игрока в данном раунде.
+    {
+        return $this->hasOne(Moves::class, 'move_player_2');
+    }
+
+    public function winnedPlayer() // Получаем все данные победившего игрока в данном раунде из таблицы 'users'.
+    {
+        return $this->belongsTo(User::class, 'winned_player');
+    }
+}

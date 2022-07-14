@@ -44,6 +44,7 @@ class User extends Authenticatable
 
 
     // Game status.
+    const GIVING_REPLY = 0;
     const WAITING_PLAYER = 0;
     const PLAYING = 1;
     const FREE = 2;
@@ -82,11 +83,7 @@ class User extends Authenticatable
 
     // Relationship.
 
-    public function rounds()
-    {
-        return $this->hasMany(Rounds::class);
-    }
-
+   
 
     // Methods.
     
@@ -165,8 +162,11 @@ class User extends Authenticatable
 
         $firstPlayer->game_status = User::WAITING_PLAYER;
         $firstPlayer->save();
+
+        $secondPlayer->game_status = User::GIVING_REPLY;
+        $secondPlayer->save();
           
-        $game = new Game($request->validated()); // $request->validated() -  saving in game 'id' second player.
+        $game = new Game($request->validated()); // $request->validated() -  saving in game second player 'id'.
         $game->player_1 = $firstPlayer->id;
         $game->status = Game::WAITING_PLAYER;
         $game->save();
@@ -196,7 +196,7 @@ class User extends Authenticatable
         return response(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
-
+    // ДОРАБОТАТЬ МЕТОД!!!
     public static function play(Game $game): GameResource
     {
         $firstPlayer = $game->firstPlayer;
@@ -209,11 +209,15 @@ class User extends Authenticatable
 
         $game->status = Game::IN_PROCESS;
         $game->start = Carbon::now();
-        $game->last_round_start = Carbon::now();
         $game->save();
 
-        GameStartEvent::dispatch(GameResource::make($game));
+        $round = new Round();
+        $round->game_id = $game->id;
+        $round->save();
 
+        // Запустить GameProcessJob::dispatch();
+        GameStartEvent::dispatch(GameResource::make($game));
+        
         return new GameResource($game);
     }
 
@@ -234,7 +238,7 @@ class User extends Authenticatable
         return response(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
-
+    // ДОРАБОТАТЬ МЕТОД!!!
     public static function leave(Game $game): GameResource
     {   
         $firstPlayer = $game->firstPlayer;
@@ -247,6 +251,14 @@ class User extends Authenticatable
 
         $leaving_player = Auth::id();
         $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
+
+        // Сделать последнему активному раунду игры статус finished = 1;
+
+        // ПРИМЕР ПОЛУЧЕНИЯ СВЯЗИ С УСЛОВИЕМ!!!
+        // $comment = Post::find(1)->comments()
+        //             ->where('title', 'foo')
+        //             ->first();
+
 
         $game->status = Game::FINISHED;
         $game->end = Carbon::now();
@@ -263,7 +275,7 @@ class User extends Authenticatable
         return GameResource::make($game);
     }
 
-
+    //ПЕРЕПИСАТЬ МЕТОД!!! Изменена структура таблиц round вместе с запросом можно не передавать!!! Возможно вообще не понадобится.
     public static function move(MoveRequest $request)
     {   
         $player = Auth::user();

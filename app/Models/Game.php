@@ -43,27 +43,32 @@ class Game extends Model
 
     // Relationship.
 
-    public function firstPlayer()
+    public function firstPlayer() // Получаем все данные первого игрока данной игры из таблицы 'users'.
     {
         return $this->belongsTo(User::class, 'player_1');
     }
 
-    public function secondPlayer()
+    public function secondPlayer() // Получаем все данные второго игрока данной игры из таблицы 'users'.
     {
         return $this->belongsTo(User::class, 'player_2');
     }
 
-    public function winnedPlayer()
+    public function winnedPlayer() // Получаем все данные победившего в данной игре игрока из таблицы 'users'.
     {
         return $this->belongsTo(User::class, 'winned_player');
     }
 
-    public function leavingPlayer()
+    public function leavingPlayer() // Получаем все данные покинувшего игру игрока из таблицы 'users'.
     {
         return $this->belongsTo(User::class, 'leaving_player');
     }
 
-    public function moves()
+    public function rounds() // Получаем все раунды относящиеся к данной игры.
+    {
+        return $this->hasMany(Round::class);
+    }
+
+    public function moves() // Получаем все ходы относящиеся к данной игры.
     {
         return $this->hasMany(Move::class);
     }
@@ -142,9 +147,18 @@ class Game extends Model
         ]]);
     }
 
-
+    // ПЕРЕПИСАТЬ МЕТОД!!!!
     public function getRemainingTimeOfRound():int               
     {
+        // Время начала раунда брать через связь с условием, где  раунд со статусом finish = 0,
+
+        // ПРИМЕР ПОЛУЧЕНИЯ СВЯЗИ С УСЛОВИЕМ!!!
+        // $comment = Post::find(1)->comments()
+        //             ->where('title', 'foo')
+        //             ->first();
+
+        // Далее получаем поле 'create_at'.
+
         $nowTime = Carbon::now();
         $roundTime = Carbon::createFromTimestampUTC($this->last_round_start)->addSeconds(env('ROUND_TIME'));
 
@@ -155,7 +169,7 @@ class Game extends Model
         return $remainingTime;
     }
 
-
+    // ВОЗМОЖНО НЕ НУЖНЫЙ МЕТОД!!! ПЕРЕПИСАТЬ!!!!
     public function getMovesOfRound(int $round)
     {
         $moves = Move::where('game_id', $this->id)
@@ -166,7 +180,7 @@ class Game extends Model
         return $moves;
     }
 
-
+    // ПЕРЕПИСАТЬ МЕТОД!!!!
     public function finishRoundIsNeeded(MoveRequest $request)
     {   
         $moves = $this->getMovesOfRound($request->validated(['round']));

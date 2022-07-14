@@ -17,13 +17,10 @@ class  MoveResource extends JsonResource
         return [
 
             'id'=> $this->id,
-            'game_id' => $this->game_id, 
-            'player_id' => UserResource::make($this->player),
-            'round' => $this->round,
+            'game_id' => $this->game_id,
+            'round_id' => $this->round_id,
+            'player_id' => UserResource::make($this->player), // $this->player - is Relationship(Получаем все поля с данными игрока из таблицы пользователей). $this->player_id получаем id игрока.
             'figure' => $this->figure,
-            'winner' => $this->winner,
-            'draw' => $this->draw,
-            'finished' => $this->finished,
             'created_at' => $this->created_at,
         ];
     }

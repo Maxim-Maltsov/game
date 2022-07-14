@@ -96,7 +96,7 @@ class GameController extends Controller
 
             return User::move($request);
         }
-        catch (MoveAlreadyMadeException $e){
+        catch (MoveAlreadyMadeException $e) {
 
             return response()->json([ 'data' => [
 
