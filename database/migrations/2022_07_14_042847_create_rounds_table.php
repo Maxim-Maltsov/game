@@ -15,12 +15,14 @@ return new class extends Migration
     {
         Schema::create('rounds', function (Blueprint $table) {
             
-            $table->id();
+            $table->id(); // Сделать поле значением bigInt и передавать из Vue JS как значение.
 
             $table->foreignId('game_id')
                   ->constrained()
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
+
+            $table->boolean('status')->default(false)->comment('is boolean value: 0 - NO_FINISHED, 1 - FINISHED');
             
             $table->bigInteger('move_player_1')->unsigned()->nullable()->comment('is move_id');
             $table->index(['move_player_1']);
@@ -46,20 +48,27 @@ return new class extends Migration
                   ->onDelete('cascade')
                   ->onUpdate('cascade');
 
-            $table->boolean('draw')->default(false)->comment('is boolean value: 1 - YES, 0 - NO');
-            $table->boolean('finish')->default(false)->comment('is boolean value: 1 - YES, 0 - NO');
+            $table->boolean('draw')->default(false)->comment('is boolean value: 0 - NO, 1 - YES');
 
             $table->timestamps();
         });
 
-        
-        Schema::table('moves', function (Blueprint $table) {
+         /* Поле 'round_id' из таблице 'moves' со ссылкой на таблицу 'round' перенесено в миграцию create_rounds_table,
+             так как возникает ошибка при запуске миграций, которые ссылаются друг на друга 
+             Миграция не может быть создана, так как в ней существует ссылка на таблицу которой ещё нет.
+             Если изменять порядок запуска миграций, то происходит обратная ситуации. 
+             
+            На данный момен закоментировано, так как это решение вызывает ошибку при удалении миграций. 
+            Cоздано простое поле без ссылки $table->bigInteger('round_id') в миграции create_moves_table.
+        */
+
+        // Schema::table('moves', function (Blueprint $table) {
             
-            $table->foreignId('round_id')
-                  ->constrained()
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
-        });
+        //     $table->foreignId('round_id')
+        //           ->constrained()
+        //           ->cascadeOnUpdate()
+        //           ->cascadeOnDelete();
+        // });
     }
 
     /**

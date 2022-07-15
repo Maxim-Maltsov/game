@@ -7,6 +7,7 @@ use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\Game;
 use App\Models\Move;
+use App\Models\Round;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -35,10 +36,11 @@ Route::get('/welcome', function () {
 
     // exit();
 
-
     $game = Game::where('id', 1)->first();
+    $round = $game->rounds()->where('status', Round::NO_FINISHED)->first();
+    
 
-    // $game->getRemainingTimeOfRound();
+    $game->getRemainingTimeOfRound();
     // $last = $game->last_round_start->addSeconds(env('ROUND_TIME'));
 
     $gameResurce = GameResource::make($game);
@@ -56,7 +58,7 @@ Route::get('/welcome', function () {
 
     $token = session('API-Token');
     
-    dd( $gameResurce, $play, $offer, $waiting, $token, $can_play, $game, $firstPlayer);
+    dd( $game, $round, $gameResurce, $play, $offer, $waiting, $token, $can_play,  $firstPlayer);
 
     return view('welcome');
 });

@@ -147,43 +147,43 @@ class Game extends Model
         ]]);
     }
 
-    // ПЕРЕПИСАТЬ МЕТОД!!!!
+
     public function getRemainingTimeOfRound():int               
     {
-        // Время начала раунда брать через связь с условием, где  раунд со статусом finish = 0,
+        $round = $this->rounds()->where('status', Round::NO_FINISHED)->first();
 
-        // ПРИМЕР ПОЛУЧЕНИЯ СВЯЗИ С УСЛОВИЕМ!!!
-        // $comment = Post::find(1)->comments()
-        //             ->where('title', 'foo')
-        //             ->first();
+        if ($round == null) {
 
-        // Далее получаем поле 'create_at'.
+            return 0;
+        }
 
-        $nowTime = Carbon::now();
-        $roundTime = Carbon::createFromTimestampUTC($this->last_round_start)->addSeconds(env('ROUND_TIME'));
+        $currentTime = Carbon::now();
+        $roundStartTime = $round->created_at;
+        $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
 
-        $remainingTime = $nowTime->diffInSeconds($roundTime, false);
+        $remainingTime = $currentTime->diffInSeconds($roundEndTime, true);
 
-        $remainingTime = Carbon::createFromTimestampUTC($remainingTime)->secondsSinceMidnight();
-    
+        // $remainingTime = Carbon::createFromTimestampUTC($remainingTime)->secondsSinceMidnight();
+
         return $remainingTime;
     }
 
     // ВОЗМОЖНО НЕ НУЖНЫЙ МЕТОД!!! ПЕРЕПИСАТЬ!!!!
-    public function getMovesOfRound(int $round)
-    {
-        $moves = Move::where('game_id', $this->id)
-                     ->where('round', $round)
-                     ->where('finished', 0)
-                     ->get();
+    // public function getMovesOfRound(int $round)
+    // {
+    //     $moves = Move::where('game_id', $this->id)
+    //                  ->where('round', $round)
+    //                  ->where('finished', 0)
+    //                  ->get();
 
-        return $moves;
-    }
+    //     return $moves;
+    // }
 
     // ПЕРЕПИСАТЬ МЕТОД!!!!
     public function finishRoundIsNeeded(MoveRequest $request)
     {   
         $moves = $this->getMovesOfRound($request->validated(['round']));
+        // получить ходы через связь с раундом. Сделать проверку, что хода два.
 
         if ($moves->count() == 2) {
 

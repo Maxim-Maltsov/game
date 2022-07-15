@@ -49,7 +49,6 @@ class User extends Authenticatable
     const PLAYING = 1;
     const FREE = 2;
 
-
     /**
      * The attributes that are mass assignable.
      *
@@ -196,7 +195,7 @@ class User extends Authenticatable
         return response(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
-    // ДОРАБОТАТЬ МЕТОД!!!
+
     public static function play(Game $game): GameResource
     {
         $firstPlayer = $game->firstPlayer;
@@ -238,7 +237,7 @@ class User extends Authenticatable
         return response(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
-    // ДОРАБОТАТЬ МЕТОД!!!
+    
     public static function leave(Game $game): GameResource
     {   
         $firstPlayer = $game->firstPlayer;
@@ -252,12 +251,11 @@ class User extends Authenticatable
         $leaving_player = Auth::id();
         $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
 
-        // Сделать последнему активному раунду игры статус finished = 1;
-
-        // ПРИМЕР ПОЛУЧЕНИЯ СВЯЗИ С УСЛОВИЕМ!!!
-        // $comment = Post::find(1)->comments()
-        //             ->where('title', 'foo')
-        //             ->first();
+        
+        $activeRound = $game->rounds()->where('status', Round::NO_FINISHED)->first();
+        $activeRound->status = Round::FINISHED;
+        $activeRound->winned_player = $winned_player;
+        $activeRound->save();
 
 
         $game->status = Game::FINISHED;
@@ -275,7 +273,7 @@ class User extends Authenticatable
         return GameResource::make($game);
     }
 
-    //ПЕРЕПИСАТЬ МЕТОД!!! Изменена структура таблиц round вместе с запросом можно не передавать!!! Возможно вообще не понадобится.
+    //ПЕРЕПИСАТЬ МЕТОД!!! Измененить структуру таблицы передавать round вместе с запросом Заменить автоинкримент знасением bigInt() Убрать поля move_player_1 и move_player_2 !!! Возможно вообще не понадобится.
     public static function move(MoveRequest $request)
     {   
         $player = Auth::user();
@@ -287,16 +285,26 @@ class User extends Authenticatable
           throw new MoveAlreadyMadeException('You have already made a move in this round.');
         }
 
-        $move = new Move($request->validated()); // $request->validated() -  saving in table moves 'game_id', 'round' and 'figure'.
+        $game = Game::where('id', $request->game_id)->first();
+        $activeRound = $game->rounds()->where('status', Round::NO_FINISHED)->first();
+        
+        $move = new Move($request->validated()); // $request->validated() - saving in table moves 'game_id' and 'figure'.
         $move->player_id = $player->id;
+        $move->round_id = $activeRound->id; // ИЗМЕНИТЬ ЗНАЧЕНИЕ $request->round. Передавать в запросе!!!
         $move->save();
 
-        $game = $move->game;
+        // Заполнить поля 'game_id', убрать поля 'move_player_1 ', 'move_player_2' в таблице  'rounds' Передавать номер раунда параметром из Vue.JS.
+        $activeRound->game_id = $game->id;
+        $activeRound->move_player_1 = ($player->id == $move->player_id)? $move->id : null;  // УДАЛИТЬ ИЗ ТАБЛИЦЫ!!!
+        // $activeRound->move_player_2 = ($player->id != $move->player_id)? $move->id : null; // УДАЛИТЬ ИЗ ТАБЛИЦЫ!!!
+        $activeRound->save();
+
+        // $game = $move->game;
 
         FirstPlayerMadeMoveEvent::dispatch(GameResource::make($game));
         SecondPlayerMadeMoveEvent::dispatch(GameResource::make($game));
 
-        $game->finishRoundIsNeeded($request);
+        // $game->finishRoundIsNeeded($request);
 
         return MoveResource::make($move);
     }

@@ -350,11 +350,11 @@
                             this.offer = response.data.data.offer;
                             this.play = response.data.data.play;
                             this.leave = response.data.data.leave;
-                            // this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
-                            this.timer.totalSeconds = 40;
-                            console.log(response.data.data.game.remainingTimeOfRound);
+
+                            this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
+                            this.startTimer();
+                            
                             console.log(this.timer);
-                            alert(55);
                         }
                     })
                     .catch( error => {
@@ -456,17 +456,15 @@
                 .then( response => {
 
                     this.game = response.data.data;
-
                     this.timer.totalSeconds = response.data.data.remainingTimeOfRound;
 
-                    // alert('Ты принял игру');
-                    console.log(response.data.data.remainingTimeOfRound);
                     console.log(this.timer);
 
                     this.exception = false;
                     this.offer = false;
                     this.play = true;
                     this.leave = true;
+
                     this.startTimer();
                 })
                 .catch( error => {
@@ -552,7 +550,7 @@
                 axios.post('api/v1/make-move', {
 
                     game_id: this.game.id,
-                    round: this.round,
+                    // round: this.round, // Не нужен.
                     figure: figure,
                     
                 }, config)
@@ -579,19 +577,21 @@
 
             startTimer() {
 
-                this.timer.intervalId = setInterval(() => {
+                let self = this;
+
+                self.timer.intervalId = setInterval(() => {
                 
-                    this.timer.minutes = parseInt(this.timer.totalSeconds / 60, 10);
-                    this.timer.seconds = parseInt(this.timer.totalSeconds % 60, 10);
+                    self.timer.minutes = parseInt(self.timer.totalSeconds / 60, 10);
+                    self.timer.seconds = parseInt(self.timer.totalSeconds % 60, 10);
 
-                    this.timer.minutes = this.timer.minutes < 10 ? '0' + this.timer.minutes : this.timer.minutes;
-                    this.timer.seconds = this.timer.seconds < 10 ? '0' + this.timer.seconds : this.timer.seconds;
-                    this.timer.display = this.timer.minutes + ":" + this.timer.seconds;
-                    --this.timer.totalSeconds;
+                    self.timer.minutes = self.timer.minutes < 10 ? '0' + self.timer.minutes : self.timer.minutes;
+                    self.timer.seconds = self.timer.seconds < 10 ? '0' + self.timer.seconds : self.timer.seconds;
+                    self.timer.display = self.timer.minutes + ":" + self.timer.seconds;
+                    --self.timer.totalSeconds;
 
-                    if ( this.timer.totalSeconds <= 0) {
+                    if ( self.timer.totalSeconds <= 0) {
 
-                        this.stopTimer();
+                        self.stopTimer();
                     }
                     
                 }, 1000);

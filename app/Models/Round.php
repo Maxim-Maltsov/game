@@ -10,6 +10,11 @@ class Round extends Model
 {
     use HasFactory;
 
+
+     // Round Status
+     const NO_FINISHED = 0;
+     const FINISHED = 1;
+
     // Relationship.
 
     public function game() // Получаем игру к которой принадлежит раунд.

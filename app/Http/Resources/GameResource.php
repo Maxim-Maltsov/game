@@ -25,8 +25,8 @@ class GameResource extends JsonResource
             'end' => $this->end,
             'winned_player' => UserResource::make($this->winnedPlayer), // $this->whenLoaded('winnedPlayer')
             'leaving_player' => UserResource::make($this->leavingPlayer), // $this->whenLoaded('leavingPlayer')
-            //'remainingTimeOfRound' => $this->getRemainingTimeOfRound(),
-            'rounds' => RoundResource::collection($this->rounds), // $this->whenLoaded('rounds')
+            'remainingTimeOfRound' => $this->getRemainingTimeOfRound(),
+            'rounds' => RoundResource::collection($this->whenLoaded('rounds')), // $this->whenLoaded('rounds')
             'created_at' => $this->created_at,
         ];
     }
