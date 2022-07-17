@@ -550,7 +550,7 @@
                 axios.post('api/v1/make-move', {
 
                     game_id: this.game.id,
-                    // round: this.round, // Не нужен.
+                    round_number: this.round,
                     figure: figure,
                     
                 }, config)

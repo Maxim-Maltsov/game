@@ -212,6 +212,7 @@ class User extends Authenticatable
 
         $round = new Round();
         $round->game_id = $game->id;
+        $round->number = 1;
         $round->save();
 
         // Запустить GameProcessJob::dispatch();
@@ -252,8 +253,8 @@ class User extends Authenticatable
         $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
 
         
-        $activeRound = $game->rounds()->where('status', Round::NO_FINISHED)->first();
-        $activeRound->status = Round::FINISHED;
+        $activeRound = $game->rounds()->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
+        $activeRound->status = 1; // При использовании значения Round::FINISHED выдаёт ошибку о попытке присвоения значения = null.
         $activeRound->winned_player = $winned_player;
         $activeRound->save();
 
@@ -273,7 +274,7 @@ class User extends Authenticatable
         return GameResource::make($game);
     }
 
-    //ПЕРЕПИСАТЬ МЕТОД!!! Измененить структуру таблицы передавать round вместе с запросом Заменить автоинкримент знасением bigInt() Убрать поля move_player_1 и move_player_2 !!! Возможно вообще не понадобится.
+    
     public static function move(MoveRequest $request)
     {   
         $player = Auth::user();
@@ -285,26 +286,16 @@ class User extends Authenticatable
           throw new MoveAlreadyMadeException('You have already made a move in this round.');
         }
 
-        $game = Game::where('id', $request->game_id)->first();
-        $activeRound = $game->rounds()->where('status', Round::NO_FINISHED)->first();
-        
-        $move = new Move($request->validated()); // $request->validated() - saving in table moves 'game_id' and 'figure'.
+        $move = new Move($request->validated()); // $request->validated() - saving in table moves 'game_id', 'round_number' and 'figure'.
         $move->player_id = $player->id;
-        $move->round_id = $activeRound->id; // ИЗМЕНИТЬ ЗНАЧЕНИЕ $request->round. Передавать в запросе!!!
         $move->save();
 
-        // Заполнить поля 'game_id', убрать поля 'move_player_1 ', 'move_player_2' в таблице  'rounds' Передавать номер раунда параметром из Vue.JS.
-        $activeRound->game_id = $game->id;
-        $activeRound->move_player_1 = ($player->id == $move->player_id)? $move->id : null;  // УДАЛИТЬ ИЗ ТАБЛИЦЫ!!!
-        // $activeRound->move_player_2 = ($player->id != $move->player_id)? $move->id : null; // УДАЛИТЬ ИЗ ТАБЛИЦЫ!!!
-        $activeRound->save();
-
-        // $game = $move->game;
-
+        $game = Game::where('id', $request->game_id)->first();
+        
         FirstPlayerMadeMoveEvent::dispatch(GameResource::make($game));
         SecondPlayerMadeMoveEvent::dispatch(GameResource::make($game));
 
-        // $game->finishRoundIsNeeded($request);
+        $game->finishRoundIsNeeded($request);
 
         return MoveResource::make($move);
     }

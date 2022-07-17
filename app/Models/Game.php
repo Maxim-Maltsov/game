@@ -41,6 +41,7 @@ class Game extends Model
 
     protected $fillable = [ 'player_2'];
 
+
     // Relationship.
 
     public function firstPlayer() // Получаем все данные первого игрока данной игры из таблицы 'users'.
@@ -150,53 +151,52 @@ class Game extends Model
 
     public function getRemainingTimeOfRound():int               
     {
-        $round = $this->rounds()->where('status', Round::NO_FINISHED)->first();
+        $activeRound = $this->rounds()->where('status', Round::NO_FINISHED)->first();
 
-        if ($round == null) {
+        if ($activeRound == null) {
 
             return 0;
         }
 
         $currentTime = Carbon::now();
-        $roundStartTime = $round->created_at;
+        $roundStartTime = $activeRound->created_at;
         $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
 
         $remainingTime = $currentTime->diffInSeconds($roundEndTime, true);
 
-        // $remainingTime = Carbon::createFromTimestampUTC($remainingTime)->secondsSinceMidnight();
-
         return $remainingTime;
     }
 
-    // ВОЗМОЖНО НЕ НУЖНЫЙ МЕТОД!!! ПЕРЕПИСАТЬ!!!!
-    // public function getMovesOfRound(int $round)
-    // {
-    //     $moves = Move::where('game_id', $this->id)
-    //                  ->where('round', $round)
-    //                  ->where('finished', 0)
-    //                  ->get();
 
-    //     return $moves;
-    // }
+    public function getMovesOfActiveRound(int $round)
+    {
+        $moves = Move::where('game_id', $this->id)
+                     ->where('round_number', $round)
+                     ->get();
 
-    // ПЕРЕПИСАТЬ МЕТОД!!!!
+        return $moves;
+    }
+
+
     public function finishRoundIsNeeded(MoveRequest $request)
     {   
-        $moves = $this->getMovesOfRound($request->validated(['round']));
-        // получить ходы через связь с раундом. Сделать проверку, что хода два.
+        $moves = $this->getMovesOfActiveRound($request->validated(['round_number']));
 
         if ($moves->count() == 2) {
 
             $roundMoves = $moves->all();
             $winner_id = $this->defineWinner($roundMoves[0], $roundMoves[1]);
-            
-            foreach ($moves as $move) {
 
-                $move->winner = ($winner_id == $moves->player_id)? Game::YES : Game::NO;
-                $move->draw = ($winner_id == Game::NO_WINNER)? Game::YES : Game::NO;
-                $move->finished = Game::YES;
-                $move->save();
-            }
+            $winnedPlayer = ($winner_id != Game::NO_WINNER)? $winner_id : null;
+            $draw = ($winner_id == Game::NO_WINNER)? Game::YES : Game::NO;
+            
+            $activeRound = $this->rounds()
+                                ->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
+
+            $activeRound->winned_player = $winnedPlayer;
+            $activeRound->draw = $draw;
+            $activeRound->status = Round::FINISHED;
+            $activeRound->save();
 
             // Событие завершение раунда.
             // GameRoundFinishedEvent::dispatch();
@@ -309,8 +309,6 @@ class Game extends Model
                     return $move_2->player_id;
             }
         }
-          
-        // return 0;
     }
 
 

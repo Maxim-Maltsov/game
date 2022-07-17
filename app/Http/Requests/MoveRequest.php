@@ -26,6 +26,7 @@ class MoveRequest extends FormRequest
         return [
 
             'game_id' => 'required|numeric',
+            'round_number' => 'required|numeric',
             'figure' => 'required|numeric',
         ];
     }

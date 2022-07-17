@@ -27,16 +27,6 @@ class Round extends Model
         return $this->hasMany(Moves::class);
     }
 
-    public function moveFirstPlayer()  // Получаем ход первого игрока в данном раунде.
-    {
-        return $this->hasOne(Moves::class, 'move_player_1');
-    }
-
-    public function moveSecondPlayer() // Получаем ход второго игрока в данном раунде.
-    {
-        return $this->hasOne(Moves::class, 'move_player_2');
-    }
-
     public function winnedPlayer() // Получаем все данные победившего игрока в данном раунде из таблицы 'users'.
     {
         return $this->belongsTo(User::class, 'winned_player');

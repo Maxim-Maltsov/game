@@ -9,7 +9,7 @@ class Move extends Model
 {
     use HasFactory;
 
-    protected $fillable = [ 'game_id', 'round', 'figure'];
+    protected $fillable = [ 'game_id', 'round_number', 'figure'];  
 
     // Relationship.
 
