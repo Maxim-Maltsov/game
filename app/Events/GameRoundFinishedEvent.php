@@ -2,27 +2,46 @@
 
 namespace App\Events;
 
+use App\Http\Resources\GameResource;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class GameRoundFinishedEvent
+class GameRoundFinishedEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $recipient;
+    public $game;
+    
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct()
-    {
-        //
+    public function __construct(GameResource $game)
+    {   
+        $this->firstRecipient = $game->firstPlayer;
+        $this->secondRecipient = $game->secondPlayer;
+        $this->game = $game;
     }
+
+    public function broadcastWith()
+    {   
+        $finishedRound = $this->game->getLastRound();
+
+        return [
+            
+            'game' => $this->game,
+            'message' => "All the players have made a move. Round {$finishedRound->number}: FINISHED.",
+        ];
+    }
+
 
     /**
      * Get the channels the event should broadcast on.
@@ -31,6 +50,11 @@ class GameRoundFinishedEvent
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('channel-name');
+        return [
+
+            new PrivateChannel('privateChannelFor.'. $this->firstRecipient->id),
+            new PrivateChannel('privateChannelFor.'. $this->secondRecipient->id),
+        ];
+
     }
 }

@@ -36,7 +36,6 @@ class FirstPlayerMadeMoveEvent implements ShouldBroadcastNow
             
             'message' => $this->game->firstPlayer->name . ' made a move.',
             'game' => $this->game,
-            'exception' => false,
         ];
     }
 

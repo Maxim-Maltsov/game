@@ -35,7 +35,6 @@ class GameStartEvent implements ShouldBroadcastNow
             
             'game' => $this->game,
             'message' => $this->game->secondPlayer->name . " accept invite in the game.",
-            'info' => true,
         ];
     }
 

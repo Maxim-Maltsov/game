@@ -22,9 +22,9 @@ return new class extends Migration
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
 
-            $table->bigInteger('number')->unsigned();
+            $table->bigInteger('number')->unsigned()->comment('is round number');
 
-            $table->boolean('status')->default(false)->comment('is boolean value: 0 - NO_FINISHED, 1 - FINISHED');
+            $table->integer('status')->default(0)->comment('0 - NO_FINISHED, 1 - FINISHED');
             
             $table->bigInteger('winned_player')->unsigned()->nullable()->comment('is user_id');
             $table->index(['winned_player']);

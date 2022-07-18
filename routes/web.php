@@ -36,16 +36,17 @@ Route::get('/welcome', function () {
 
     // exit();
 
-    $game = Game::where('id', 1)->first();
-    $round = $game->rounds()->where('status', Round::NO_FINISHED)->first();
-    
 
-    $game->getRemainingTimeOfRound();
-    // $last = $game->last_round_start->addSeconds(env('ROUND_TIME'));
+    $game = Game::where('id', 3)->first();
+    
+    $lastRound = $game->getLastRound();
+    // $roundNumber = $game->getLastRound()->number;
+    $activeRound = $game->getActiveRound();
+
+    $remainingTime = $game->getRemainingTimeOfRound();
 
     $gameResurce = GameResource::make($game);
 
-    
 
     $firstPlayer = $game->firstPlayer;
 
@@ -58,7 +59,7 @@ Route::get('/welcome', function () {
 
     $token = session('API-Token');
     
-    dd( $game, $round, $gameResurce, $play, $offer, $waiting, $token, $can_play,  $firstPlayer);
+    dd( $game, $lastRound,  $activeRound, $gameResurce, $play, $offer, $waiting, $token, $can_play,  $firstPlayer);
 
     return view('welcome');
 });

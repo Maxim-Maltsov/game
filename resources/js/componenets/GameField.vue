@@ -257,6 +257,7 @@
                 exception: false,
                 info: false,
 
+
                 NONE: 0,
                 ROCK: 1,
                 SCISSORS: 2,
@@ -563,9 +564,21 @@
                         this.info = false;
                         // console.log(this.message);
                     }
+                    // else if (this.roundFinished) {
+
+                    //     roundNumber = response.data.data.round_number;
+
+                    //     фдуке(roundNumber);
+
+                    //     this.message = "!!!!!You made a move. Round " + roundNumber +": FINISHED.";
+                    //     this.exception = false;
+                    //     this.info = true;
+                    // }
                     else {
 
                         this.message = 'You made a move.';
+                        this.exception = false;
+                        this.info = true;
                     }
                 })
                 .catch( error => {
@@ -662,19 +675,15 @@
                     this.game = e.game;
                     this.timer.totalSeconds = e.game.remainingTimeOfRound;
 
-                    // alert('Сообщение первому игроку. Второй игрок нажал accept')
-                    console.log(e.game.remainingTimeOfRound);
-
                     this.message = e.message;
                     this.info = true;
                     this.play = true;
                     this.leave = true;
                     this.startTimer();
 
-                    // console.log(this.game);
-
                     this.exception = false;
                     this.waiting = false;
+                    // console.log(e.game);
                 })
                 .listen('FirstPlayerLeavedGameEvent', (e) => {
                     
@@ -717,7 +726,18 @@
 
                     this.game = e.game;
                     // console.log(e.game);
-                });
+                })
+                 .listen('GameRoundFinishedEvent', (e) => {
+
+                    // alert('Раунд завершён!')
+                    this.message = e.message;
+                    this.info = true;
+                    this.exception = false;
+
+                    this.game = e.game;
+                    this.round = e.game.finishedRound.number + 1;
+                   // console.log(e.game);
+                 });
                 
         },
 

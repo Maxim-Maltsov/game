@@ -178,6 +178,22 @@ class Game extends Model
     }
 
 
+    public function getActiveRound() :?Round
+    {
+        $activeRound = $this->rounds()->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
+
+        return $activeRound;
+    }
+
+
+    public function getLastRound() :?Round
+    {
+        $lastRound = $this->rounds()->where('status', Round::FINISHED)->first(); // $lastRound получен через связь с game по условию.
+
+        return $lastRound;
+    }
+
+
     public function finishRoundIsNeeded(MoveRequest $request)
     {   
         $moves = $this->getMovesOfActiveRound($request->validated(['round_number']));
@@ -190,16 +206,14 @@ class Game extends Model
             $winnedPlayer = ($winner_id != Game::NO_WINNER)? $winner_id : null;
             $draw = ($winner_id == Game::NO_WINNER)? Game::YES : Game::NO;
             
-            $activeRound = $this->rounds()
-                                ->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
+            $activeRound = $this->getActiveRound();
 
             $activeRound->winned_player = $winnedPlayer;
             $activeRound->draw = $draw;
             $activeRound->status = Round::FINISHED;
             $activeRound->save();
 
-            // Событие завершение раунда.
-            // GameRoundFinishedEvent::dispatch();
+            GameRoundFinishedEvent::dispatch(GameResource::make($this));
         }
     }
 

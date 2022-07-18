@@ -21,6 +21,7 @@ use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
 use App\Http\Resources\MoveResource;
 use App\Http\Resources\UserCollection;
+use App\Jobs\GameProcessJob;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -215,7 +216,7 @@ class User extends Authenticatable
         $round->number = 1;
         $round->save();
 
-        // Запустить GameProcessJob::dispatch();
+        GameProcessJob::dispatch(GameResource::make($game));
         GameStartEvent::dispatch(GameResource::make($game));
         
         return new GameResource($game);
@@ -253,8 +254,8 @@ class User extends Authenticatable
         $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
 
         
-        $activeRound = $game->rounds()->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
-        $activeRound->status = 1; // При использовании значения Round::FINISHED выдаёт ошибку о попытке присвоения значения = null.
+        $activeRound = $game->getActiveRound();
+        $activeRound->status = Round::FINISHED;
         $activeRound->winned_player = $winned_player;
         $activeRound->save();
 

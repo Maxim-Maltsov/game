@@ -34,8 +34,8 @@ return new class extends Migration
                   ->onUpdate('cascade');
 
             $table->integer('status')->default(0)->comment('WAITING_PLAYER = 0; IN_PROCESS = 1; FINISHED = 2;');
-            $table->timestamp('start')->nullable();
-            $table->timestamp('end')->nullable();
+            $table->timestamp('start')->nullable()->comment('is start game');
+            $table->timestamp('end')->nullable()->comment('is end game');
             
             $table->bigInteger('winned_player')->unsigned()->nullable()->comment('is user_id');
             $table->index(['winned_player']);
