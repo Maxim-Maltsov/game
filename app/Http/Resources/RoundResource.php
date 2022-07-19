@@ -18,11 +18,10 @@ class RoundResource extends JsonResource
 
             'id' => $this->id,
             'game_id' => $this->game_id,
-            'move_player_1' => MoveResource::make($this->whenLoaded('moveFirstPlayer')), // Со значением $this->moveFirstPlayer - получаем все поля хода из таблицы 'moves'. $this->move_player_1 - получаем id хода.
-            'move_player_2' => MoveResource::make($this->whenLoaded('moveSecondPlayer')), // Со значением $this->move_player_2 - получаем только id хода.
+            'status' => $this->status,
             'winned_player' => UserResource::make($this->whenLoaded('winnedPlayer')), // Со значением $this->winnedPlayer - получаем все поля c данными пользователя из таблицы 'users'. Со значением $this->winner_player - получаем только id пользователя. 
             'draw' => $this->draw,
-            'finish' => $this->finish,
+            'moves' => MoveResource::make($this->whenLoaded('moves')), // Получаем все ходы раунда через связь, если они есть.
             'created_at' => $this->created_at,
         ];
     }

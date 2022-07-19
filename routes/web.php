@@ -11,8 +11,10 @@ use App\Models\Round;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\Cookie as HttpFoundationCookie;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,30 +38,45 @@ Route::get('/welcome', function () {
 
     // exit();
 
+    Cookie::forever('Round','fgfhgfhg');
+    cookie('test', 'тестовое значение' , 500 );
 
-    $game = Game::where('id', 3)->first();
+    $test = Cookie::get('test');
+
+    $tt = Cookie::has('Round');
+
+    $cookie = Cookie::get('Round');
+
+    Cookie::forget('Round');
+
+    dd($test, $tt, $cookie);
+
+    // $game = Game::where('id', 56)->first();
+
+    // $time = $game->getRemainingTimeOfRound();
+    // $need = $game->needStartNewRound;
     
-    $lastRound = $game->getLastRound();
-    // $roundNumber = $game->getLastRound()->number;
-    $activeRound = $game->getActiveRound();
-
-    $remainingTime = $game->getRemainingTimeOfRound();
-
-    $gameResurce = GameResource::make($game);
-
-
-    $firstPlayer = $game->firstPlayer;
-
-    $play = Game::showGameplayBlock();
-    $offer = Game::showOfferBlock();
-    $waiting = Game::showWaitingBlock();
-
-    $user = User::where('id', Auth::id())->first();
-    $can_play = $user->canPlay();
-
-    $token = session('API-Token');
     
-    dd( $game, $lastRound,  $activeRound, $gameResurce, $play, $offer, $waiting, $token, $can_play,  $firstPlayer);
+    // $lastRound = $game->getLastRound();
+
+    // $activeRound = $game->getActiveRound();
+    // $remainingTime = $game->getRemainingTimeOfRound();
+
+    // $gameResource = GameResource::make($game);
+    
+
+    // $firstPlayer = $game->firstPlayer;
+
+    // $play = Game::showGameplayBlock();
+    // $offer = Game::showOfferBlock();
+    // $waiting = Game::showWaitingBlock();
+
+    // $user = User::where('id', Auth::id())->first();
+    // $can_play = $user->canPlay();
+
+    // $token = session('API-Token');
+    
+    // dd($need,  $game, $lastRound,  $activeRound, $gameResource, $play, $offer, $waiting, $token, $can_play,  $firstPlayer);
 
     return view('welcome');
 });

@@ -216,10 +216,10 @@ class User extends Authenticatable
         $round->number = 1;
         $round->save();
 
-        GameProcessJob::dispatch(GameResource::make($game));
+        GameProcessJob::dispatch($game);
         GameStartEvent::dispatch(GameResource::make($game));
         
-        return new GameResource($game);
+        return GameResource::make($game);
     }
 
 
@@ -296,7 +296,7 @@ class User extends Authenticatable
         FirstPlayerMadeMoveEvent::dispatch(GameResource::make($game));
         SecondPlayerMadeMoveEvent::dispatch(GameResource::make($game));
 
-        $game->finishRoundIsNeeded($request);
+        $game->finishRoundIfNeeded($request);
 
         return MoveResource::make($move);
     }

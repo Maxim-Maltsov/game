@@ -26,8 +26,9 @@ class GameResource extends JsonResource
             'winned_player' => UserResource::make($this->winnedPlayer), // $this->whenLoaded('winnedPlayer')
             'leaving_player' => UserResource::make($this->leavingPlayer), // $this->whenLoaded('leavingPlayer')
             'remainingTimeOfRound' => $this->getRemainingTimeOfRound(),
-            'rounds' => RoundResource::collection($this->whenLoaded('rounds')), // $this->whenLoaded('rounds')
-            'finishedRound' => $this->getLastRound(),
+            'rounds' => RoundResource::collection($this->whenLoaded('rounds')), // $this->whenLoaded('rounds') - получаем все раунды игры через связь, если они есть.
+            'lastFinishedRound' => $this->getLastFinishedRound(),
+            // 'needStartNewRound' => $this->needStartNewRound,
             'created_at' => $this->created_at,
         ];
     }

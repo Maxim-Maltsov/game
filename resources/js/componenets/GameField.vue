@@ -735,7 +735,17 @@
                     this.exception = false;
 
                     this.game = e.game;
-                    this.round = e.game.finishedRound.number + 1;
+                    this.round = e.game.lastFinishedRound.number + 1;
+                   // console.log(e.game);
+                 })
+                  .listen('GameNewRoundStartEvent', (e) => {
+
+                    alert('Новый Раунд!')
+                    this.message = e.message;
+                    this.info = true;
+                    this.exception = false;
+
+                    this.game = e.game;
                    // console.log(e.game);
                  });
                 

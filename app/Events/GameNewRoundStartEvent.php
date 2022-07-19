@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class GameRoundFinishedEvent implements ShouldBroadcastNow
+class GameNewRoundStartEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -34,12 +34,13 @@ class GameRoundFinishedEvent implements ShouldBroadcastNow
 
     public function broadcastWith()
     {   
-        
-$lastFinishedRound = $this->game->getLastFinishedRound();
+        // $lastFinishedRound = $this->game->getLastFinishedRound();
+        // $lastFinishedRound = $lastFinishedRound->number + 1;
+
         return [
             
             'game' => $this->game,
-            'message' => "All the players have made a move. Round {$lastFinishedRound->number}: FINISHED.",
+            'message' => "Round: STARTED.",
         ];
     }
 

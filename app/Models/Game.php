@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 
 class Game extends Model
 {
@@ -37,7 +38,8 @@ class Game extends Model
     const NO = 0;
 
     const NO_WINNER = 0;
- 
+
+    public $needStartNewRound = false;
 
     protected $fillable = [ 'player_2'];
 
@@ -186,7 +188,7 @@ class Game extends Model
     }
 
 
-    public function getLastRound() :?Round
+    public function getLastFinishedRound() :?Round
     {
         $lastRound = $this->rounds()->where('status', Round::FINISHED)->first(); // $lastRound получен через связь с game по условию.
 
@@ -194,7 +196,7 @@ class Game extends Model
     }
 
 
-    public function finishRoundIsNeeded(MoveRequest $request)
+    public function finishRoundIfNeeded(MoveRequest $request)
     {   
         $moves = $this->getMovesOfActiveRound($request->validated(['round_number']));
 
@@ -212,6 +214,9 @@ class Game extends Model
             $activeRound->draw = $draw;
             $activeRound->status = Round::FINISHED;
             $activeRound->save();
+
+            // $this->needStartNewRound = true ;
+            $cookie = Cookie::forever('needStartNewRound', 1); // Создаём $cookie.
 
             GameRoundFinishedEvent::dispatch(GameResource::make($this));
         }
