@@ -37,15 +37,22 @@ class GameProcessJob implements ShouldQueue
      */
     public function handle()
     {
-        // while (true) {
+        $remainingTimeOfRound = $this->game->getRemainingTimeOfRound();
+
+        while (true) {
+
+            if ($remainingTimeOfRound > 0) {
+
+                print_r($remainingTimeOfRound);
+
+                // if ($this->canStartNewRound()) {
+
+                //     $this->StartNewRound($this->game);
+                // }
+            }
         
-            // if ($this->canStartNewRound()) {
-
-                $this->StartNewRound($this->game);
-            // }
-
-        //     sleep(1);
-        // }
+            sleep(1);
+        }
 
 
        
@@ -75,7 +82,10 @@ class GameProcessJob implements ShouldQueue
     public function StartNewRound(Game $game)
     {
         // 1. Сделать переменную $this->game->needStartNewRound = false;
+        //////
+        // $game->needStartNewRound = false;
         $cookie = Cookie::forget('needStartNewRound'); // удаление $cookie.
+        //////
 
         // 2. Создать новый раунд.
         $round = new Round();

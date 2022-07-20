@@ -153,7 +153,7 @@ class Game extends Model
 
     public function getRemainingTimeOfRound():int               
     {
-        $activeRound = $this->rounds()->where('status', Round::NO_FINISHED)->first();
+        $activeRound = $this->getActiveRound();
 
         if ($activeRound == null) {
 
@@ -215,8 +215,10 @@ class Game extends Model
             $activeRound->status = Round::FINISHED;
             $activeRound->save();
 
-            // $this->needStartNewRound = true ;
-            $cookie = Cookie::forever('needStartNewRound', 1); // Создаём $cookie.
+            //////
+            $this->needStartNewRound = true ;
+            $cookie = Cookie::forever('needStartNewRound', true); // Создаём $cookie.
+            /////
 
             GameRoundFinishedEvent::dispatch(GameResource::make($this));
         }
