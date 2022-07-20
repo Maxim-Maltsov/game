@@ -38,6 +38,10 @@ Route::get('/welcome', function () {
 
     // exit();
 
+
+    
+
+    //////
     Cookie::forever('Round','fgfhgfhg');
     cookie('test', 'тестовое значение' , 500 );
 
@@ -50,6 +54,7 @@ Route::get('/welcome', function () {
     Cookie::forget('Round');
 
     dd($test, $tt, $cookie);
+    /////
 
     // $game = Game::where('id', 56)->first();
 
