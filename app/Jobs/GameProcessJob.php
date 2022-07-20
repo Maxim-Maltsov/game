@@ -53,7 +53,7 @@ class GameProcessJob implements ShouldQueue
             $currentTime = Carbon::now()->secondsSinceMidnight();
             $remainingTimeOfRound = $this->game->getRemainingTimeOfRound();
             
-            if ( $currentTime <= $roundEndTime) {
+            if ( $currentTime < $roundEndTime) {
 
                 $game = Game::where('id', $this->game->id)->first();
                 $needStartNewRound = $game->need_start_new_round;
@@ -92,21 +92,25 @@ class GameProcessJob implements ShouldQueue
     }
 
     
-    public function canStartNewRound(Game $game, $remainingTimeOfRound)
+    public function canStartNewRound(Game $game,  int $currentTime,int $endTime)
     {   
+         // Начало нового раунда, если истекло время раунда.
+         if ($currentTime >= $endTime) {
+
+            $this->reasonEndRound = GameProcessJob::ROUND_TIME_IS_UP;
+
+            return true;
+        }
         
-        
-        // Получаем переменную флаг $game->needStartNewRound == true.
-       
+        // Начало нового раунда, если оба игрока сделали ход. Получаем поле $game->need_start_new_round.
+        $game = Game::where('id', $this->game->id)->first();
+        $needStartNewRound = $game->need_start_new_round;
 
+        if ($needStartNewRound == Game::YES) {
 
-        // if ($remainingTimeOfRound == 0) {
-
-        //     print_r('Время вышло!');
-        //     $this->reasonEndRound = GameProcessJob::ROUND_TIME_IS_UP;
-
-        //     return true;
-        // }
+            
+            return true;
+        }
     }
 
 
@@ -133,7 +137,7 @@ class GameProcessJob implements ShouldQueue
 
         $players = [$firstPlayer, $secondPlayer];
 
-        
+
         foreach ($players as $player) {
 
             $move = Move::where('game_id', $game->id)->where('player_id', $player->id )->first();
