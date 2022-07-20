@@ -6,6 +6,7 @@ use App\Events\GameNewRoundStartEvent;
 use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Models\Round;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,12 +14,18 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cookie;
+use Psy\Exception\BreakException;
 
 class GameProcessJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $game;
+    public $reasonEndRound;
+
+    const ROUND_TIME_IS_UP = 0;
+    const ALL_PLAYERS_MADE_MOVE = 1;
+
 
     /**
      * Create a new job instance.
@@ -37,20 +44,35 @@ class GameProcessJob implements ShouldQueue
      */
     public function handle()
     {
-        $remainingTimeOfRound = $this->game->getRemainingTimeOfRound();
-
-        while (true) {
-
-            if ($remainingTimeOfRound > 0) {
-
-                print_r($remainingTimeOfRound);
-
-                // if ($this->canStartNewRound()) {
-
-                //     $this->StartNewRound($this->game);
-                // }
-            }
+        $roundEndTime = $this->game->getRoundEndTime();
         
+        while (true) {
+            
+            $currentTime = Carbon::now()->secondsSinceMidnight();
+            $remainingTimeOfRound = $this->game->getRemainingTimeOfRound();
+            
+            if ( $currentTime <= $roundEndTime) {
+
+                $game = Game::where('id', $this->game->id)->first();
+                $needStartNewRound = $game->need_start_new_round;
+
+                print_r( " ДО:" . $remainingTimeOfRound .  "; ");
+                print_r(' НУЖЕН=' . $needStartNewRound . "");
+
+                if ($needStartNewRound == 1) {
+
+                    print_r(' ВСЕ ИГРОКИ СДЕЛАЛИ ХОД!!! ');
+                    print_r(' НУЖЕН=' . $needStartNewRound);
+                    break;
+                }
+            }
+            // else {
+
+            //     print_r(' ВРЕМЯ РАУНДА ВЫШЛО!!! ');
+            //     break;
+            // }
+           
+           
             sleep(1);
         }
 
@@ -59,20 +81,24 @@ class GameProcessJob implements ShouldQueue
     }
 
     
-    public function canStartNewRound()
+    public function canStartNewRound(Game $game, $remainingTimeOfRound)
     {   
-        $cookie = Cookie::get('needStartNewRound'); // Получение $cookie.
         
-        // Cookie::has('needStartNewRound'); // Проверяем есть ли $cookie c еаким ключём.
+        
+        // Получаем переменную флаг $game->needStartNewRound == true.
+        if ($game->needStartNewRound == 'YES' ) {
 
-        if (Cookie::has('needStartNewRound')) {
+            print_r('Ходы сделаны!');
+            $this->reasonEndRound = GameProcessJob::ALL_PLAYERS_MADE_MOVE;
 
             return true;
         }
 
-        // if ($this->game->getRemainingTimeOfRound() == 0) {
 
-            // Создать константу обозначающую это условие.
+        // if ($remainingTimeOfRound == 0) {
+
+        //     print_r('Время вышло!');
+        //     $this->reasonEndRound = GameProcessJob::ROUND_TIME_IS_UP;
 
         //     return true;
         // }
@@ -83,7 +109,7 @@ class GameProcessJob implements ShouldQueue
     {
         // 1. Сделать переменную $this->game->needStartNewRound = false;
         //////
-        // $game->needStartNewRound = false;
+        $game->needStartNewRound = 'NO';
         $cookie = Cookie::forget('needStartNewRound'); // удаление $cookie.
         //////
 

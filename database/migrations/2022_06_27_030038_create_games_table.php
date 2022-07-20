@@ -53,6 +53,8 @@ return new class extends Migration
                   ->onDelete('cascade')
                   ->onUpdate('cascade');
 
+            $table->boolean('need_start_new_round')->default(false)->comment('is boolean value: 0 - NO, 1 - YES');
+
             $table->timestamps();
         });
     }

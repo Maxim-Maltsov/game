@@ -38,50 +38,14 @@ Route::get('/welcome', function () {
 
     // exit();
 
+    $currentTime = Carbon::now()->secondsSinceMidnight();
 
-    
+    $game = Game::where('id', 18)->first();
 
-    //////
-    Cookie::forever('Round','fgfhgfhg');
-    cookie('test', 'тестовое значение' , 500 );
-
-    $test = Cookie::get('test');
-
-    $tt = Cookie::has('Round');
-
-    $cookie = Cookie::get('Round');
-
-    Cookie::forget('Round');
-
-    dd($test, $tt, $cookie);
-    /////
-
-    // $game = Game::where('id', 56)->first();
-
-    // $time = $game->getRemainingTimeOfRound();
-    // $need = $game->needStartNewRound;
-    
-    
-    // $lastRound = $game->getLastRound();
-
-    // $activeRound = $game->getActiveRound();
-    // $remainingTime = $game->getRemainingTimeOfRound();
-
-    // $gameResource = GameResource::make($game);
-    
-
-    // $firstPlayer = $game->firstPlayer;
-
-    // $play = Game::showGameplayBlock();
-    // $offer = Game::showOfferBlock();
-    // $waiting = Game::showWaitingBlock();
-
-    // $user = User::where('id', Auth::id())->first();
-    // $can_play = $user->canPlay();
-
-    // $token = session('API-Token');
-    
-    // dd($need,  $game, $lastRound,  $activeRound, $gameResource, $play, $offer, $waiting, $token, $can_play,  $firstPlayer);
+    $roundEndTime = $game->getRoundEndTime();
+    $remainingTimeOfRound = $game->getRemainingTimeOfRound();
+   
+    dd($roundEndTime,  $currentTime,);
 
     return view('welcome');
 });

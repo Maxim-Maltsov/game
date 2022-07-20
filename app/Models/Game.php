@@ -39,8 +39,6 @@ class Game extends Model
 
     const NO_WINNER = 0;
 
-    public $needStartNewRound = false;
-
     protected $fillable = [ 'player_2'];
 
 
@@ -164,9 +162,26 @@ class Game extends Model
         $roundStartTime = $activeRound->created_at;
         $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
 
-        $remainingTime = $currentTime->diffInSeconds($roundEndTime, true);
+        $remainingTime = $currentTime->diffInSeconds($roundEndTime, false);
 
         return $remainingTime;
+    }
+
+
+    public function getRoundEndTime() :int 
+    {
+        $activeRound = $this->getActiveRound();
+
+        if ($activeRound == null) {
+
+            return 0;
+        }
+
+        $roundStartTime = $activeRound->created_at;
+        $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
+        $roundEndTimeInSeconds = $roundEndTime->secondsSinceMidnight();
+
+        return $roundEndTimeInSeconds;
     }
 
 
@@ -210,15 +225,14 @@ class Game extends Model
             
             $activeRound = $this->getActiveRound();
 
+            $game = $activeRound->game;
+            $game->need_start_new_round = Game::YES;
+            $game->save();
+
             $activeRound->winned_player = $winnedPlayer;
             $activeRound->draw = $draw;
             $activeRound->status = Round::FINISHED;
             $activeRound->save();
-
-            //////
-            $this->needStartNewRound = true ;
-            $cookie = Cookie::forever('needStartNewRound', true); // Создаём $cookie.
-            /////
 
             GameRoundFinishedEvent::dispatch(GameResource::make($this));
         }
