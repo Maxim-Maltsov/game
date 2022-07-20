@@ -38,14 +38,14 @@ Route::get('/welcome', function () {
 
     // exit();
 
-    $currentTime = Carbon::now()->secondsSinceMidnight();
+    $game = Game::where('id', 22)->first();
 
-    $game = Game::where('id', 18)->first();
+    $firstPlayer = $game->firstPlayer;
+    $secondPlayer = $game->secondPlayer;
 
-    $roundEndTime = $game->getRoundEndTime();
-    $remainingTimeOfRound = $game->getRemainingTimeOfRound();
+    $players = [$firstPlayer, $secondPlayer];
    
-    dd($roundEndTime,  $currentTime,);
+    dd($firstPlayer, $secondPlayer, $players);
 
     return view('welcome');
 });

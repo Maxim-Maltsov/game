@@ -3,8 +3,10 @@
 namespace App\Jobs;
 
 use App\Events\GameNewRoundStartEvent;
+use App\Exceptions\MoveAlreadyMadeException;
 use App\Http\Resources\GameResource;
 use App\Models\Game;
+use App\Models\Move;
 use App\Models\Round;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -59,18 +61,27 @@ class GameProcessJob implements ShouldQueue
                 print_r( " ДО:" . $remainingTimeOfRound .  "; ");
                 print_r(' НУЖЕН=' . $needStartNewRound . "");
 
-                if ($needStartNewRound == 1) {
+                if ($needStartNewRound == Game::YES) {
 
                     print_r(' ВСЕ ИГРОКИ СДЕЛАЛИ ХОД!!! ');
                     print_r(' НУЖЕН=' . $needStartNewRound);
+
+                    // Добавить новый раунд.
+
                     break;
                 }
             }
-            // else {
+            
+            if ( $currentTime > $roundEndTime) {
 
-            //     print_r(' ВРЕМЯ РАУНДА ВЫШЛО!!! ');
-            //     break;
-            // }
+                // 1. Сделать ходы за игроков.
+                // 2. Добавить новый раунд.
+                print_r(' ВРЕМЯ РАУНДА ВЫШЛО!!! ');
+
+                $this->makeMoveIsNeeded($this->game);
+
+                break;
+            }
            
            
             sleep(1);
@@ -86,13 +97,7 @@ class GameProcessJob implements ShouldQueue
         
         
         // Получаем переменную флаг $game->needStartNewRound == true.
-        if ($game->needStartNewRound == 'YES' ) {
-
-            print_r('Ходы сделаны!');
-            $this->reasonEndRound = GameProcessJob::ALL_PLAYERS_MADE_MOVE;
-
-            return true;
-        }
+       
 
 
         // if ($remainingTimeOfRound == 0) {
@@ -107,19 +112,14 @@ class GameProcessJob implements ShouldQueue
 
     public function StartNewRound(Game $game)
     {
-        // 1. Сделать переменную $this->game->needStartNewRound = false;
-        //////
-        $game->needStartNewRound = 'NO';
-        $cookie = Cookie::forget('needStartNewRound'); // удаление $cookie.
-        //////
-
-        // 2. Создать новый раунд.
+        
+        // 1. Создать новый раунд.
         $round = new Round();
         $round->game_id = $game->id;
         $round->number = $game->getLastFinishedRound()->number + 1; // 
         $round->save();
 
-         // 3. Запустить событые начала нового раунда. Передать игру.
+         // 2. Запустить событые начала нового раунда. Передать игру.
         //  GameNewRoundStartEvent::dispatch(GameResource::make($this->game));
          // 4. Вернуть ресурс нового созданного раунда.
         
@@ -128,49 +128,31 @@ class GameProcessJob implements ShouldQueue
 
     public function makeMoveIsNeeded(Game $game)
     {
-
-
-        // Сделать ходы игроков. Использовать
-        // $plyers = // Получить всех игроков участвующих в игре или их id.
-
-        $firstPlayer = $game->firstPlayer();
-        $secondPlayer = $game->secondPlayer();
+        $firstPlayer = $game->firstPlayer;
+        $secondPlayer = $game->secondPlayer;
 
         $players = [$firstPlayer, $secondPlayer];
 
-        /* 
-         Перебрать игроков циклом, делая ход за каждого игрока фигурой со значение NONE.
-         Записываем ход в базу.
-
-         Также сделать перед этим проверку на то, что игрок уже сделал ход.
-        */
         
         foreach ($players as $player) {
 
-            // 1. Cделать перед этим проверку на то, что игрок уже сделал ход.
+            $move = Move::where('game_id', $game->id)->where('player_id', $player->id )->first();
 
-            // 2. Cделать ход фигурой со значение NONE.
+            if ($move instanceof Move) {
+
+              return; 
+            }
+
+            $activeRound = $game->getActiveRound();
+
+            $move = new Move();
+            $move->game_id = $game->id;
+            $move->round_number = $activeRound->number;
+            $move->player_id = $player->id;
+            $move->figure = Game::FIGURE_NONE;
+            $move->save();
         }
 
-
-        // $move = Move::where('game_id', $game->id)->where('player_id', $player->id )->first();
-
-        // if ($move instanceof Move) {
-
-        //   throw new MoveAlreadyMadeException('You have already made a move in this round.');
-        // }
-
-        // $move = new Move($request->validated()); // $request->validated() - saving in table moves 'game_id', 'round_number' and 'figure'.
-        // $move->player_id = $player->id;
-        // $move->save();
-
-        // $game = Game::where('id', $request->game_id)->first();
-        
-        // FirstPlayerMadeMoveEvent::dispatch(GameResource::make($game));
-        // SecondPlayerMadeMoveEvent::dispatch(GameResource::make($game));
-
-        // $game->finishRoundIfNeeded($request);
-
-        // return MoveResource::make($move);
+        // Подсчитать победителя и завершить раунд. Переиспользовать метод finishRoundIfNeeded().
     }
 }
