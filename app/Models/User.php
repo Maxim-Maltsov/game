@@ -280,7 +280,10 @@ class User extends Authenticatable
     {   
         $player = Auth::user();
         
-        $move = Move::where('game_id', $request->game_id)->where('player_id', $player->id )->first();
+        $move = Move::where('game_id', $request->game_id)
+                    ->where('player_id', $player->id )
+                    ->where('round_number', $request->round_number)
+                    ->first();
 
         if ($move instanceof Move) {
 

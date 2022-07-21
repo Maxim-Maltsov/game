@@ -39,6 +39,11 @@ class Game extends Model
 
     const NO_WINNER = 0;
 
+
+    const ROUND_TIME_IS_UP = 0;
+    const ALL_PLAYERS_MADE_MOVE = 1;
+
+
     protected $fillable = [ 'player_2'];
 
 
@@ -213,8 +218,8 @@ class Game extends Model
 
     public function finishRoundIfNeeded(MoveRequest $request)
     {   
-        $moves = $this->getMovesOfActiveRound($request->validated(['round_number']));
-
+        $moves = $this->getMovesOfActiveRound($request['round_number']);
+         
         if ($moves->count() == 2) {
 
             $roundMoves = $moves->all();

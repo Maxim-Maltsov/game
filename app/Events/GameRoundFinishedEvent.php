@@ -34,12 +34,12 @@ class GameRoundFinishedEvent implements ShouldBroadcastNow
 
     public function broadcastWith()
     {   
+        $lastFinishedRound = $this->game->getLastFinishedRound();
         
-$lastFinishedRound = $this->game->getLastFinishedRound();
         return [
             
             'game' => $this->game,
-            'message' => "All the players have made a move. Round {$lastFinishedRound->number}: FINISHED.",
+            'message' => "All the players have made a move. Round $lastFinishedRound->number: FINISHED.",
         ];
     }
 
