@@ -2,6 +2,7 @@
 
 use App\Events\AmountUsersOnlineChangedEvent;
 use App\Http\Controllers\GameController;
+use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
@@ -10,11 +11,13 @@ use App\Models\Move;
 use App\Models\Round;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Cookie as HttpFoundationCookie;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -38,14 +41,20 @@ Route::get('/welcome', function () {
 
     // exit();
 
-    $game = Game::where('id', 22)->first();
 
-    $firstPlayer = $game->firstPlayer;
-    $secondPlayer = $game->secondPlayer;
+    $move = Move::where('game_id', $request->game_id)->where('player_id', $player->id )->first();
 
-    $players = [$firstPlayer, $secondPlayer];
+
+    dd();
+
+    // $game = Game::where('id', 22)->first();
+
+    // $firstPlayer = $game->firstPlayer;
+    // $secondPlayer = $game->secondPlayer;
+
+    // $players = [$firstPlayer, $secondPlayer];
    
-    dd($firstPlayer, $secondPlayer, $players);
+    // dd($firstPlayer, $secondPlayer, $players);
 
     return view('welcome');
 });
