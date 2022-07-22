@@ -41,13 +41,12 @@ Route::get('/welcome', function () {
 
     // exit();
 
+    $game = Game::where('id', 84)->first();
 
-    $move = Move::where('game_id', $request->game_id)->where('player_id', $player->id )->first();
+    $lastRound = $game->rounds()->where('status', Round::FINISHED)->latest()->first();
 
 
-    dd();
-
-    // $game = Game::where('id', 22)->first();
+    dd($lastRound);
 
     // $firstPlayer = $game->firstPlayer;
     // $secondPlayer = $game->secondPlayer;

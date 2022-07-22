@@ -210,7 +210,7 @@ class Game extends Model
 
     public function getLastFinishedRound() :?Round
     {
-        $lastRound = $this->rounds()->where('status', Round::FINISHED)->first(); // $lastRound получен через связь с game по условию.
+        $lastRound = $this->rounds()->where('status', Round::FINISHED)->latest()->first(); // $lastRound получен через связь с game по условию.
 
         return $lastRound;
     }
@@ -223,7 +223,7 @@ class Game extends Model
         if ($moves->count() == 2) {
 
             $roundMoves = $moves->all();
-            $winner_id = $this->defineWinner($roundMoves[0], $roundMoves[1]);
+            $winner_id = $this->defineWinnerRound($roundMoves[0], $roundMoves[1]);
 
             $winnedPlayer = ($winner_id != Game::NO_WINNER)? $winner_id : null;
             $draw = ($winner_id == Game::NO_WINNER)? Game::YES : Game::NO;
@@ -244,7 +244,7 @@ class Game extends Model
     }
 
 
-    public function defineWinner(Move $move_1, Move $move_2): int
+    public function defineWinnerRound(Move $move_1, Move $move_2): int
     {
         $figure_1 = $move_1->figure;
         $figure_2 = $move_2->figure;
@@ -349,6 +349,13 @@ class Game extends Model
                     return $move_2->player_id;
             }
         }
+    }
+
+
+    public function defineWinnerGame()
+    {
+
+        //
     }
 
 

@@ -459,8 +459,6 @@
                     this.game = response.data.data;
                     this.timer.totalSeconds = response.data.data.remainingTimeOfRound;
 
-                    console.log(this.timer);
-
                     this.exception = false;
                     this.offer = false;
                     this.play = true;
@@ -541,7 +539,8 @@
 
             makeMove(figure) {
 
-                alert(this.round);
+                console.log(`Сделан ход в раунде ${this.round}`);
+
                 let config = {
 
                     headers: {
@@ -706,17 +705,18 @@
                     this.play = false;
                     this.leave = false;
                     this.exception = false;
+
                     this.game = {};
                 })
                 .listen('FirstPlayerMadeMoveEvent', (e) => {
                     
                     // alert('Первый игрок сделал ход.');
                     this.message = e.message;
+                    this.game = e.game;
+                    // console.log(e.game);
                     this.info = true;
                     this.exception = false;
 
-                    this.game = e.game;
-                    // console.log(e.game);
                 })
                  .listen('SecondPlayerMadeMoveEvent', (e) => {
                     
@@ -731,26 +731,33 @@
                  .listen('GameRoundFinishedEvent', (e) => {
 
                     // alert('Раунд завершён!')
-                    this.message = e.message;
-                    this.info = true;
-                    this.exception = false;
+                    this.stopTimer();
 
-                    this.game = e.game;
-                   // console.log(e.game);
-                 })
-                  .listen('GameNewRoundStartEvent', (e) => {
-
-                    // alert('Новый Раунд!')
                     this.message = e.message;
                     this.info = true;
                     this.exception = false;
 
                     this.game = e.game;
                     this.round = e.game.lastFinishedRound.number + 1;
+
+                    console.log(e.game);
+                    console.log(`Раунд ${e.game.lastFinishedRound.number} завершён`);
                     
-                    console.log(e.game.lastFinishedRound.number);
-                    console.log(this.round);
-                   // console.log(e.game);
+                 })
+                  .listen('GameNewRoundStartEvent', (e) => {
+
+                    // alert('Новый Раунд!')
+                    this.timer.totalSeconds = e.game.remainingTimeOfRound;
+                    this.startTimer();
+
+                    this.message = e.message;
+                    this.info = true;
+                    this.exception = false;
+
+                    this.game = e.game;
+
+                    console.log(e.game);
+                    console.log(`Раунд ${this.round} начат.`);
                  });
                 
         },

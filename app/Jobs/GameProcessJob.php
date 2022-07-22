@@ -46,20 +46,23 @@ class GameProcessJob implements ShouldQueue
     public function handle()
     {
         $roundEndTime = $this->game->getRoundEndTime();
-        
+        print_r(" 1. 1-е Получение времени окончания раунда getRoundEndTime() $roundEndTime ");
         while (true) {
             
             $currentTime = Carbon::now()->secondsSinceMidnight();
-            
-            if ( $currentTime <= $roundEndTime) {
+        
+            if ( $currentTime <=  $roundEndTime) {
 
-                if ($this->canStartNewRound($currentTime, $roundEndTime)) {
+                if ($this->canStartNewRound($currentTime,  $roundEndTime)) {
 
                     if ($this->endRoundReason == Game::ROUND_TIME_IS_UP) {
 
-                        try {
+                        print_r(" Условие запуска метода выполнения хода за игрока сработало. \n");
 
+                        try {
+                            
                             $this->makeMoveIsNeeded($this->game);
+                            print_r(" 2. Завершение ходов makeMoveIsNeeded() выполнено. \n");
                         }
                         catch (MoveAlreadyMadeException $e) {
 
@@ -67,8 +70,9 @@ class GameProcessJob implements ShouldQueue
                         } 
                     }
                     
-                    $this->StartNewRound($this->game);
-
+                    print_r(" 3. Запуск нового раунда ");
+                    $this->StartNewRound();
+                
                     break;
                 }
             }
@@ -76,8 +80,8 @@ class GameProcessJob implements ShouldQueue
             sleep(1);
         }
 
-
-       
+        // GameProcessJob::dispatch($this->game);
+        // print_r(" 5. Новый запуск GameProcessJob ");
     }
 
     
@@ -90,41 +94,48 @@ class GameProcessJob implements ShouldQueue
         if ($needStartNewRound == Game::YES) {
             
             $this->endRoundReason = Game::ALL_PLAYERS_MADE_MOVE;
+           
             return true;
         }
-
-        // Разрешение на начало нового раунда, если истекло время предыдущего раунда.
+           
+        // Разрешение на то, чтобы сделать ходы за игроков, если истекло время предыдущего раунда и ход какого-то игрока не сделан.
         if ($currentTime >= $endTime) {
+
+            print_r( "Условие при котором выполняются ходы за игрока $currentTime >= $endTime \n");
             
             $this->endRoundReason = Game::ROUND_TIME_IS_UP;
+            print( "Сейчас причина для начала хода за игрока  endRoundReason значение должно быть 0,  оно = $this->endRoundReason \n");
             return true;
         }
     }
 
 
-    public function StartNewRound(Game $game)
-    {       
-        // 1. Создать новый раунд.
+    public function StartNewRound()
+    {   
         $round = new Round();
-        $round->game_id = $game->id;
-        $round->number = $game->getLastFinishedRound()->number + 1; // 
+        $round->game_id = $this->game->id;
+        $round->number = $this->game->getLastFinishedRound()->number + 1; // 
         $round->save();
 
-         // 2. Запустить событые начала нового раунда. Передать игру.
-         GameNewRoundStartEvent::dispatch(GameResource::make($this->game));
-         // 4. Вернуть ресурс нового созданного раунда.
+        $game = Game::where('id', $this->game->id)->first(); // Игра с обновлённым состоянием.
+
+        $game->need_start_new_round = Game::NO;
+        $game->save(); 
+
+        GameProcessJob::dispatch($game);
+        GameNewRoundStartEvent::dispatch(GameResource::make($game));
     }
 
 
     public function makeMoveIsNeeded(Game $game)
-    {
+    {   echo "метод makeMoveIsNeeded запущен \n";
         $firstPlayer = $game->firstPlayer;
         $secondPlayer = $game->secondPlayer;
 
         $players = [$firstPlayer, $secondPlayer];
-
+        var_dump(  $players);
         $activeRound = $game->getActiveRound();
-
+        
         foreach ($players as $player) {
 
             $move = Move::where('game_id', $game->id)->where('player_id', $player->id )->first();
