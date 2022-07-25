@@ -262,8 +262,9 @@ class User extends Authenticatable
 
         $game->status = Game::FINISHED;
         $game->end = Carbon::now();
-        $game->leaving_player = $leaving_player;
         $game->winned_player = $winned_player;
+        $game->leaving_player = $leaving_player;
+        $game->need_start_new_round = Game::NO;
         $game->save();
 
         FirstPlayerLeavedGameEvent::dispatch(GameResource::make($game));

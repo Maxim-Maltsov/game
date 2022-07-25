@@ -15,6 +15,10 @@ class Round extends Model
      const NO_FINISHED = 0;
      const FINISHED = 1;
 
+
+     protected $fillable = [ 'game_id', 'round_number'];
+
+
     // Relationship.
 
     public function game() // Получаем игру к которой принадлежит раунд.

@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Events\GameEndEvent;
+use App\Events\GameFinishEvent;
 use App\Events\GameNewRoundStartEvent;
 use App\Exceptions\MoveAlreadyMadeException;
 use App\Http\Requests\MoveRequest;
@@ -46,23 +48,31 @@ class GameProcessJob implements ShouldQueue
     public function handle()
     {
         $roundEndTime = $this->game->getRoundEndTime();
-        print_r(" 1. 1-е Получение времени окончания раунда getRoundEndTime() $roundEndTime ");
+        echo " 1. Получение времени окончания раунда getRoundEndTime() $roundEndTime ";
+
         while (true) {
             
             $currentTime = Carbon::now()->secondsSinceMidnight();
         
             if ( $currentTime <=  $roundEndTime) {
 
+                if ($this->canFinishGame()) {
+                    
+                    echo " 4. Можно завершить игру \n";
+                    $this->finishGame();
+                    echo " 5. Игра завершена \n";
+                    break;
+                }
+
                 if ($this->canStartNewRound($currentTime,  $roundEndTime)) {
 
                     if ($this->endRoundReason == Game::ROUND_TIME_IS_UP) {
 
-                        print_r(" Условие запуска метода выполнения хода за игрока сработало. \n");
-
+                        echo " Условие запуска метода выполнения хода за игрока сработало. \n";
                         try {
                             
                             $this->makeMoveIsNeeded($this->game);
-                            print_r(" 2. Завершение ходов makeMoveIsNeeded() выполнено. \n");
+                            echo " 2. Завершение ходов makeMoveIsNeeded() выполнено. \n";
                         }
                         catch (MoveAlreadyMadeException $e) {
 
@@ -70,18 +80,15 @@ class GameProcessJob implements ShouldQueue
                         } 
                     }
                     
-                    print_r(" 3. Запуск нового раунда ");
                     $this->StartNewRound();
-                
+                    echo " 3. Запуск нового раунда ";
+
                     break;
                 }
             }
 
             sleep(1);
         }
-
-        // GameProcessJob::dispatch($this->game);
-        // print_r(" 5. Новый запуск GameProcessJob ");
     }
 
     
@@ -133,7 +140,7 @@ class GameProcessJob implements ShouldQueue
         $secondPlayer = $game->secondPlayer;
 
         $players = [$firstPlayer, $secondPlayer];
-        var_dump(  $players);
+        // var_dump(  $players);
         $activeRound = $game->getActiveRound();
         
         foreach ($players as $player) {
@@ -157,7 +164,55 @@ class GameProcessJob implements ShouldQueue
         
             $game->finishRoundIfNeeded($request);
         }
+    }
 
-       
+
+    public function canFinishGame()
+    {   
+        $game = Game::where('id', $this->game->id)->first();
+
+        $victoriesPlayers = $game->getAllVictoriesPlayersInRounds();
+
+        foreach($victoriesPlayers as $victoriesPlayer )
+        {
+            $victories = $victoriesPlayer->victories;
+           
+            if ($victories == Game::VICTORY_CONDITION){
+
+                return  true;
+            }
+        }
+    }
+
+
+    public function finishGame()
+    {
+        $game = Game::where('id', $this->game->id)->first();
+
+        $winnedPlayer = $game->defineWinnerGame();
+
+        if ( $winnedPlayer == null) {
+
+            echo "Не удалось определить победителя\n";
+
+            Log::error('Failed to define the winner');
+            return;
+        }
+
+        $game->status = Game::FINISHED;
+        $game->end = Carbon::now();
+        $game->winned_player = $winnedPlayer;
+        $game->need_start_new_round = Game::NO;
+        $game->save();
+
+        $firstPlayer = $game->firstPlayer;
+        $firstPlayer->game_status = User::FREE;
+        $firstPlayer->save();
+
+        $secondPlayer = $game->secondPlayer;
+        $secondPlayer->game_status = User::FREE;
+        $secondPlayer->save();
+
+        GameFinishEvent::dispatch(GameResource::make($game));
     }
 }

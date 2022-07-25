@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 
 class Game extends Model
 {
@@ -39,9 +40,11 @@ class Game extends Model
 
     const NO_WINNER = 0;
 
-
     const ROUND_TIME_IS_UP = 0;
     const ALL_PLAYERS_MADE_MOVE = 1;
+
+    // The condition for winning the game.
+    const VICTORY_CONDITION = 2;
 
 
     protected $fillable = [ 'player_2'];
@@ -138,11 +141,11 @@ class Game extends Model
                     })->first();
         
 
-        if ( $game == null) {
+        if ($game == null) {
 
             throw new GameNotFoundException('The Game Was Not Found! Start the game!');
         }
-    
+
         return response()->json([ 'data' => [
 
             'game' => GameResource::make($game),
@@ -209,7 +212,23 @@ class Game extends Model
 
 
     public function getLastFinishedRound() :?Round
-    {
+    {   
+        $rounds = $this->rounds;
+
+        if ($rounds->isEmpty()) {
+
+            $round = new Round();
+            $round->game_id = $this->id;
+            $round->number = 0;
+            $round->status = Round::FINISHED;
+            $round->winned_player = null;
+            $round->draw = Game::NO;
+            $round->created_at = Carbon::now();
+            $round->update_at = Carbon::now();
+
+            return $round;
+        }
+
         $lastRound = $this->rounds()->where('status', Round::FINISHED)->latest()->first(); // $lastRound получен через связь с game по условию.
 
         return $lastRound;
@@ -352,11 +371,32 @@ class Game extends Model
     }
 
 
-    public function defineWinnerGame()
+    public function getAllVictoriesPlayersInRounds(): Collection 
     {
+        $victoriesPlayers = $this->rounds()
+                          ->select(DB::raw('count(*) as victories, winned_player'))
+                          ->groupBy('winned_player')
+                          ->having('winned_player', '!=', 'null')
+                          ->orderBy('victories', 'desc')
+                          ->get();
 
-        //
+        return $victoriesPlayers;
     }
 
+
+    public function defineWinnerGame(): int
+    {
+        $victoriesPlayers = $this->getAllVictoriesPlayersInRounds();
+
+        foreach($victoriesPlayers as $victoriesPlayer )
+        {
+            $victories = $victoriesPlayer->victories;
+           
+            if ($victories == Game::VICTORY_CONDITION){
+
+                return  $victoriesPlayer->winned_player;
+            }
+        }
+    }
 
 }
