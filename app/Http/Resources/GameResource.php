@@ -29,6 +29,7 @@ class GameResource extends JsonResource
             'remainingTimeOfRound' => $this->getRemainingTimeOfRound(),
             'rounds' => RoundResource::collection($this->whenLoaded('rounds')), // $this->whenLoaded('rounds') - получаем все раунды игры через связь, если они есть.
             'lastFinishedRound' => $this->getLastFinishedRound(),
+            'history' => HistoryResource::collection($this->history) ,  // Получаем историю игры, через связь.
             'created_at' => $this->created_at,
         ];
     }

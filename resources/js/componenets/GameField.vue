@@ -231,6 +231,8 @@
 
                 game: {},
 
+                history: [],
+
                 timer: {
 
                     display: '00:00',
@@ -742,10 +744,11 @@
 
                     this.game = e.game;
                     this.round = e.game.lastFinishedRound.number + 1;
+                    this.history = e.game.history;
 
                     // console.log(e.game);
                     console.log(`Раунд ${e.game.lastFinishedRound.number} завершён`);
-                
+                    console.log(e.game.history);
                 })
                 .listen('GameNewRoundStartEvent', (e) => {
 

@@ -41,18 +41,34 @@ Route::get('/welcome', function () {
 
     // exit();
 
-    $game = Game::where('id', 143)->first();
+    $game = Game::where('id', 150)->first();
 
     // $lastRound = $game->getLastFinishedRound();
-
-    $moves = $game->getMovesLastFinishedRound();
-
-    $result = $game->getRoundResults();
-
     
-   
+    // $rounds = $game->rounds;
+    // $moves = $game->moves;
+    // $movesLastRound = $game->getMovesLastFinishedRound();
 
-    dd( $moves, $result );
+    // $result = $game->getRoundResults();
+
+    // dd( $rounds, $moves, $movesLastRound, $result );
+
+
+    $activeRound = $game->getActiveRound();
+    $request = new MoveRequest(['round_number' => $activeRound->number]);
+    $moves = $game->getMovesOfActiveRound($request['round_number']);
+
+    $game->player_1;
+
+    $moves[0]->player_id;
+
+    $roundMoves = $moves->all();
+    $roundMoves[0];
+
+    $move_player_1 = ($game->player_1 == $moves[0]->player_id)? $moves[0]->figure : $moves[1]->figure;
+    $move_player_2 = ($game->player_2 == $moves[0]->player_id)? $moves[0]->figure : $moves[1]->figure;
+
+    dd($roundMoves[0], $moves, $game->player_1, $moves[0]->player_id, "Ход первого игрока $move_player_1", "Ход второго игрока $move_player_2");
 
     // $firstPlayer = $game->firstPlayer;
     // $secondPlayer = $game->secondPlayer;

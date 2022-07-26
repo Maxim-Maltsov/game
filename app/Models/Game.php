@@ -82,6 +82,11 @@ class Game extends Model
         return $this->hasMany(Move::class);
     }
 
+    public function history() // Получаем коллекцию с историей каждого раунда относящегося к данной игры.
+    {
+        return $this->hasMany(History::class);
+    }
+
 
     // Methods.
 
@@ -157,7 +162,7 @@ class Game extends Model
     }
 
 
-    public function getRemainingTimeOfRound():int               
+    public function getRemainingTimeOfRound(): int               
     {
         $activeRound = $this->getActiveRound();
 
@@ -176,7 +181,7 @@ class Game extends Model
     }
 
 
-    public function getRoundEndTime() :int 
+    public function getRoundEndTime(): int 
     {
         $activeRound = $this->getActiveRound();
 
@@ -192,22 +197,22 @@ class Game extends Model
         return $roundEndTimeInSeconds;
     }
 
+   
+    public function getActiveRound() :?Round
+    {
+        $activeRound = $this->rounds()->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
 
-    public function getMovesOfActiveRound(int $round)
+        return $activeRound;
+    }
+
+
+    public function getMovesOfActiveRound(int $round) // Определить возвращаемый тип данных.
     {
         $moves = Move::where('game_id', $this->id)
                      ->where('round_number', $round)
                      ->get();
 
         return $moves;
-    }
-
-
-    public function getActiveRound() :?Round
-    {
-        $activeRound = $this->rounds()->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
-
-        return $activeRound;
     }
 
 
@@ -235,7 +240,7 @@ class Game extends Model
         return $lastRound;
     }
 
-
+    // Возможно не нужен.!!!
     public function getMovesLastFinishedRound()
     {
         $lastRound = $this->getLastFinishedRound();
@@ -247,7 +252,7 @@ class Game extends Model
         return $movesLastRound;
     }
 
-
+    
     public function finishRoundIfNeeded(MoveRequest $request)
     {   
         $moves = $this->getMovesOfActiveRound($request['round_number']);
@@ -270,6 +275,8 @@ class Game extends Model
             $activeRound->draw = $draw;
             $activeRound->status = Round::FINISHED;
             $activeRound->save();
+
+            $this->saveHistoryGame($moves, $activeRound, $winnedPlayer, $draw);
 
             GameRoundFinishedEvent::dispatch(GameResource::make($this));
         }
@@ -413,7 +420,7 @@ class Game extends Model
     }
 
 
-   
+   // Возможно не нужен.!!!
     public function getRoundResults()
     {
         // $lastRound = $this->getLastFinishedRound();
@@ -421,6 +428,23 @@ class Game extends Model
         // $moves = $this->getMovesLastFinishedRound();
 
         // return $moves;
+    }
+
+
+    public function saveHistoryGame( $moves, Round $round, int|null $winned, int $draw): void
+    {
+        $moveFirstPlayer = ($this->player_1 == $moves[0]->player_id)? $moves[0]->figure : $moves[1]->figure;
+        $moveSecondPlayer = ($this->player_2 == $moves[0]->player_id)? $moves[0]->figure : $moves[1]->figure;
+        $roundNumber = $round->number;
+
+        $history = new History();
+        $history->game_id = $this->id;
+        $history->round_number = $roundNumber;
+        $history->move_player_1 = $moveFirstPlayer;
+        $history->move_player_2 = $moveSecondPlayer;
+        $history->winned_player = $winned;
+        $history->draw = $draw;
+        $history->save();
     }
 
 }
