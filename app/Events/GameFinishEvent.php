@@ -35,10 +35,12 @@ class GameFinishEvent implements ShouldBroadcastNow
 
     public function broadcastWith()
     {   
+        $winnedPlayer = $this->game->winnedPlayer;
+
         return [
             
             'game' => $this->game,
-            'message' => "Game Finished.",
+            'message' => "The game is over. $winnedPlayer->name wins the game.",
         ];
     }
 

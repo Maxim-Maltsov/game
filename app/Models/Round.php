@@ -28,7 +28,7 @@ class Round extends Model
 
     public function moves()  // Получаем все ходы данного раунда.
     {
-        return $this->hasMany(Moves::class);
+        return $this->hasMany(Move::class, 'round_number', 'number');
     }
 
     public function winnedPlayer() // Получаем все данные победившего игрока в данном раунде из таблицы 'users'.
