@@ -213,18 +213,19 @@ class Game extends Model
 
     public function getLastFinishedRound() :?Round
     {   
-        $rounds = $this->rounds;
+        $rounds = $this->rounds; // $rounds - получение раундов через отношение с game.
 
         if ($rounds->isEmpty()) {
 
             $round = new Round();
+            $round->id = 1;
             $round->game_id = $this->id;
             $round->number = 0;
             $round->status = Round::FINISHED;
             $round->winned_player = null;
             $round->draw = Game::NO;
             $round->created_at = Carbon::now();
-            $round->update_at = Carbon::now();
+            $round->updated_at = Carbon::now();
 
             return $round;
         }
@@ -232,6 +233,18 @@ class Game extends Model
         $lastRound = $this->rounds()->where('status', Round::FINISHED)->latest()->first(); // $lastRound получен через связь с game по условию.
 
         return $lastRound;
+    }
+
+
+    public function getMovesLastFinishedRound()
+    {
+        $lastRound = $this->getLastFinishedRound();
+
+        $movesLastRound = $this->moves()
+                               ->where('round_number', $lastRound->number)
+                               ->get();
+
+        return $movesLastRound;
     }
 
 
@@ -397,6 +410,17 @@ class Game extends Model
                 return  $victoriesPlayer->winned_player;
             }
         }
+    }
+
+
+   
+    public function getRoundResults()
+    {
+        // $lastRound = $this->getLastFinishedRound();
+
+        // $moves = $this->getMovesLastFinishedRound();
+
+        // return $moves;
     }
 
 }
