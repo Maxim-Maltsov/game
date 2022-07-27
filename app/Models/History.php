@@ -17,4 +17,9 @@ class History extends Model
         return $this->belongsTo(Game::class); 
     }
 
+    public function winnedPlayer() // Получаем все данные победившего игрока в данной истории раунда из таблицы 'users'.
+    {
+        return $this->belongsTo(User::class, 'winned_player');
+    }
+
 }

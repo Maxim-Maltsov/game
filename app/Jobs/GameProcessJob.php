@@ -193,7 +193,7 @@ class GameProcessJob implements ShouldQueue
 
         if ( $winnedPlayer == null) {
 
-            echo "Не удалось определить победителя\n";
+            echo "Не удалось определить победителя \n";
 
             Log::error('Failed to define the winner');
             return;

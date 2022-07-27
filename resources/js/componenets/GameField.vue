@@ -32,7 +32,7 @@
                     <div v-for="user of users" :key="user.id" class="card text-center mt-1">
                         <div class="card-body d-flex flex-column  align-items-center">
                         <h6 class="h6 card-title text-secondary">
-                             {{ user.name }} <small v-show="user.can_play" class="text-success">free</small> <small v-show="!user.can_play" class="text-danger">is playing</small>  </h6>
+                             {{ (user.name)? user.name : '' }} <small v-show="user.can_play" class="text-success">free</small> <small v-show="!user.can_play" class="text-danger">is playing</small>  </h6>
                         <button v-on:click="inviteToPlay(user.id)" class="btn btn-outline-success hover-shadow" :class="{ disabled: !user.can_play || (auth_id == user.id) }" type="button" style="width: 80%">Play</button>
                         </div>
                     </div>
@@ -75,7 +75,7 @@
 
                     <div class="offer-card" style="width: 100%">
                         <div class="alert alert-light m-0" role="alert">
-                            <h6 class="h6" ><i class="text-success"> {{  game.player_1.name  }} </i> offers to play the game!</h6>
+                            <h6 class="h6" ><i class="text-success"> {{  (game.player_1.name)? game.player_1.name : ''  }} </i> offers to play the game!</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
                                 <button v-on:click="acceptInvite(game)" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
                                 <button v-on:click="rejectInvite(game)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
@@ -94,7 +94,7 @@
 
                     <div class="offer-card" style="width: 100%">
                         <div class="alert alert-light m-0" role="alert">
-                            <h6 class="h6" > Waiting for a response from <i class="text-success"> {{  game.player_2.name }} </i> ...</h6>
+                            <h6 class="h6" > Waiting for a response from <i class="text-success"> {{  (game.player_2.name)? game.player_2.name : '' }} </i> ...</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
                                 <button v-on:click="cancelInvite(game)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
                             </div>
@@ -109,7 +109,7 @@
         <section v-if="exception" class="d-flex flex-column align-items-center">
             <div class="card-exception shadow" style="width: 100%">
                 <div class="alert alert-warning mb-0 p-y-1" role="alert">
-                    <div class="text-secondary"> {{ message }} </div>
+                    <div class="text-secondary"> {{ (message)? message : 'The message was not received.' }} </div>
                 </div>  
             </div>
         </section>
@@ -118,7 +118,7 @@
         <section v-if="info" class="d-flex flex-column align-items-center">
             <div class="card-info shadow" style="width: 100%">
                 <div class="alert alert-success mb-0 p-y-1" role="alert">
-                    <div class="text-secondary"> {{ message }} </div>
+                    <div class="text-secondary"> {{ (message)? message : 'The message was not received.' }} </div>
                 </div>  
             </div>
         </section>
@@ -152,18 +152,18 @@
                         <!-- timer -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex justify-content-between align-items-center">
-                            <h6 class="h6 card-title text-secondary"><i class="text-success"> Round Time:</i> {{timer.display}} sec. </h6>
+                            <h6 class="h6 card-title text-secondary"><i class="text-success"> Round Time:</i> {{ (timer.display)? timer.display : '00:00' }} sec. </h6>
                             </div>
                         </div>
 
                         <!-- figures -->
                         <div class="card text-center mt-1">
                             <div class="btn-group p-3" role="group" aria-label="Figures" style="width: 100%">
-                                <button v-on:click="makeMove(ROCK)" class="btn btn-outline-success hover-shadow" style="width: 50%">Rock</button>
-                                <button v-on:click="makeMove(SCISSORS)" class="btn btn-outline-success hover-shadow" style="width: 50%">Scissors</button>
-                                <button v-on:click="makeMove(PAPER)" class="btn btn-outline-success hover-shadow" style="width: 50%">Paper</button>
-                                <button v-on:click="makeMove(LIZARD)" class="btn btn-outline-success hover-shadow" style="width: 50%">Lizard</button>
-                                <button v-on:click="makeMove(SPOCK)" class="btn btn-outline-success hover-shadow" style="width: 50%">Spoke</button>
+                                <button :disabled="finished" v-on:click="makeMove(ROCK)" class="btn btn-outline-success hover-shadow" style="width: 50%">Rock</button>
+                                <button :disabled="finished" v-on:click="makeMove(SCISSORS)" class="btn btn-outline-success hover-shadow" style="width: 50%">Scissors</button>
+                                <button :disabled="finished" v-on:click="makeMove(PAPER)" class="btn btn-outline-success hover-shadow" style="width: 50%">Paper</button>
+                                <button :disabled="finished" v-on:click="makeMove(LIZARD)" class="btn btn-outline-success hover-shadow" style="width: 50%">Lizard</button>
+                                <button :disabled="finished" v-on:click="makeMove(SPOCK)" class="btn btn-outline-success hover-shadow" style="width: 50%">Spoke</button>
                             </div>
                         </div>
 
@@ -190,12 +190,14 @@
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex flex-column justify-content-start align-items-start">
                                 <h6 class="h6 card-title text-success pt-3 pb-1"><i>Game History </i></h6>
-                                <div class=" my-0 py-0 pt-2 d-flex flex-column justify-content-start align-items-start">
-                                    <h6 class="h6 card-title text-success">Round : <span class="text-secondary">1</span></h6>
-                                    <h6 class="h6 card-title text-secondary">Player One : <span class="text-success">Rock</span></h6>
-                                    <h6 class="h6 card-title text-secondary">Player Two: <span class="text-success">Paper</span></h6>
-                                    <h6 class="h6 card-title text-secondary">Winner: <span class="text-success">Player One</span></h6>
+
+                                <div v-for="round of history" :key="round.round_number" class="my-0 py-3 d-flex flex-column justify-content-start align-items-start  border-bottom">
+                                    <h6 class="h6 card-title text-success">Round : <span class="text-secondary"> {{ (round.round_number)? round.round_number : '' }} </span></h6>
+                                    <h6 class="h6 card-title text-secondary">Player One : <span class="text-success"> {{ this.getFigureName(round.move_player_1) }} </span></h6>
+                                    <h6 class="h6 card-title text-secondary">Player Two: <span class="text-success"> {{ this.getFigureName(round.move_player_2) }} </span></h6>
+                                    <h6 class="h6 card-title text-secondary">Winner: <span class="text-success"> {{ (round.winned_player.name)? round.winned_player.name : '' }} </span></h6>
                                 </div>
+
                             </div>
                         </div>
                     
@@ -259,6 +261,7 @@
                 exception: false,
                 info: false,
 
+                finished: false,
 
                 NONE: 0,
                 ROCK: 1,
@@ -271,7 +274,23 @@
             }
         },
 
+
         methods: {
+
+
+            getFigureName(figure) {
+
+                switch(figure) {
+
+                    case this.NONE:  return 'None';
+                    case this.ROCK:  return ' Rock';
+                    case this.SCISSORS:  return ' Scissors';
+                    case this.PAPER:  return ' Papper';
+                    case this.LIZARD:  return ' Lizzard';
+                    case this.SPOCK:  return ' Spoke';
+                }
+            },
+
 
             makePagination(data) {
 
@@ -349,6 +368,8 @@
                         else {
 
                             this.game = response.data.data.game;
+                            this.history = response.data.data.game.history;
+                            this.finished = response.data.data.game.finished;
                             this.waiting = response.data.data.waiting;
                             this.offer = response.data.data.offer;
                             this.play = response.data.data.play;
@@ -359,7 +380,8 @@
                             this.startTimer();
                             
                             // console.log(this.timer);
-                             console.log(response.data.data.game.lastFinishedRound);
+                            //  console.log(response.data.data.game.lastFinishedRound);
+                            console.log(`finished: ${this.finished}`);
                         }
                     })
                     .catch( error => {
@@ -400,6 +422,8 @@
 
                         this.game = response.data.data;
                         this.waiting = true;
+                        this.play = false;
+                        this.history = [];
                         // console.log(this.game);
                     }  
                 })
@@ -461,11 +485,13 @@
                 .then( response => {
 
                     this.game = response.data.data;
-                    console.log(this.game);
                     this.timer.totalSeconds = response.data.data.remainingTimeOfRound;
+                    this.history = [];
+                    console.log(this.game);
 
                     this.exception = false;
                     this.offer = false;
+                    this.finished = false;
                     this.play = true;
                     this.leave = true;
 
@@ -628,8 +654,7 @@
 
                 clearInterval(this.timer.intervalId);
                 this.clearTimer();
-            }
-            
+            },
 
         },
                 
@@ -652,6 +677,7 @@
                     this.game = e.game;
                     this.offer = true;
                     this.info = false;
+                    this.play = false;
                     // console.log( e.game);
                 })
                 .listen('FirstPlayerCancelInviteEvent', (e) => {
@@ -688,6 +714,7 @@
 
                     this.exception = false;
                     this.waiting = false;
+                    this.finished = false;
                     // console.log(e.game);
                 })
                 .listen('FirstPlayerLeavedGameEvent', (e) => {
@@ -748,7 +775,7 @@
 
                     // console.log(e.game);
                     console.log(`Раунд ${e.game.lastFinishedRound.number} завершён`);
-                    console.log(e.game.history);
+                    console.log( e.game.history);
                 })
                 .listen('GameNewRoundStartEvent', (e) => {
 
@@ -761,7 +788,7 @@
                     this.exception = false;
 
                     this.game = e.game;
-                    // console.log(e.game);
+                    // console.log(e.game); 
                     console.log(`Раунд ${this.round} начат.`);
                 })
                 .listen('GameFinishEvent', (e) => {
@@ -772,8 +799,9 @@
                     this.message = e.message;
                     this.info = true;
                     this.exception = false;
-                    this.play = false;
                     this.leave = false;
+
+                    this.finished = true
 
                     this.game = e.game;
                     this.round = 1;

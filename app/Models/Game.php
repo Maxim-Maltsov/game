@@ -44,7 +44,7 @@ class Game extends Model
     const ALL_PLAYERS_MADE_MOVE = 1;
 
     // The condition for winning the game.
-    const VICTORY_CONDITION = 2;
+    const VICTORY_CONDITION = 3;
 
 
     protected $fillable = [ 'player_2'];
@@ -121,12 +121,12 @@ class Game extends Model
 
 
     public static function showGameplayBlock(): bool
-    {
-        $game = Game::where('status', [Game::IN_PROCESS])
+    {   
+        $game = Game::whereIn('status', [Game::IN_PROCESS, Game::FINISHED])
                     ->where(function ($query)  {
                         $query->where('player_1', Auth::id());
                         $query->orWhere('player_2', Auth::id());
-                    })->first();
+                    })->latest()->first();
                 
         if ($game instanceof Game) {
 
@@ -137,13 +137,50 @@ class Game extends Model
     }
 
 
-    public static function init(): JsonResponse
-    {   
-        $game = Game::whereIn('status',[Game::WAITING_PLAYER, Game::IN_PROCESS])
+    public static function showButtonLeaveGame()
+    {
+        $game = Game::where('status', Game::IN_PROCESS)
                     ->where(function ($query)  {
                         $query->where('player_1', Auth::id());
                         $query->orWhere('player_2', Auth::id());
-                    })->first();
+                    })->latest()->first();
+
+        if ($game instanceof Game) {
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+
+    public function checkingFinishGame()
+    {
+        $game = Game::where('id', $this->id)->first();
+
+        if ($game->status == Game::FINISHED) {
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+
+
+    public static function init(): JsonResponse
+    {   
+        // Старое условие отбора игры.
+        // $game = Game::whereIn('status',[Game::WAITING_PLAYER, Game::IN_PROCESS])
+        //             ->where(function ($query)  {
+        //                 $query->where('player_1', Auth::id());
+        //                 $query->orWhere('player_2', Auth::id());
+        //             })->first();
+
+        $game = Game::where(function ($query)  {
+                        $query->where('player_1', Auth::id());
+                        $query->orWhere('player_2', Auth::id());
+                    })->latest()->first();
         
 
         if ($game == null) {
@@ -157,7 +194,7 @@ class Game extends Model
             'waiting' => Game::showWaitingBlock(),
             'offer' => Game::showOfferBlock(),
             'play' => Game::showGameplayBlock(),
-            'leave' => Game::showGameplayBlock(),
+            'leave' => Game::showButtonLeaveGame(),
         ]]);
     }
 
@@ -447,4 +484,16 @@ class Game extends Model
         $history->save();
     }
 
+    public function getHistoryGame()
+    {
+        // if ($this->status == Game::FINISHED) {
+
+        //     return [];
+        // }
+
+        $history = $this->history()->get();
+
+        return $history;
+
+    }
 }
