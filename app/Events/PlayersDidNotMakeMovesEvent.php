@@ -12,19 +12,20 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class GameRoundFinishedEvent implements ShouldBroadcastNow
+class PlayersDidNotMakeMovesEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $firstRecipient;
     public $secondRecipient;
     public $game;
-    
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
+
     public function __construct(GameResource $game)
     {   
         $this->firstRecipient = $game->firstPlayer;
@@ -34,15 +35,14 @@ class GameRoundFinishedEvent implements ShouldBroadcastNow
 
     public function broadcastWith()
     {   
-        $lastFinishedRound = $this->game->getLastFinishedRound();
-        
+        $activeRound = $this->game->getActiveRound();
+
         return [
             
             'game' => $this->game,
-            'message' => "All the players have made a move. Round:$lastFinishedRound->number - FINISHED.",
+            'message' => "Round:$activeRound->number was restarted because the players did not make moves.",
         ];
     }
-
 
     /**
      * Get the channels the event should broadcast on.

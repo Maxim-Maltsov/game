@@ -169,20 +169,22 @@
 
                         <!-- round results -->
                         <div class="card text-center mt-1">
-                            <div class="card-body d-flex flex-column justify-content-start align-items-start">
+                            <div class="card-body d-flex flex-column justify-content-start align-items-start" style="height: 11.5rem">
                                 <h6 class="h6 card-title text-success py-3"><i>Round Results</i></h6>
-                                <h6 class="h6 card-title text-secondary">Player One : <span class="text-success">Rock</span></h6>
-                                <h6 class="h6 card-title text-secondary">Player Two: <span class="text-success">Paper</span></h6>
-                                <h6 class="h6 card-title text-secondary">Winner: <span class="text-success">Player One</span></h6>
+                                <h6 v-show="visible" class="h6 card-title text-secondary">Player One : <span class="text-success"> {{ this.getFigureName( (historyLastRound)? historyLastRound.move_player_1 : null ) }} </span></h6>
+                                <h6 v-show="visible" class="h6 card-title text-secondary">Player Two: <span class="text-success"> {{ this.getFigureName( (historyLastRound)? historyLastRound.move_player_2 : null ) }} </span></h6>
+                                <h6 v-show="visible" class="h6 card-title text-secondary">Winner: 
+                                    <span class="text-success"> {{ (historyLastRound.winned_player)? historyLastRound.winned_player.name : this.getDrawDescription( (historyLastRound)? historyLastRound.draw : null ) }} </span>
+                                </h6>
                             </div>
                         </div>
                         
                         <!-- score users -->
                         <div class="card text-center mt-1">
-                            <div class="card-body d-flex flex-column justify-content-start align-items-start">
+                            <div class="card-body d-flex flex-column justify-content-start align-items-start" style="height: 10rem">
                                 <h6 class="h6 card-title text-success py-3"><i>Score</i></h6>
-                                <h6 class="h6 card-title text-secondary">Player One : <span class="text-success">0</span></h6>
-                                <h6 class="h6 card-title text-secondary">Player Two: <span class="text-success">1</span></h6>
+                                <h6 v-for="player of playersVictories" :key="player.id" class="h6 card-title text-secondary"> {{ (game.player_1.id == player.winned_player)? `${game.player_1.name} - Player One: ` : `${game.player_2.name} - Player Two: ` }} <span class="text-success"> {{ player.victories }} </span></h6>
+                               
                             </div>
                         </div>
 
@@ -195,7 +197,9 @@
                                     <h6 class="h6 card-title text-success">Round : <span class="text-secondary"> {{ (round.round_number)? round.round_number : '' }} </span></h6>
                                     <h6 class="h6 card-title text-secondary">Player One : <span class="text-success"> {{ this.getFigureName(round.move_player_1) }} </span></h6>
                                     <h6 class="h6 card-title text-secondary">Player Two: <span class="text-success"> {{ this.getFigureName(round.move_player_2) }} </span></h6>
-                                    <h6 class="h6 card-title text-secondary">Winner: <span class="text-success"> {{ (round.winned_player.name)? round.winned_player.name : '' }} </span></h6>
+                                    <h6 class="h6 card-title text-secondary">Winner: 
+                                        <span class="text-success"> {{ (round.winned_player)? round.winned_player.name : this.getDrawDescription(round.draw) }} </span>
+                                    </h6>
                                 </div>
 
                             </div>
@@ -235,6 +239,10 @@
 
                 history: [],
 
+                historyLastRound: {},
+
+                playersVictories: [],
+
                 timer: {
 
                     display: '00:00',
@@ -256,6 +264,7 @@
                 waiting:  false,
                 play:     false,
                 leave:    false,
+                visible:  false,
 
                 message: '',
                 exception: false,
@@ -276,21 +285,6 @@
 
 
         methods: {
-
-
-            getFigureName(figure) {
-
-                switch(figure) {
-
-                    case this.NONE:  return 'None';
-                    case this.ROCK:  return ' Rock';
-                    case this.SCISSORS:  return ' Scissors';
-                    case this.PAPER:  return ' Papper';
-                    case this.LIZARD:  return ' Lizzard';
-                    case this.SPOCK:  return ' Spoke';
-                }
-            },
-
 
             makePagination(data) {
 
@@ -368,20 +362,25 @@
                         else {
 
                             this.game = response.data.data.game;
+                            this.round = response.data.data.game.lastFinishedRound.number + 1;
                             this.history = response.data.data.game.history;
+                            this.historyLastRound = response.data.data.game.historyLastRound;
+                            this.playersVictories = response.data.data.game.playersVictories;
                             this.finished = response.data.data.game.finished;
+                            
+
                             this.waiting = response.data.data.waiting;
                             this.offer = response.data.data.offer;
                             this.play = response.data.data.play;
                             this.leave = response.data.data.leave;
 
-                            this.round = response.data.data.game.lastFinishedRound.number + 1;
+                            
                             this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
                             this.startTimer();
                             
                             // console.log(this.timer);
                             //  console.log(response.data.data.game.lastFinishedRound);
-                            console.log(`finished: ${this.finished}`);
+                            console.log(`Раунд после перезагрузки страницы:  ${this.round}`);
                         }
                     })
                     .catch( error => {
@@ -487,7 +486,7 @@
                     this.game = response.data.data;
                     this.timer.totalSeconds = response.data.data.remainingTimeOfRound;
                     this.history = [];
-                    console.log(this.game);
+                    this.playersVictories = [];
 
                     this.exception = false;
                     this.offer = false;
@@ -496,6 +495,7 @@
                     this.leave = true;
 
                     this.startTimer();
+                    console.log(this.game);
                 })
                 .catch( error => {
 
@@ -593,18 +593,7 @@
                         this.message = response.data.data.message;
                         this.exception = true;
                         this.info = false;
-                        // console.log(this.message);
                     }
-                    // else if (this.roundFinished) {
-
-                    //     roundNumber = response.data.data.round_number;
-
-                    //     фдуке(roundNumber);
-
-                    //     this.message = "!!!!!You made a move. Round " + roundNumber +": FINISHED.";
-                    //     this.exception = false;
-                    //     this.info = true;
-                    // }
                     else {
 
                         this.message = 'You made a move.';
@@ -617,6 +606,44 @@
                     console.log(error);
                 });
             },
+
+
+             getFigureName(figure) {
+
+                if (figure == null) {
+
+                    return ' ' ;
+                }
+
+                switch(figure) {
+
+                    case this.NONE:  return 'None';
+                    case this.ROCK:  return ' Rock';
+                    case this.SCISSORS:  return ' Scissors';
+                    case this.PAPER:  return ' Papper';
+                    case this.LIZARD:  return ' Lizzard';
+                    case this.SPOCK:  return ' Spoke';
+                }
+            },
+
+
+            getDrawDescription(draw) {
+
+                if (draw == null) {
+
+                    return ' ' ;
+                }
+
+                return ' Draw' ;
+            },
+
+
+            hideHistoryLastRound() {
+
+                setTimeout(() => this.visible = false, 5000);
+            },
+
+
 
 
             startTimer() {
@@ -712,6 +739,8 @@
                     this.leave = true;
                     this.startTimer();
 
+                    this.playersVictories = [];
+
                     this.exception = false;
                     this.waiting = false;
                     this.finished = false;
@@ -750,7 +779,7 @@
                     this.game = e.game;
                     // console.log(e.game);
                 })
-                 .listen('SecondPlayerMadeMoveEvent', (e) => {
+                .listen('SecondPlayerMadeMoveEvent', (e) => {
                     
                     // alert('Второй игрок сделал ход.');
                     this.message = e.message;
@@ -760,6 +789,19 @@
                     this.game = e.game;
                     // console.log(e.game);
                 })
+                .listen('PlayersDidNotMakeMovesEvent', (e) => {
+                    
+                    // alert('Игроки не сделали ходов.');
+                    this.message = e.message;
+                    this.info = true;
+                    this.exception = false;
+
+                    this.timer.totalSeconds = e.game.remainingTimeOfRound;
+                    // this.startTimer();
+
+                    this.game = e.game;
+                    // console.log(e.game);
+                }) 
                 .listen('GameRoundFinishedEvent', (e) => {
 
                     // alert('Раунд завершён!')
@@ -773,9 +815,15 @@
                     this.round = e.game.lastFinishedRound.number + 1;
                     this.history = e.game.history;
 
+                    this.historyLastRound = e.game.historyLastRound;
+                    this.visible = true;
+                    this.hideHistoryLastRound();
+
+                    this.playersVictories = e.game.playersVictories;
+
                     // console.log(e.game);
                     console.log(`Раунд ${e.game.lastFinishedRound.number} завершён`);
-                    console.log( e.game.history);
+                    console.log( this.historyLastRound);
                 })
                 .listen('GameNewRoundStartEvent', (e) => {
 
@@ -800,11 +848,11 @@
                     this.info = true;
                     this.exception = false;
                     this.leave = false;
-
-                    this.finished = true
-
+                    this.finished = true;
+                    
                     this.game = e.game;
                     this.round = 1;
+
                     console.log(this.game);
                 });
                 

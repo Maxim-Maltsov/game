@@ -122,7 +122,7 @@ class Game extends Model
 
     public static function showGameplayBlock(): bool
     {   
-        $game = Game::whereIn('status', [Game::IN_PROCESS, Game::FINISHED])
+        $game = Game::whereIn('status', [Game::IN_PROCESS, Game::IN_PROCESS])
                     ->where(function ($query)  {
                         $query->where('player_1', Auth::id());
                         $query->orWhere('player_2', Auth::id());
@@ -137,7 +137,7 @@ class Game extends Model
     }
 
 
-    public static function showButtonLeaveGame()
+    public static function showButtonLeaveGame(): bool
     {
         $game = Game::where('status', Game::IN_PROCESS)
                     ->where(function ($query)  {
@@ -154,7 +154,7 @@ class Game extends Model
     }
 
 
-    public function checkingFinishGame()
+    public function checkingFinishGame(): bool
     {
         $game = Game::where('id', $this->id)->first();
 
@@ -235,7 +235,7 @@ class Game extends Model
     }
 
    
-    public function getActiveRound() :?Round
+    public function getActiveRound(): ?Round
     {
         $activeRound = $this->rounds()->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
 
@@ -243,21 +243,24 @@ class Game extends Model
     }
 
 
-    public function getMovesOfActiveRound(int $round) // Определить возвращаемый тип данных.
+    public function getMovesOfActiveRound()//: Collection
     {
-        $moves = Move::where('game_id', $this->id)
-                     ->where('round_number', $round)
-                     ->get();
+        $activeRound = $this->getActiveRound();
+
+        $moves = $activeRound->moves()
+                            ->where('game_id', $this->id)
+                            ->get();
 
         return $moves;
     }
 
 
-    public function getLastFinishedRound() :?Round
+    public function getLastFinishedRound(): ?Round
     {   
         $rounds = $this->rounds; // $rounds - получение раундов через отношение с game.
+        $game = Game::where('id', $this->id)->first();
 
-        if ($rounds->isEmpty()) {
+        if ($rounds->isEmpty() || $game->status == Game::FINISHED) {
 
             $round = new Round();
             $round->id = 1;
@@ -277,22 +280,26 @@ class Game extends Model
         return $lastRound;
     }
 
-    // Возможно не нужен.!!!
-    public function getMovesLastFinishedRound()
-    {
-        $lastRound = $this->getLastFinishedRound();
 
-        $movesLastRound = $this->moves()
-                               ->where('round_number', $lastRound->number)
-                               ->get();
+    public function makeTimerRestartActiveIfNeeded(): void
+    {   
+        $moves = $this->getMovesOfActiveRound();
 
-        return $movesLastRound;
+        if ($moves->count() == 0) {
+
+            $game = Game::where('id', $this->id)->first();
+            $game->need_restart_timer = Game::YES;
+            $game->save();
+            echo "Метка перезапуска Таймера активна! \n";
+
+            return;
+        }
     }
 
     
-    public function finishRoundIfNeeded(MoveRequest $request)
+    public function finishRoundIfNeeded(): void
     {   
-        $moves = $this->getMovesOfActiveRound($request['round_number']);
+        $moves = $this->getMovesOfActiveRound();
          
         if ($moves->count() == 2) {
 
@@ -428,19 +435,6 @@ class Game extends Model
     }
 
 
-    public function getAllVictoriesPlayersInRounds(): Collection 
-    {
-        $victoriesPlayers = $this->rounds()
-                          ->select(DB::raw('count(*) as victories, winned_player'))
-                          ->groupBy('winned_player')
-                          ->having('winned_player', '!=', 'null')
-                          ->orderBy('victories', 'desc')
-                          ->get();
-
-        return $victoriesPlayers;
-    }
-
-
     public function defineWinnerGame(): int
     {
         $victoriesPlayers = $this->getAllVictoriesPlayersInRounds();
@@ -457,14 +451,23 @@ class Game extends Model
     }
 
 
-   // Возможно не нужен.!!!
-    public function getRoundResults()
+    public function getAllVictoriesPlayersInRounds(): Collection|array
     {
-        // $lastRound = $this->getLastFinishedRound();
+        $game = Game::where('id', $this->id)->first();
 
-        // $moves = $this->getMovesLastFinishedRound();
+        if ($game->status == Game::FINISHED) {
 
-        // return $moves;
+            return $victoriesPlayers = [] ;
+        }
+
+        $victoriesPlayers = $this->rounds()
+                          ->select(DB::raw('count(*) as victories, winned_player'))
+                          ->groupBy('winned_player')
+                          ->having('winned_player', '!=', 'null')
+                          ->orderBy('victories', 'desc')
+                          ->get();
+
+        return $victoriesPlayers;
     }
 
 
@@ -484,16 +487,20 @@ class Game extends Model
         $history->save();
     }
 
-    public function getHistoryGame()
-    {
-        // if ($this->status == Game::FINISHED) {
 
-        //     return [];
-        // }
-
+    public function getHistoryGame(): Collection
+    {   
         $history = $this->history()->get();
 
         return $history;
-
     }
+
+
+    public  function getHistoryLastRound(): ?History
+    {
+        $historyLastRound = $this->history()->latest()->first();
+
+        return $historyLastRound;
+    }
+
 }

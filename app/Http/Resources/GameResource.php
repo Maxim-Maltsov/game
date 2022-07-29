@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\History;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +31,9 @@ class GameResource extends JsonResource
             'rounds' => RoundResource::collection($this->whenLoaded('rounds')), // $this->whenLoaded('rounds') - получаем все раунды игры через связь, если они есть.
             'lastFinishedRound' => $this->getLastFinishedRound(),
             'history' => HistoryResource::collection($this->getHistoryGame()),
+            'historyLastRound' => HistoryResource::make($this->getHistoryLastRound()),
             'finished' => $this->checkingFinishGame(),
+            'playersVictories' => $this->getAllVictoriesPlayersInRounds(),
             'created_at' => $this->created_at,
         ];
     }

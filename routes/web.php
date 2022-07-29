@@ -4,9 +4,11 @@ use App\Events\AmountUsersOnlineChangedEvent;
 use App\Http\Controllers\GameController;
 use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
+use App\Http\Resources\HistoryResource;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\Game;
+use App\Models\History;
 use App\Models\Move;
 use App\Models\Round;
 use App\Models\User;
@@ -41,20 +43,11 @@ Route::get('/welcome', function () {
 
     // exit();
 
-    // $game = Game::where('id', 172)->first();
+    $game = Game::where('id', 2)->first();
 
-    $game = Game::where(function ($query)  {
-                    $query->where('player_1', Auth::id());
-                    $query->orWhere('player_2', Auth::id());
-                })->latest()->first();
-
-    $finished = $game->checkingFinishGame();
+    $moves = $game->getMovesOfActiveRound();
     
-
-    $leave = Game::showButtonLeaveGame();
-
-
-    dd($game, $game->status, $finished, $leave);
+    dd( $moves->count() == 0);
 
     return view('welcome');
 });
