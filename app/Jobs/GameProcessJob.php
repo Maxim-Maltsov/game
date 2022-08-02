@@ -190,16 +190,10 @@ class GameProcessJob implements ShouldQueue
 
             // Получить ход активного раунда.
             $move = $game->getMovePlayerInActiveRound($player);
-
-            if ($move == null) {
-
-                echo " - Все игроки уже сделали ход в этом раунде Игры с id:$game->id . \n";
-                return;
-            }
             
             if ($move instanceof Move) {
 
-                echo " - $player->name уже сделал ход в Раунде:$activeRound->number Игры с id:$game->id . \n";
+                echo " - $player->name уже сделал ход в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
                 return;
             }
 
@@ -210,7 +204,7 @@ class GameProcessJob implements ShouldQueue
             $move->figure = Game::FIGURE_NONE;
             $move->save();
 
-            echo " - Сделан ход за $player->name в Раунде:$activeRound->number Игры с id:$game->id . \n";
+            echo " - Сделан ход за $player->name в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
 
             $game->finishRoundIfNeeded();
         }
