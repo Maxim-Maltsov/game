@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Events\GameRoundFinishedEvent;
 use App\Exceptions\GameNotFoundException;
+use App\Exceptions\TimerRestartException;
 use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
+use App\Jobs\GameProcessJob;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -170,13 +172,6 @@ class Game extends Model
 
     public static function init(): JsonResponse
     {   
-        // Старое условие отбора игры.
-        // $game = Game::whereIn('status',[Game::WAITING_PLAYER, Game::IN_PROCESS])
-        //             ->where(function ($query)  {
-        //                 $query->where('player_1', Auth::id());
-        //                 $query->orWhere('player_2', Auth::id());
-        //             })->first();
-
         $game = Game::where(function ($query)  {
                         $query->where('player_1', Auth::id());
                         $query->orWhere('player_2', Auth::id());
@@ -248,10 +243,23 @@ class Game extends Model
         $activeRound = $this->getActiveRound();
 
         $moves = $activeRound->moves()
-                            ->where('game_id', $this->id)
-                            ->get();
+                             ->where('game_id', $this->id)
+                             ->get();
 
         return $moves;
+    }
+
+
+    public function getMovePlayerInActiveRound($player): ?Move
+    {
+        $activeRound = $this->getActiveRound();
+
+        $move = Move::where('game_id', $this->id)
+                    ->where('player_id', $player->id )
+                    ->where('round_number', $activeRound->number)
+                    ->first();
+
+        return $move;
     }
 
 
@@ -290,7 +298,7 @@ class Game extends Model
             $game = Game::where('id', $this->id)->first();
             $game->need_restart_timer = Game::YES;
             $game->save();
-            echo "Метка перезапуска Таймера активна! \n";
+            echo " - Метка перезапуска Таймера активна. need_restart_timer = 1! \n";
 
             return;
         }
@@ -314,6 +322,8 @@ class Game extends Model
             $game = $activeRound->game;
             $game->need_start_new_round = Game::YES;
             $game->save();
+
+            echo " - Раунд: $activeRound->number окончен! \n";
 
             $activeRound->winned_player = $winnedPlayer;
             $activeRound->draw = $draw;
@@ -441,7 +451,7 @@ class Game extends Model
 
         foreach($victoriesPlayers as $victoriesPlayer )
         {
-            $victories = $victoriesPlayer->victories;
+            $victories = $victoriesPlayer->victory_count;
            
             if ($victories == Game::VICTORY_CONDITION){
 
@@ -461,10 +471,10 @@ class Game extends Model
         }
 
         $victoriesPlayers = $this->rounds()
-                          ->select(DB::raw('count(*) as victories, winned_player'))
+                          ->select(DB::raw('count(*) as victory_count , winned_player'))
                           ->groupBy('winned_player')
                           ->having('winned_player', '!=', 'null')
-                          ->orderBy('victories', 'desc')
+                          ->orderBy('victory_count', 'desc')
                           ->get();
 
         return $victoriesPlayers;
@@ -502,5 +512,6 @@ class Game extends Model
 
         return $historyLastRound;
     }
+
 
 }

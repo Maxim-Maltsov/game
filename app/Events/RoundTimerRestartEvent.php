@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class PlayersDidNotMakeMovesEvent implements ShouldBroadcastNow
+class RoundTimerRestartEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -40,7 +40,7 @@ class PlayersDidNotMakeMovesEvent implements ShouldBroadcastNow
         return [
             
             'game' => $this->game,
-            'message' => "Round:$activeRound->number was restarted because the players did not make moves.",
+            'message' => "None of the players made a move, so the timer of the Round: $activeRound->number was restarted.",
         ];
     }
 

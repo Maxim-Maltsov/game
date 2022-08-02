@@ -16,7 +16,7 @@ class Round extends Model
      const FINISHED = 1;
 
 
-     protected $fillable = [ 'game_id', 'round_number'];
+     protected $fillable = [ 'game_id', 'round_number', 'created_at'];
 
 
     // Relationship.

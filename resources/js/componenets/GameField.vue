@@ -183,8 +183,7 @@
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex flex-column justify-content-start align-items-start" style="height: 10rem">
                                 <h6 class="h6 card-title text-success py-3"><i>Score</i></h6>
-                                <h6 v-for="player of playersVictories" :key="player.id" class="h6 card-title text-secondary"> {{ (game.player_1.id == player.winned_player)? `${game.player_1.name} - Player One: ` : `${game.player_2.name} - Player Two: ` }} <span class="text-success"> {{ player.victories }} </span></h6>
-                               
+                                <h6 v-for="player of playersVictories" :key="player.id" class="h6 card-title text-secondary"> {{ (game.player_1.id == player.winned_player)? `${game.player_1.name} - Player One: ` : `${game.player_2.name} - Player Two: ` }} <span class="text-success"> {{ (player.victory_count)?  player.victory_count : '' }} </span></h6>
                             </div>
                         </div>
 
@@ -560,6 +559,16 @@
                 .then( response => {
 
                     this.message = 'You leaved the game!';
+                    this.info = true;
+
+                    this.play = false;
+                    this.leave = false;
+                    this.exception = false;
+                    
+                    this.game = {}
+                    this.playersVictories = [];
+
+                    this.stopTimer();
                 })
                 .catch( error => {
 
@@ -755,7 +764,10 @@
                     this.play = false;
                     this.leave = false;
                     this.exception = false;
+
                     this.game = {};
+                    this.playersVictories = [];
+                    this.stopTimer();
                 })
                 .listen('SecondPlayerLeavedGameEvent', (e) => {
                     
@@ -768,6 +780,8 @@
                     this.exception = false;
 
                     this.game = {};
+                    this.playersVictories = [];
+                    this.stopTimer();
                 })
                 .listen('FirstPlayerMadeMoveEvent', (e) => {
                     
@@ -789,7 +803,7 @@
                     this.game = e.game;
                     // console.log(e.game);
                 })
-                .listen('PlayersDidNotMakeMovesEvent', (e) => {
+                .listen('RoundTimerRestartEvent', (e) => {
                     
                     // alert('Игроки не сделали ходов.');
                     this.message = e.message;
@@ -797,10 +811,11 @@
                     this.exception = false;
 
                     this.timer.totalSeconds = e.game.remainingTimeOfRound;
-                    // this.startTimer();
+                    this.startTimer();
 
                     this.game = e.game;
                     // console.log(e.game);
+                    console.log(e.game.remainingTimeOfRound);
                 }) 
                 .listen('GameRoundFinishedEvent', (e) => {
 
@@ -842,8 +857,7 @@
                 .listen('GameFinishEvent', (e) => {
 
                     console.log('Игра окончена!');
-                    this.stopTimer();
-
+                    
                     this.message = e.message;
                     this.info = true;
                     this.exception = false;
@@ -852,6 +866,8 @@
                     
                     this.game = e.game;
                     this.round = 1;
+
+                    this.stopTimer();
 
                     console.log(this.game);
                 });
