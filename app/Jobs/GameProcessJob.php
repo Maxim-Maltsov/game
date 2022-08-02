@@ -174,14 +174,11 @@ class GameProcessJob implements ShouldQueue
         // Делаем метку перезапуска таймера активной, если нужно;
         $game->makeTimerRestartActiveIfNeeded();
 
-        ///////////////////////////////////////
         if ($this->canRestartTimer()) { 
 
             return;
         }
-        //////////////////////////////////////
-
-
+        
         $firstPlayer = $game->firstPlayer;
         $secondPlayer = $game->secondPlayer;
 
@@ -192,12 +189,17 @@ class GameProcessJob implements ShouldQueue
         foreach ($players as $player) {
 
             // Получить ход активного раунда.
-            // $move = Move::where('game_id', $game->id)->where('player_id', $player->id )->first();
             $move = $game->getMovePlayerInActiveRound($player);
+
+            if ($move == null) {
+
+                echo " - Все игроки уже сделали ход в этом раунде Игры с id:$game->id . \n";
+                return;
+            }
             
             if ($move instanceof Move) {
 
-                echo " - $player->name уже сделал ход в Раунде: $activeRound->number Игры с id:$game->id . \n";
+                echo " - $player->name уже сделал ход в Раунде:$activeRound->number Игры с id:$game->id . \n";
                 return;
             }
 
@@ -205,9 +207,10 @@ class GameProcessJob implements ShouldQueue
             $move->game_id = $game->id;
             $move->round_number = $activeRound->number;
             $move->player_id = $player->id;
-            echo " - Сделан ход за $player->name в Раунде: $activeRound->number Игры с id:$game->id . \n";
             $move->figure = Game::FIGURE_NONE;
             $move->save();
+
+            echo " - Сделан ход за $player->name в Раунде:$activeRound->number Игры с id:$game->id . \n";
 
             $game->finishRoundIfNeeded();
         }

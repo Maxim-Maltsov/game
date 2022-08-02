@@ -43,13 +43,17 @@ Route::get('/welcome', function () {
 
     // exit();
 
-    $game = Game::where('id', 62)->first();
+    $game = Game::where('id', 78)->first();
+
+    
 
     $player = $game->firstPlayer;
 
-    $move = $game->getMovePlayerInActiveRound($player);
+    $move1 = Move::where('game_id', $game->id)->where('player_id', $player->id )->first();
+
+    $move2 = $game->getMovePlayerInActiveRound($player);
     
-    dd( $game, $move);
+    dd( $game, $move1, $move2);
 
     return view('welcome');
 });

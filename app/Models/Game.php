@@ -254,6 +254,13 @@ class Game extends Model
     {
         $activeRound = $this->getActiveRound();
 
+        if ( $activeRound == null) {
+
+
+            echo "Активный раунд в игре с id:$this->id не обнаружен. return null. getMovePlayerInActiveRound() \n" ;
+            return null;
+        }
+
         $move = Move::where('game_id', $this->id)
                     ->where('player_id', $player->id )
                     ->where('round_number', $activeRound->number)
