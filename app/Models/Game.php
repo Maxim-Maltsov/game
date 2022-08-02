@@ -296,7 +296,7 @@ class Game extends Model
     }
 
 
-    public function makeTimerRestartActiveIfNeeded(): void
+    public function makeTimerRestartActiveIfNeeded(): void // ПЕРЕРАБОТАТЬ. ПРОВЕРЯТЬ ТОЛЬКО ХОДЫ. ВОЗВРАЩАТЬ TRUE, FALSE.
     {   
         $moves = $this->getMovesOfActiveRound();
 
@@ -307,7 +307,6 @@ class Game extends Model
             $game->save();
             echo " - Метка перезапуска Таймера активна. need_restart_timer = 1! \n";
 
-            return;
         }
     }
 

@@ -83,13 +83,13 @@ class GameProcessJob implements ShouldQueue
                         echo " - Завершение хода выполнено. Метод  makeMoveIfNeeded() отработал. \n";
                     }
 
-                    if ($this->canRestartTimer()) { 
+                    if ($this->canRestartTimer()) { // убрать
 
-                        $this->restartTimer();
-                        echo " - Таймер перезапущен. restartTimer() \n";
+                        $this->restartTimer();//убрать вызывать метод в блоке else.
+                        echo " - Таймер перезапущен. restartTimer() \n";//
 
-                        break;
-                    }
+                        break;//убрать
+                    }// убрать
                 
 
                     $this->startNewRound();
@@ -97,6 +97,10 @@ class GameProcessJob implements ShouldQueue
 
                     break;
                 }
+                // else {
+
+                //     $this->restartTimer();
+                // }
             }
 
             sleep(1);
@@ -104,7 +108,8 @@ class GameProcessJob implements ShouldQueue
     }
 
 
-    public function canRestartTimer() {
+    public function canRestartTimer(): bool
+    {
 
         // Если оба игрока не сделали ходов, то нужен перезапуск.
         
@@ -116,6 +121,8 @@ class GameProcessJob implements ShouldQueue
             echo " - Условие перезапуска Таймера сработало. need_restart_timer = 1. canRestartTimer() \n";
             return true;
         }
+
+        return false;
     }
 
 
@@ -144,7 +151,7 @@ class GameProcessJob implements ShouldQueue
     }
 
     
-    public function canStartNewRound($currentTime, $endTime)
+    public function canStartNewRound($currentTime, $endTime): bool 
     {   
         $game = Game::where('id', $this->game->id)->first();
         $needStartNewRound = $game->need_start_new_round;
@@ -158,11 +165,18 @@ class GameProcessJob implements ShouldQueue
            
         if ($currentTime >= $endTime) { // Разрешение на то, чтобы сделать ходы за игроков, если истекло время предыдущего раунда и ход какого-то игрока не сделан.
 
+            // if (если никто  не ходил) { // ИСПОЛЬЗОВАТЬ В КАЧЕСТВЕ УСЛОВИЯ  ПЕРЕРАБОТАННЫЙ МЕТОД makeTimerRestartActiveIfNeeded()
+              
+            //     return false
+            // }
+
             $this->endRoundReason = Game::ROUND_TIME_IS_UP;
             print( " - Время раунда вышло  \n");
 
             return true;
         }
+
+        return false;
     }
 
 
@@ -172,12 +186,12 @@ class GameProcessJob implements ShouldQueue
         $game = Game::where('id', $this->game->id)->first();
 
         // Делаем метку перезапуска таймера активной, если нужно;
-        $game->makeTimerRestartActiveIfNeeded();
+        $game->makeTimerRestartActiveIfNeeded(); // Убрать метод . Проверку делаем в методе 
 
-        if ($this->canRestartTimer()) { 
+        if ($this->canRestartTimer()) {  // Убрать Проверку 
 
-            return;
-        }
+            return; // Убрать Проверку 
+        } // Убрать Проверку 
         
         $firstPlayer = $game->firstPlayer;
         $secondPlayer = $game->secondPlayer;
