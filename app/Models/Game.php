@@ -296,18 +296,16 @@ class Game extends Model
     }
 
 
-    public function makeTimerRestartActiveIfNeeded(): void // ПЕРЕРАБОТАТЬ. ПРОВЕРЯТЬ ТОЛЬКО ХОДЫ. ВОЗВРАЩАТЬ TRUE, FALSE.
+    public function playersNotMakeMoves(): bool
     {   
         $moves = $this->getMovesOfActiveRound();
 
         if ($moves->count() == 0) {
 
-            $game = Game::where('id', $this->id)->first();
-            $game->need_restart_timer = Game::YES;
-            $game->save();
-            echo " - Метка перезапуска Таймера активна. need_restart_timer = 1! \n";
-
+            return true;
         }
+        
+        return false;
     }
 
     
@@ -328,8 +326,6 @@ class Game extends Model
             $game = $activeRound->game;
             $game->need_start_new_round = Game::YES;
             $game->save();
-
-            echo " - Раунд: $activeRound->number окончен! \n";
 
             $activeRound->winned_player = $winnedPlayer;
             $activeRound->draw = $draw;

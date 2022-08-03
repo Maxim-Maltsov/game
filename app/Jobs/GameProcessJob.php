@@ -32,6 +32,7 @@ class GameProcessJob implements ShouldQueue
 
     public $game;
     public $endRoundReason;
+    public $needRestartTimer = false;
 
     /**
      * Create a new job instance.
@@ -77,30 +78,20 @@ class GameProcessJob implements ShouldQueue
 
                     if ($this->endRoundReason == Game::ROUND_TIME_IS_UP) {
 
-                        echo " - Условие запуска метода выполнения хода за игрока сработало. handle() \n";
-
                         $this->makeMoveIfNeeded();
-                        echo " - Завершение хода выполнено. Метод  makeMoveIfNeeded() отработал. \n";
                     }
 
-                    if ($this->canRestartTimer()) { // убрать
-
-                        $this->restartTimer();//убрать вызывать метод в блоке else.
-                        echo " - Таймер перезапущен. restartTimer() \n";//
-
-                        break;//убрать
-                    }// убрать
-                
-
                     $this->startNewRound();
-                    echo " - Новый раунд запущен. startNewRound() \n";
+                    
+                    break;
+                } 
+                
+                if ($this->needRestartTimer) {
 
+                    $this->restartTimer();
+                   
                     break;
                 }
-                // else {
-
-                //     $this->restartTimer();
-                // }
             }
 
             sleep(1);
@@ -108,33 +99,13 @@ class GameProcessJob implements ShouldQueue
     }
 
 
-    public function canRestartTimer(): bool
-    {
-
-        // Если оба игрока не сделали ходов, то нужен перезапуск.
-        
-        $game = Game::where('id', $this->game->id)->first();
-        $needRestartTimer = $game->need_restart_timer;
-       
-        if ($needRestartTimer == Game::YES) {
-            
-            echo " - Условие перезапуска Таймера сработало. need_restart_timer = 1. canRestartTimer() \n";
-            return true;
-        }
-
-        return false;
-    }
-
-
     public function restartTimer()
     {
+        $this->needRestartTimer = false;
+
         // 1. Получить игру
         $game = Game::where('id', $this->game->id)->first();
-        // 2. Сделать метку необходимости перезапустить таймер равной 0.
-        $game->need_restart_timer = Game::NO;
-        $game->save();
-        echo " - need_restart_timer изменено на 0. restartTimer() \n";
-
+        
         // 3. Получить активный раунд 
         $activeRound = $game->getActiveRound();
         
@@ -142,12 +113,13 @@ class GameProcessJob implements ShouldQueue
         $activeRound->created_at = Carbon::now();
         $activeRound->save(); 
         echo " - Время начала раунда обновлено и равно " . Carbon::now() . ". restartTimer() \n";
-        
+    
         // 5. Запустить GameProcessJob::dispatch($game);
         GameProcessJob::dispatch($game);
         echo " - GameProcessJob для текущего раунда перезапущен. restartTimer() \n";
         // 6. Запустить событие перезапуска таймера.
         RoundTimerRestartEvent::dispatch(GameResource::make($game));
+        echo " - Таймер перезапущен. restartTimer() \n";
     }
 
     
@@ -165,13 +137,19 @@ class GameProcessJob implements ShouldQueue
            
         if ($currentTime >= $endTime) { // Разрешение на то, чтобы сделать ходы за игроков, если истекло время предыдущего раунда и ход какого-то игрока не сделан.
 
-            // if (если никто  не ходил) { // ИСПОЛЬЗОВАТЬ В КАЧЕСТВЕ УСЛОВИЯ  ПЕРЕРАБОТАННЫЙ МЕТОД makeTimerRestartActiveIfNeeded()
-              
-            //     return false
-            // }
+            if ($game->playersNotMakeMoves()) {
+                
+                echo " - Игроки не cделал ходов. Новый раунд не нужен. Возвращён false. canStartNewRound() \n";
+
+                // Сдеолать метку на перезапуск раунда активной.
+                $this->needRestartTimer = true;
+                echo " - Нужен перезапуск Таймера. Переменная needRestartTimer = true. canStartNewRound() \n";
+                
+                return false;
+            }
 
             $this->endRoundReason = Game::ROUND_TIME_IS_UP;
-            print( " - Время раунда вышло  \n");
+            echo " - Время раунда вышло  \n";
 
             return true;
         }
@@ -185,14 +163,6 @@ class GameProcessJob implements ShouldQueue
 
         $game = Game::where('id', $this->game->id)->first();
 
-        // Делаем метку перезапуска таймера активной, если нужно;
-        $game->makeTimerRestartActiveIfNeeded(); // Убрать метод . Проверку делаем в методе 
-
-        if ($this->canRestartTimer()) {  // Убрать Проверку 
-
-            return; // Убрать Проверку 
-        } // Убрать Проверку 
-        
         $firstPlayer = $game->firstPlayer;
         $secondPlayer = $game->secondPlayer;
 
@@ -208,7 +178,8 @@ class GameProcessJob implements ShouldQueue
             if ($move instanceof Move) {
 
                 echo " - $player->name уже сделал ход в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
-                return;
+
+                continue;
             }
 
             $move = new Move();
@@ -227,13 +198,23 @@ class GameProcessJob implements ShouldQueue
 
     public function startNewRound()
     {   
+        if ($this->canFinishGame()) {
+
+            echo " - Побед достаточно. Cоздавать новый раунд не нужно. startNewRound() \n";
+
+            $this->finishGame();
+
+            return;
+        }
+
         $round = new Round();
         $round->game_id = $this->game->id;
-        $round->number = $this->game->getLastFinishedRound()->number + 1; // 
+        $round->number = $this->game->getLastFinishedRound()->number + 1; // Сделать проверку- Если завершённого раунда ещё нет то возвращать.
         $round->save();
 
-        $game = Game::where('id', $this->game->id)->first(); // Игра с обновлённым состоянием.
+        echo " - Новый раунд создан. startNewRound() \n";
 
+        $game = Game::where('id', $this->game->id)->first(); // Игра с обновлённым состоянием.
         $game->need_start_new_round = Game::NO;
         $game->save(); 
 
@@ -243,7 +224,7 @@ class GameProcessJob implements ShouldQueue
     }
 
 
-    public function canFinishGame()
+    public function canFinishGame(): bool
     {   
         $game = Game::where('id', $this->game->id)->first();
 
@@ -258,6 +239,8 @@ class GameProcessJob implements ShouldQueue
                 return  true;
             }
         }
+
+        return false;
     }
 
 
