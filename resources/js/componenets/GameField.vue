@@ -806,6 +806,8 @@
                 .listen('RoundTimerRestartEvent', (e) => {
                     
                     // alert('Игроки не сделали ходов.');
+                    this.stopTimer();
+
                     this.message = e.message;
                     this.info = true;
                     this.exception = false;
