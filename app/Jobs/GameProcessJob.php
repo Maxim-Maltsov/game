@@ -168,12 +168,16 @@ class GameProcessJob implements ShouldQueue
 
         $players = [$firstPlayer, $secondPlayer];
 
-        $activeRound = $game->getActiveRound(); // Удалить!!! Нужен в процессе тестирования для вывода сообщения.
+        $activeRound = $game->getActiveRound();
         
         foreach ($players as $player) {
-
+            
             // Получить ход активного раунда.
-            $move = $game->getMovePlayerInActiveRound($player);
+            // $move = $game->getMovePlayerInActiveRound($player);
+            $move = Move::where('game_id', $game->id)
+                        ->where('player_id', $player->id )
+                        ->where('round_number', $activeRound->number)
+                        ->first();
             
             if ($move instanceof Move) {
 
@@ -181,7 +185,7 @@ class GameProcessJob implements ShouldQueue
 
                 continue;
             }
-
+            
             $move = new Move();
             $move->game_id = $game->id;
             $move->round_number = $activeRound->number;

@@ -232,7 +232,9 @@ class Game extends Model
    
     public function getActiveRound(): ?Round
     {
-        $activeRound = $this->rounds()->where('status', Round::NO_FINISHED)->first(); // $activeRound получен через связь с game по условию.
+        $activeRound = Round::where('game_id', $this->id)
+                            ->where('status', Round::NO_FINISHED)
+                            ->first();
 
         return $activeRound;
     }
@@ -256,8 +258,7 @@ class Game extends Model
 
         if ( $activeRound == null) {
 
-
-            echo "Активный раунд в игре с id:$this->id не обнаружен. return null. getMovePlayerInActiveRound() \n" ;
+            echo " - Активный раунд в игре с id:$this->id не обнаружен. return null. getMovePlayerInActiveRound() \n" ;
             return null;
         }
 
