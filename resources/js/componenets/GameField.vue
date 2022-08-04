@@ -378,8 +378,10 @@
                             this.startTimer();
                             
                             // console.log(this.timer);
-                            //  console.log(response.data.data.game.lastFinishedRound);
                             console.log(`Раунд после перезагрузки страницы:  ${this.round}`);
+                            console.log(response.data.data.game.historyLastRound);
+                            console.log(response.data.data.game.historyLastRound.draw);
+                            console.log(`Время после перезагрузки страницы: ${response.data.data.game.remainingTimeOfRound}`);
                         }
                     })
                     .catch( error => {
@@ -621,7 +623,7 @@
 
                 if (figure == null) {
 
-                    return ' ' ;
+                    return  ' None Data ';
                 }
 
                 switch(figure) {
@@ -640,10 +642,15 @@
 
                 if (draw == null) {
 
-                    return ' ' ;
+                    return ' None Data ';
                 }
 
-                return ' Draw' ;
+                if (draw == 0) {
+
+                    return ' None';
+                }
+
+                return ' Draw ';
             },
 
 

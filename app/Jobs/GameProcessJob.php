@@ -98,34 +98,50 @@ class GameProcessJob implements ShouldQueue
         }
     }
 
+    
+    public function makeMoveIfNeeded()
+    {   echo " - Метод завершения ходов запущен. makeMoveIfNeeded() \n";
 
-    public function restartTimer()
-    {
-        $this->needRestartTimer = false;
+        // Обновление состояния модели. Метод fresh() загружает новый экземпляр модели из базы данных с обнавлёнными атрибутами.
+        $game = $this->game->fresh();
 
-        // 1. Получить игру
-        $game = Game::where('id', $this->game->id)->first();
-        
-        // 3. Получить активный раунд 
+        $firstPlayer = $game->firstPlayer;
+        $secondPlayer = $game->secondPlayer;
+
+        $players = [$firstPlayer, $secondPlayer];
         $activeRound = $game->getActiveRound();
         
-        // 4.Обновляем время создания раунда на текущее время.
-        $activeRound->created_at = Carbon::now();
-        $activeRound->save(); 
-        echo " - Время начала раунда обновлено и равно " . Carbon::now() . ". restartTimer() \n";
-    
-        // 5. Запустить GameProcessJob::dispatch($game);
-        GameProcessJob::dispatch($game);
-        echo " - GameProcessJob для текущего раунда перезапущен. restartTimer() \n";
-        // 6. Запустить событие перезапуска таймера.
-        RoundTimerRestartEvent::dispatch(GameResource::make($game));
-        echo " - Таймер перезапущен. restartTimer() \n";
+        foreach ($players as $player) {
+            
+            
+            $move = $game->getMovePlayerInActiveRound($player, $activeRound);
+            
+            if ($move instanceof Move) {
+
+                echo " - $player->name уже сделал ход в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
+
+                continue;
+            }
+            
+            $move = new Move();
+            $move->game_id = $game->id;
+            $move->round_number = $activeRound->number;
+            $move->player_id = $player->id;
+            $move->figure = Game::FIGURE_NONE;
+            $move->save();
+
+            echo " - Сделан ход за $player->name в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
+
+            $game->finishRoundIfNeeded();
+        }
     }
 
-    
+
     public function canStartNewRound($currentTime, $endTime): bool 
     {   
-        $game = Game::where('id', $this->game->id)->first();
+        // Обновление состояния модели. Метод fresh() загружает новый экземпляр модели из базы данных с обнавлёнными атрибутами.
+        $game = $this->game->fresh();
+        
         $needStartNewRound = $game->need_start_new_round;
 
         if ($needStartNewRound == Game::YES) { // Разрешение на начало нового раунда, если оба игрока сделали ход.
@@ -158,48 +174,6 @@ class GameProcessJob implements ShouldQueue
     }
 
 
-    public function makeMoveIfNeeded()
-    {   echo " - Метод завершения ходов запущен. makeMoveIfNeeded() \n";
-
-        $game = Game::where('id', $this->game->id)->first();
-
-        $firstPlayer = $game->firstPlayer;
-        $secondPlayer = $game->secondPlayer;
-
-        $players = [$firstPlayer, $secondPlayer];
-
-        $activeRound = $game->getActiveRound();
-        
-        foreach ($players as $player) {
-            
-            // Получить ход активного раунда.
-            // $move = $game->getMovePlayerInActiveRound($player);
-            $move = Move::where('game_id', $game->id)
-                        ->where('player_id', $player->id )
-                        ->where('round_number', $activeRound->number)
-                        ->first();
-            
-            if ($move instanceof Move) {
-
-                echo " - $player->name уже сделал ход в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
-
-                continue;
-            }
-            
-            $move = new Move();
-            $move->game_id = $game->id;
-            $move->round_number = $activeRound->number;
-            $move->player_id = $player->id;
-            $move->figure = Game::FIGURE_NONE;
-            $move->save();
-
-            echo " - Сделан ход за $player->name в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
-
-            $game->finishRoundIfNeeded();
-        }
-    }
-
-
     public function startNewRound()
     {   
         if ($this->canFinishGame()) {
@@ -218,7 +192,7 @@ class GameProcessJob implements ShouldQueue
 
         echo " - Новый раунд создан. startNewRound() \n";
 
-        $game = Game::where('id', $this->game->id)->first(); // Игра с обновлённым состоянием.
+        $game = $this->game->fresh(); // Игра с обновлённым состоянием.
         $game->need_start_new_round = Game::NO;
         $game->save(); 
 
@@ -228,9 +202,30 @@ class GameProcessJob implements ShouldQueue
     }
 
 
+    public function restartTimer()
+    {
+        $this->needRestartTimer = false;
+
+        // Обновление состояния модели. Метод fresh() загружает новый экземпляр модели из базы данных с обнавлёнными атрибутами.
+        $game = $this->game->fresh();
+        
+        $activeRound = $game->getActiveRound();
+        $activeRound->created_at = Carbon::now();
+        $activeRound->save(); 
+        echo " - Время начала раунда обновлено и равно " . Carbon::now() . ". restartTimer() \n";
+    
+        // 5. Запустить GameProcessJob::dispatch($game);
+        GameProcessJob::dispatch($game);
+        echo " - GameProcessJob для текущего раунда перезапущен. restartTimer() \n";
+        // 6. Запустить событие перезапуска таймера.
+        RoundTimerRestartEvent::dispatch(GameResource::make($game));
+        echo " - Таймер перезапущен. restartTimer() \n";
+    }
+
+
     public function canFinishGame(): bool
     {   
-        $game = Game::where('id', $this->game->id)->first();
+        $game = $this->game->fresh();
 
         $victoriesPlayers = $game->getAllVictoriesPlayersInRounds();
 
@@ -250,7 +245,7 @@ class GameProcessJob implements ShouldQueue
 
     public function finishGame()
     {
-        $game = Game::where('id', $this->game->id)->first();
+        $game = $this->game->fresh();
 
         $winnedPlayer = $game->defineWinnerGame();
 
@@ -285,7 +280,7 @@ class GameProcessJob implements ShouldQueue
 
     public function leavedGame(): bool
     {
-        $game = Game::where('id', $this->game->id)->first();
+        $game = $this->game->fresh();
         $leavingPlayer = $game->leaving_player;
         
         if ($leavingPlayer != null) {

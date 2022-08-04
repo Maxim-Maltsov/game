@@ -43,17 +43,16 @@ Route::get('/welcome', function () {
 
     // exit();
 
-    $game = Game::where('id', 78)->first();
+    $game = Game::where('id', 1)->first();
 
+    $activeRound = $game->getActiveRound();
+
+    $currentTime = Carbon::now();
+    $roundStartTime = $activeRound->created_at;
+    $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
+    $remainingTime = $currentTime->diffInSeconds($roundEndTime, false);
     
-
-    $player = $game->firstPlayer;
-
-    $move1 = Move::where('game_id', $game->id)->where('player_id', $player->id )->first();
-
-    $move2 = $game->getMovePlayerInActiveRound($player);
-    
-    dd( $game, $move1, $move2);
+    dd("Номер раунда:", $activeRound->number, "Оставшееся время:", $remainingTime, "Текущее время:", $currentTime , "Время окончания раунда:", $roundEndTime,);
 
     return view('welcome');
 });

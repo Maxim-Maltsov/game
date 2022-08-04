@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Game extends Model
 {
@@ -169,18 +170,17 @@ class Game extends Model
     }
 
 
-
     public static function init(): JsonResponse
     {   
         $game = Game::where(function ($query)  {
                         $query->where('player_1', Auth::id());
                         $query->orWhere('player_2', Auth::id());
                     })->latest()->first();
-        
+
 
         if ($game == null) {
 
-            throw new GameNotFoundException('The Game Was Not Found! Start the game!');
+            throw new GameNotFoundException('Game not found! Start a new game!');
         }
 
         return response()->json([ 'data' => [
@@ -252,13 +252,14 @@ class Game extends Model
     }
 
 
-    public function getMovePlayerInActiveRound($player): ?Move
+    public function getMovePlayerInActiveRound(User $player, Round $activeRound): ?Move
     {
-        $activeRound = $this->getActiveRound();
-
+        
         if ( $activeRound == null) {
 
-            echo " - Активный раунд в игре с id:$this->id не обнаружен. return null. getMovePlayerInActiveRound() \n" ;
+            Log::error("Active round in the game with id:$this->id not detected.");
+            echo " - Активный раунд в игре с id:$this->id не обнаружен. return null. getMovePlayerInActiveRound() \n";
+
             return null;
         }
 
@@ -273,10 +274,11 @@ class Game extends Model
 
     public function getLastFinishedRound(): ?Round
     {   
-        $rounds = $this->rounds; // $rounds - получение раундов через отношение с game.
-        $game = Game::where('id', $this->id)->first();
+        $lastRound = $this->rounds()->where('status', Round::FINISHED)->latest()->first(); // $lastRound получен через связь с game по условию.
+        $game =  $this->fresh();
+        
 
-        if ($rounds->isEmpty() || $game->status == Game::FINISHED) {
+        if ($lastRound == null /* || $game->status == Game::FINISHED */) {
 
             $round = new Round();
             $round->id = 1;
@@ -483,7 +485,6 @@ class Game extends Model
         return $victoriesPlayers;
     }
 
-
     public function saveHistoryGame( $moves, Round $round, int|null $winned, int $draw): void
     {
         $moveFirstPlayer = ($this->player_1 == $moves[0]->player_id)? $moves[0]->figure : $moves[1]->figure;
@@ -509,9 +510,25 @@ class Game extends Model
     }
 
 
-    public  function getHistoryLastRound(): ?History
+    public  function getHistoryLastRound(): History
     {
         $historyLastRound = $this->history()->latest()->first();
+
+        if ($historyLastRound == null) {
+
+            $history = new History();
+            $history->id = 1;
+            $history->game_id = $this->id;
+            $history->round_number = 1;
+            $history->move_player_1 = Game::NO;
+            $history->move_player_2 = Game::NO;
+            $history->winned_player = null;
+            $history->draw = Game::NO;
+            $history->created_at = Carbon::now();
+            $history->updated_at = Carbon::now();
+
+            return $history;
+        }
 
         return $historyLastRound;
     }
