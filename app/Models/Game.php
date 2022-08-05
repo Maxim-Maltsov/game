@@ -200,7 +200,7 @@ class Game extends Model
 
         if ($activeRound == null) {
 
-            return 0;
+            return 1;
         }
 
         $currentTime = Carbon::now();
@@ -208,6 +208,11 @@ class Game extends Model
         $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
 
         $remainingTime = $currentTime->diffInSeconds($roundEndTime, false);
+
+        if ($remainingTime <= 0) {
+
+            return 0;
+        }
 
         return $remainingTime;
     }

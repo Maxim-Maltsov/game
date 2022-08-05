@@ -23,7 +23,6 @@ class HistoryResource extends JsonResource
             'move_player_2' => $this->move_player_2,
             'winned_player' => UserResource::make($this->winnedPlayer),
             'draw' => $this->draw,
-            'timeout' => $this->timeout,
             'created_at' => $this->created_at,
         ];
     }
