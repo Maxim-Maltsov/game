@@ -378,9 +378,10 @@
                             this.startTimer();
                             
                             // console.log(this.timer);
-                            console.log(`Раунд после перезагрузки страницы:  ${this.round}`);
+                            console.log(`Раунд после перезагрузки страницы: ${this.round}`);
+                            console.log(`История последнего раунда: `);
                             console.log(response.data.data.game.historyLastRound);
-                            console.log(response.data.data.game.historyLastRound.draw);
+                            console.log(`Ничья последнего раунда: ${response.data.data.game.historyLastRound.draw}`);
                             console.log(`Время после перезагрузки страницы: ${response.data.data.game.remainingTimeOfRound}`);
                         }
                     })

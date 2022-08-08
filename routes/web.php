@@ -45,15 +45,17 @@ Route::get('/welcome', function () {
 
     
 
-    $game = Game::where('id', 5)->first();
+    $game = Game::where('id', 9)->first();
 
 
     $rounds = DB::table('rounds')
                 ->where('rounds.game_id', $game->id)
                 ->leftJoin('moves', 'moves.game_id', '=', 'rounds.game_id')
                 ->select( 'rounds.game_id', 'rounds.number as round_number', 'rounds.winned_player', 'rounds.draw', 'moves.player_id', 'moves.figure', 'rounds.created_at')
+                ->groupBy('rounds.number', 'rounds.game_id', 'rounds.winned_player', 'rounds.draw', 'moves.player_id', 'moves.figure', 'rounds.created_at')
                 ->get();
 
+    
     $rounds->transform(function ($round) use ($game) {
                 
                 $round->game_id = $game->id;
@@ -63,52 +65,57 @@ Route::get('/welcome', function () {
                     $round->move_player_1 = $round->figure;
 
                 } else {
+
                     $round->move_player_2 = $round->figure;
                 }
                     
                 return $round;
             });
 
-
-    $roundCollection = collect();
+    $roundsCollection = collect();
         
 
     foreach ($rounds as $round) {
         
         $new_round = [];
-        
+
+                                        echo "$round->round_number \n";
+
         foreach ($rounds as $round) {
-            
 
             $new_round['game_id'] = $round->game_id;
             $new_round['round_number'] = $round->round_number;
+            $new_round['winned_player'] = $round->winned_player;
+            $new_round['draw'] = $round->draw;
+            $new_round['created_at'] = $round->created_at;
 
-            if ($round->player_id === $game->player_1 && $new_round['round_number'] === $round->round_number) {
+            if ($round->player_id === $game->player_1 && $new_round['round_number'] === $round->round_number ) {
                 
                 $new_round['move_player_1'] = $round->figure; 
             } 
 
-            if ($round->player_id === $game->player_2 && $new_round['round_number'] === $round->round_number) {
+            if ($round->player_id === $game->player_2 && $new_round['round_number'] === $round->round_number ) {
                 
                 $new_round['move_player_2'] = $round->figure;
             }
 
-            $new_round['winned_player'] = $round->winned_player;
-            $new_round['draw'] = $round->draw;
-            
+            $roundsCollection->push($new_round);
         }
 
-        // if (! $roundCollection->contains('round_number')) {
+                                        echo "$round->round_number" . "</br>";
 
-        //     $roundCollection->push($new_round);
-        // }
-        
+        $roundCollection = $roundsCollection->unique('round_number');
+        $unique =  $roundCollection->values()->all();
     }
+   
+    // $unique = $roundsCollection->unique('round_number');
+    // $unique->values()->all();
+   
+    
+    dd( "Информация о раундах игры. Собрана из двух таблиц:", $rounds,  "Новый собранный раунд:", $new_round, "Коллекция из собранных раундов:",  $roundsCollection, "Вывод тольк уникальных значений с сортировкой по номеру раунда:", $unique,);
 
-    $roundCollection->push($new_round);
-
-    dd("Информация о раундах игры. Собрана из двух таблиц:", $rounds,  "Новый собранный раунд:", $new_round, "Коллекция из собранных раундов:", $roundCollection,);
-
+    
+    
     // $activeRound = $game->getActiveRound();
 
     // $currentTime = Carbon::now();
