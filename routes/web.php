@@ -74,15 +74,14 @@ Route::get('/welcome', function () {
 
 
     $roundsCollection = collect();
-
         
-    foreach ($rounds as $round) {
-        
-        $new_round = [];
+    $new_round = [];
 
-                                        echo "$round->round_number \n";
-
+    // $roundsCollection->dump();
+    
         foreach ($rounds as $round) {
+           
+                                             echo "$round->round_number </br>";
 
             $new_round['game_id'] = $round->game_id;
             $new_round['round_number'] = $round->round_number;
@@ -90,25 +89,27 @@ Route::get('/welcome', function () {
             $new_round['draw'] = $round->draw;
             $new_round['created_at'] = $round->created_at;
 
-            if ($round->player_id == $game->player_1 /* && $new_round['round_number'] == $round->round_number */) {
+            if ($round->player_id == $game->player_1  && $new_round['round_number'] == $round->round_number ) {
                 
                 $new_round['move_player_1'] = $round->figure; 
             } 
 
-            if ($round->player_id == $game->player_2 /* && $new_round['round_number'] == $round->round_number */ ) {
+            if ($round->player_id == $game->player_2  && $new_round['round_number'] == $round->round_number ) {
                 
                 $new_round['move_player_2'] = $round->figure;
             }
 
             $roundsCollection->push($new_round);
+
+            // $roundsCollection->dump();
+            // var_dump($new_round);
         }
 
-                                        echo "$round->round_number" . "</br>";
 
-    }
-   
+    $chunk = $roundsCollection->splice(1);
+    $chunk->all();
 
-    $unique = $roundsCollection->unique('round_number');
+    $unique = $chunk->unique('round_number');
     $unique->values()->all();
    
     
