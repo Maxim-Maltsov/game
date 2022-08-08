@@ -72,9 +72,10 @@ Route::get('/welcome', function () {
                 return $round;
             });
 
-    $roundsCollection = collect();
-        
 
+    $roundsCollection = collect();
+
+        
     foreach ($rounds as $round) {
         
         $new_round = [];
@@ -89,12 +90,12 @@ Route::get('/welcome', function () {
             $new_round['draw'] = $round->draw;
             $new_round['created_at'] = $round->created_at;
 
-            if ($round->player_id === $game->player_1 && $new_round['round_number'] === $round->round_number ) {
+            if ($round->player_id == $game->player_1 /* && $new_round['round_number'] == $round->round_number */) {
                 
                 $new_round['move_player_1'] = $round->figure; 
             } 
 
-            if ($round->player_id === $game->player_2 && $new_round['round_number'] === $round->round_number ) {
+            if ($round->player_id == $game->player_2 /* && $new_round['round_number'] == $round->round_number */ ) {
                 
                 $new_round['move_player_2'] = $round->figure;
             }
@@ -104,15 +105,14 @@ Route::get('/welcome', function () {
 
                                         echo "$round->round_number" . "</br>";
 
-        $roundCollection = $roundsCollection->unique('round_number');
-        $unique =  $roundCollection->values()->all();
     }
    
-    // $unique = $roundsCollection->unique('round_number');
-    // $unique->values()->all();
+
+    $unique = $roundsCollection->unique('round_number');
+    $unique->values()->all();
    
     
-    dd( "Информация о раундах игры. Собрана из двух таблиц:", $rounds,  "Новый собранный раунд:", $new_round, "Коллекция из собранных раундов:",  $roundsCollection, "Вывод тольк уникальных значений с сортировкой по номеру раунда:", $unique,);
+    dd( "Информация о раундах игры. Собрана из двух таблиц:", $rounds,  "Новый собранный раунд:", $new_round, "Коллекция из собранных раундов:",  $roundsCollection, "Вывод только уникальных значений с сортировкой по номеру раунда:", $unique,);
 
     
     
