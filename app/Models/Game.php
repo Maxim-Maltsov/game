@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
@@ -283,7 +284,7 @@ class Game extends Model
         $game =  $this->fresh();
         
 
-        if ($lastRound == null /* || $game->status == Game::FINISHED */) {
+        if ($lastRound == null  || $game->status == Game::FINISHED ) {
 
             $round = new Round();
             $round->id = 1;
@@ -297,8 +298,6 @@ class Game extends Model
 
             return $round;
         }
-
-        $lastRound = $this->rounds()->where('status', Round::FINISHED)->latest()->first(); // $lastRound получен через связь с game по условию.
 
         return $lastRound;
     }
@@ -507,36 +506,81 @@ class Game extends Model
     }
 
 
-    public function getHistoryGame(): Collection
-    {   
-        $history = $this->history()->get();
+    // public function getHistoryGame(): Collection
+    // {   
+    //     $history = $this->history()->get();
 
+    //     return $history;
+    // }
+
+
+    public function getHistoryGame(): SupportCollection
+    {
+        $history = DB::table('rounds')
+                     ->where('rounds.game_id', $this->id )
+                     ->where('rounds.status', 1)
+                     ->select( 'rounds.game_id', 'rounds.number', 'rounds.winned_player', 'rounds.draw', 'rounds.created_at')
+                     ->selectRaw('(SELECT moves.figure FROM moves where moves.game_id = ? AND moves.round_number = rounds.number AND moves.player_id = ? ORDER BY moves.round_number DESC LIMIT 1) as move_player_1 ', [$this->id, $this->player_1])
+                     ->selectRaw('(SELECT moves.figure FROM moves where moves.game_id = ? AND moves.round_number = rounds.number AND moves.player_id = ? ORDER BY moves.round_number DESC LIMIT 1) as move_player_2 ', [$this->id, $this->player_2])
+                     ->get();
+        
         return $history;
     }
 
 
-    public  function getHistoryLastRound(): History
+    public  function getHistoryLastRound()
     {
-        $historyLastRound = $this->history()->latest()->first();
+        $historyLastRound = DB::table('rounds')
+                              ->where('rounds.game_id', $this->id )
+                              ->where('rounds.status', 1)
+                              ->select( 'rounds.game_id', 'rounds.number', 'rounds.winned_player', 'rounds.draw', 'rounds.created_at')
+                              ->selectRaw('(SELECT moves.figure FROM moves where moves.game_id = ? AND moves.round_number=rounds.number AND moves.player_id=?  ORDER BY moves.round_number DESC LIMIT 1) as move_player_1', [$this->id, $this->player_1])
+                              ->selectRaw('(SELECT moves.figure FROM moves where moves.game_id = ? AND moves.round_number=rounds.number AND moves.player_id=?  ORDER BY moves.round_number DESC LIMIT 1) as move_player_2', [$this->id, $this->player_2])
+                              ->orderByDesc('number')
+                              ->limit(1)
+                              ->first();
 
-        if ($historyLastRound == null) {
+        // if ($historyLastRound->isEmpty()) {
 
-            $history = new History();
-            $history->id = 1;
-            $history->game_id = $this->id;
-            $history->round_number = 1;
-            $history->move_player_1 = Game::NO;
-            $history->move_player_2 = Game::NO;
-            $history->winned_player = null;
-            $history->draw = Game::NO;
-            $history->created_at = Carbon::now();
-            $history->updated_at = Carbon::now();
+        //     $round = [
 
-            return $history;
-        }
+        //         'game_id' => $this->id,
+        //         'number' => 1,
+        //         'move_player_1' => Game::NO,
+        //         'move_player_2' => Game::NO,
+        //         'winned_player' => null,
+        //         'draw' => Game::NO,
+        //         'created_at' => Carbon::now(),
+        //     ];
+
+        //     return $historyLastRound = collect($round);
+        // }
 
         return $historyLastRound;
     }
+
+    // public  function getHistoryLastRound(): History
+    // {
+    //     $historyLastRound = $this->history()->latest()->first();
+
+    //     if ($historyLastRound == null) {
+
+    //         $history = new History();
+    //         $history->id = 1;
+    //         $history->game_id = $this->id;
+    //         $history->round_number = 1;
+    //         $history->move_player_1 = Game::NO;
+    //         $history->move_player_2 = Game::NO;
+    //         $history->winned_player = null;
+    //         $history->draw = Game::NO;
+    //         $history->created_at = Carbon::now();
+    //         $history->updated_at = Carbon::now();
+
+    //         return $history;
+    //     }
+
+    //     return $historyLastRound;
+    // }
 
 
 }

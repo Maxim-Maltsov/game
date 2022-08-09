@@ -174,8 +174,8 @@
                                 <h6 v-show="visible" class="h6 card-title text-secondary">Player One : <span class="text-success"> {{ this.getFigureName( (historyLastRound)? historyLastRound.move_player_1 : null ) }} </span></h6>
                                 <h6 v-show="visible" class="h6 card-title text-secondary">Player Two: <span class="text-success"> {{ this.getFigureName( (historyLastRound)? historyLastRound.move_player_2 : null ) }} </span></h6>
                                 <h6 v-show="visible" class="h6 card-title text-secondary">Winner: 
-                                    <span class="text-success"> {{ (historyLastRound.winned_player)? historyLastRound.winned_player.name : this.getDrawDescription( (historyLastRound)? historyLastRound.draw : null ) }} </span>
-                                </h6>
+                                    <span class="text-success"> {{  winnedPlayerNameOrDraw  }} </span>
+                                </h6>                                                                                                                          <!--(historyLastRound)? historyLastRound.draw : null -->
                             </div>
                         </div>
                         
@@ -192,12 +192,12 @@
                             <div class="card-body d-flex flex-column justify-content-start align-items-start">
                                 <h6 class="h6 card-title text-success pt-3 pb-1"><i>Game History </i></h6>
 
-                                <div v-for="round of history" :key="round.round_number" class="my-0 py-3 d-flex flex-column justify-content-start align-items-start  border-bottom">
-                                    <h6 class="h6 card-title text-success">Round : <span class="text-secondary"> {{ (round.round_number)? round.round_number : '' }} </span></h6>
+                                <div v-for="round of history" :key="round.number" class="my-0 py-3 d-flex flex-column justify-content-start align-items-start  border-bottom">
+                                    <h6 class="h6 card-title text-success">Round : <span class="text-secondary"> {{ (round.number)? round.number : '' }} </span></h6>
                                     <h6 class="h6 card-title text-secondary">Player One : <span class="text-success"> {{ this.getFigureName(round.move_player_1) }} </span></h6>
                                     <h6 class="h6 card-title text-secondary">Player Two: <span class="text-success"> {{ this.getFigureName(round.move_player_2) }} </span></h6>
                                     <h6 class="h6 card-title text-secondary">Winner: 
-                                        <span class="text-success"> {{ (round.winned_player)? round.winned_player.name : this.getDrawDescription(round.draw) }} </span>
+                                        <span class="text-success"> {{ (round.winned_player)? getWinnerName(round.winned_player) : this.getDrawDescription(round.draw) }} </span>
                                     </h6>
                                 </div>
 
@@ -282,6 +282,26 @@
             }
         },
 
+        computed: {
+
+            winnedPlayerNameOrDraw() {
+
+                if (this.historyLastRound == null) {
+
+                    return ' None Data ';
+                }
+
+                if (this.historyLastRound.winned_player == null) {
+
+                    return ' Draw ';
+                }
+                else {
+
+                    return this.getWinnerName(this.historyLastRound.winned_player);
+                }
+
+            }
+        },
 
         methods: {
 
@@ -383,6 +403,7 @@
                             console.log(response.data.data.game.historyLastRound);
                             console.log(`Ничья последнего раунда: ${response.data.data.game.historyLastRound.draw}`);
                             console.log(`Время после перезагрузки страницы: ${response.data.data.game.remainingTimeOfRound}`);
+                            console.log(response.data.data.game.history);
                         }
                     })
                     .catch( error => {
@@ -620,7 +641,7 @@
             },
 
 
-             getFigureName(figure) {
+            getFigureName(figure) {
 
                 if (figure == null) {
 
@@ -639,8 +660,27 @@
             },
 
 
-            getDrawDescription(draw) {
+            getWinnerName(winned_player) {
+                
+                if (winned_player == null) {
 
+                    return ' None Data ';
+                }
+                
+                if (winned_player == this.game.player_1.id) {
+
+                    return this.game.player_1.name;
+                }
+
+                if (winned_player == this.game.player_2.id) {
+
+                    return this.game.player_2.name;
+                }
+            },
+
+
+            getDrawDescription(draw) {
+                
                 if (draw == null) {
 
                     return ' None Data ';

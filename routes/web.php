@@ -45,15 +45,23 @@ Route::get('/welcome', function () {
 
     
 
-    $game = Game::where('id', 21)->first();
+    $game = Game::where('id', 35)->first();
+
+    
+
+    $historyLastRound = $game->getHistoryLastRound();
+    
+    $history = $game->getHistoryGame();
+
+    dd( $historyLastRound, $history);
 
 
     // Получаем последний раунд.
     // $round = DB::table('rounds')
     //             ->where('rounds.game_id', $game->id )
     //             ->select( 'rounds.game_id', 'rounds.number as round_number', 'rounds.winned_player', 'rounds.draw', 'rounds.created_at')
-    //             ->selectRaw('(SELECT moves.figure FROM moves where moves.round_number=rounds.number AND moves.player_id=?) as move_player_1', [ $game->player_1])
-    //             ->selectRaw('(SELECT moves.figure FROM moves where moves.round_number=rounds.number AND moves.player_id=?) as move_player_2', [ $game->player_2])
+    //             ->selectRaw('(SELECT moves.figure FROM moves where moves.round_number=rounds.number AND moves.player_id=? LIMIT 1) as move_player_1', [ $game->player_1])
+    //             ->selectRaw('(SELECT moves.figure FROM moves where moves.round_number=rounds.number AND moves.player_id=? LIMIT 1) as move_player_2', [ $game->player_2])
     //             ->orderByDesc('round_number')
     //             ->limit(1)
     //             ->get();
@@ -62,14 +70,14 @@ Route::get('/welcome', function () {
 
 
     // Первый вариант c selectRaw().
-    $rounds = DB::table('rounds')
-                ->where('rounds.game_id', $game->id )
-                ->select( 'rounds.game_id', 'rounds.number as round_number', 'rounds.winned_player', 'rounds.draw', 'rounds.created_at')
-                ->selectRaw('( SELECT moves.figure FROM moves where moves.round_number = rounds.number AND moves.player_id = ? ) as move_player_1', [ $game->player_1])
-                ->selectRaw('( SELECT moves.figure FROM moves where moves.round_number = rounds.number AND moves.player_id = ? ) as move_player_2', [ $game->player_2])
-                ->get();
+    // $rounds = DB::table('rounds')
+    //             ->where('rounds.game_id', $game->id )
+    //             ->select( 'rounds.game_id', 'rounds.number as round_number', 'rounds.winned_player', 'rounds.draw', 'rounds.created_at')
+    //             ->selectRaw('( SELECT moves.figure FROM moves where moves.round_number = rounds.number AND moves.player_id = ? LIMIT 1) as move_player_1', [ $game->player_1])
+    //             ->selectRaw('( SELECT moves.figure FROM moves where moves.round_number = rounds.number AND moves.player_id = ? LIMIT 1) as move_player_2', [ $game->player_2])
+    //             ->get();
 
-    dd($rounds);
+    // dd($rounds);
 
 
     // Первый вариант c setBindings().
@@ -77,8 +85,8 @@ Route::get('/welcome', function () {
     //             ->where('rounds.game_id', $game->id )
     //             ->select( 
     //                 'rounds.game_id', 'rounds.number as round_number', 'rounds.winned_player', 'rounds.draw', 'rounds.created_at' ,
-    //                 DB::raw('(SELECT moves.figure FROM moves where moves.round_number=rounds.number AND moves.player_id=?) as move_player_1'),
-    //                 DB::raw('(SELECT moves.figure FROM moves where moves.round_number=rounds.number AND moves.player_id=?) as move_player_2')
+    //                 DB::raw('(SELECT moves.figure FROM moves where moves.round_number=rounds.number AND moves.player_id=? LIMIT 1) as move_player_1'),
+    //                 DB::raw('(SELECT moves.figure FROM moves where moves.round_number=rounds.number AND moves.player_id=? LIMIT 1) as move_player_2')
     //             )
     //             ->setBindings([ $game->player_1,  $game->player_2, $game->id])
     //             ->get();
@@ -103,123 +111,6 @@ Route::get('/welcome', function () {
 
 
 
-    // Второй вариант.
-    // $rounds = DB::table('rounds')
-    //             ->where('rounds.game_id', $game->id)
-    //             ->select( 'rounds.game_id', 'rounds.number as round_number', 'rounds.winned_player', 'rounds.draw',  'rounds.created_at')
-    //             ->get();
-
-    // foreach ($rounds as $i => $round)  {
-        
-    //    $moves = Move::where('round_number', $round->round_number)->get();
-
-    //     foreach ($moves as  $move) {
-
-    //         if ($move->player_id == $game->player_1) {
-
-    //             $rounds[$i]->move_player_1 = $move->figure;
-
-    //         } else {
-
-    //             $rounds[$i]->move_player_2 = $move->figure;
-    //         }
-    //     }
-
-    // }
-
-    // dd($rounds);
-
-    
-    // Третий вариант.
-    // $rounds = DB::table('rounds')
-    //             ->where('rounds.game_id', $game->id)
-    //             ->leftJoin('moves', 'moves.game_id', '=', 'rounds.game_id')
-    //             ->select( 'rounds.game_id', 'rounds.number as round_number', 'rounds.winned_player', 'rounds.draw', 'moves.player_id', 'moves.figure', 'rounds.created_at')
-    //             ->groupBy('rounds.number', 'rounds.game_id', 'rounds.winned_player', 'rounds.draw', 'moves.player_id', 'moves.figure', 'rounds.created_at')
-    //             ->get();
-
-    
-    // $rounds->transform(function ($round) use ($game) {
-                
-    //             $round->game_id = $game->id;
-
-    //             if ($round->player_id === $game->player_1) {
-
-    //                 $round->move_player_1 = $round->figure;
-
-    //             } else {
-
-    //                 $round->move_player_2 = $round->figure;
-    //             }
-                    
-    //             return $round;
-    //         });
-
-
-    // $roundsCollection = collect();
-        
-    // $new_round = [];
-
-    // // $roundsCollection->dump();
-    
-    //     foreach ($rounds as $round) {
-           
-    //                                          echo "$round->round_number </br>";
-
-    //         $new_round['game_id'] = $round->game_id;
-    //         $new_round['round_number'] = $round->round_number;
-    //         $new_round['winned_player'] = $round->winned_player;
-    //         $new_round['draw'] = $round->draw;
-    //         $new_round['created_at'] = $round->created_at;
-
-    //         if ($round->player_id == $game->player_1  && $new_round['round_number'] == $round->round_number ) {
-                
-    //             $new_round['move_player_1'] = $round->figure; 
-    //         } 
-
-    //         if ($round->player_id == $game->player_2  && $new_round['round_number'] == $round->round_number ) {
-                
-    //             $new_round['move_player_2'] = $round->figure;
-    //         }
-
-    //         $roundsCollection->push($new_round);
-
-    //         // $roundsCollection->dump();
-    //         // var_dump($new_round);
-    //     }
-
-
-    // $chunk = $roundsCollection->splice(1);
-    // $chunk->all();
-
-    // $unique = $chunk->unique('round_number');
-    // $unique->values()->all();
-   
-    
-    // dd( "Информация о раундах игры. Собрана из двух таблиц:", $rounds,  "Новый собранный раунд:", $new_round, "Коллекция из собранных раундов:",  $roundsCollection, "Вывод только уникальных значений с сортировкой по номеру раунда:", $unique,);
-
-    
-    
-    // $activeRound = $game->getActiveRound();
-
-    // $currentTime = Carbon::now();
-    // $roundStartTime = $activeRound->created_at;
-    // $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
-
-    // // $remainingTime = $currentTime->diffInSeconds($roundEndTime, false);
-    // $remainingTime = ($currentTime->diffInSeconds($roundEndTime, false) >= 0 )? $currentTime->diffInSeconds($roundEndTime, false) : 0;
-
-    // $mothod = $game->getRemainingTimeOfRound();
-
-    // dd("Номер раунда:", $activeRound->number, "Время полученное через метод:", $mothod, "Оставшееся время:", $remainingTime, "Текущее время:", $currentTime , "Время окончания раунда:", $roundEndTime,"Время начала раунда:", $roundStartTime,  );
-
-
-    // SELECT r.game_id, r.number, r.winned_player, r.draw, r.created_at,
-    // (SELECT m.figure FROM moves m where m.round_number=r.number AND m.player_id=g.player_1) as move_player_1,
-    // (SELECT m.figure FROM moves m where m.round_number=r.number AND m.player_id=g.player_2) as move_player_2
-    // FROM `rounds` r 
-    // inner join games g ON g.id=r.game_id
-    // where r.game_id=21
 
     return view('welcome');
 });
