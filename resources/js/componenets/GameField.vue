@@ -286,12 +286,12 @@
 
             winnedPlayerNameOrDraw() {
 
-                if (this.historyLastRound == null) {
+                if (this.historyLastRound.draw == null) {
 
                     return ' None Data ';
                 }
 
-                if (this.historyLastRound.winned_player == null) {
+                if (this.historyLastRound.move_player_1 == this.historyLastRound.move_player_2) {
 
                     return ' Draw ';
                 }
@@ -302,7 +302,7 @@
 
             }
         },
-
+        
         methods: {
 
             makePagination(data) {
@@ -316,7 +316,6 @@
                 }
 
                 this.pagination = pagination;
-                // console.log(this.pagination);
             },
 
 
@@ -396,14 +395,6 @@
                             
                             this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
                             this.startTimer();
-                            
-                            // console.log(this.timer);
-                            console.log(`Раунд после перезагрузки страницы: ${this.round}`);
-                            console.log(`История последнего раунда: `);
-                            console.log(response.data.data.game.historyLastRound);
-                            console.log(`Ничья последнего раунда: ${response.data.data.game.historyLastRound.draw}`);
-                            console.log(`Время после перезагрузки страницы: ${response.data.data.game.remainingTimeOfRound}`);
-                            console.log(response.data.data.game.history);
                         }
                     })
                     .catch( error => {
@@ -431,14 +422,12 @@
                 }, config)
                 .then( response => {
 
-                    // this.exception = (response.data.data.exception)? response.data.data.exception : false;
                     this.info = false;
 
                     if (response.data.data.exception) {
 
                         this.message = response.data.data.message;
                         this.exception = true;
-                        // console.log(this.message);
                     }
                     else {
 
@@ -446,7 +435,6 @@
                         this.waiting = true;
                         this.play = false;
                         this.history = [];
-                        // console.log(this.game);
                     }  
                 })
                 .catch( error => {
@@ -752,7 +740,6 @@
                 .listen('AmountUsersOnlineChangedEvent', (e) => {
                   
                     this.users = e.users;
-                    // console.log(e.users);
                 });
                                           
             Echo.private(`privateChannelFor.${this.auth_id}`)
@@ -762,11 +749,9 @@
                     this.offer = true;
                     this.info = false;
                     this.play = false;
-                    // console.log( e.game);
                 })
                 .listen('FirstPlayerCancelInviteEvent', (e) => {
                     
-                    // alert("Первый игрок отменил приглашение в игру!");
                     this.message = e.message;
                     this.info = true;
 
@@ -776,7 +761,6 @@
                 })
                 .listen('SecondPlayerRejectInviteEvent', (e) => {
                     
-                    // alert("Второй игрок отказался от приглашения в игру!");
                     this.message = e.message;
                     this.info = true;
 
@@ -786,7 +770,6 @@
                 })
                 .listen('GameStartEvent', (e) => {
 
-                    // alert("Второй игрок принял приглашение в игру!");
                     this.game = e.game;
                     this.timer.totalSeconds = e.game.remainingTimeOfRound;
 
@@ -801,11 +784,9 @@
                     this.exception = false;
                     this.waiting = false;
                     this.finished = false;
-                    // console.log(e.game);
                 })
                 .listen('FirstPlayerLeavedGameEvent', (e) => {
                     
-                    // alert('Первый игрок покинул игру.');
                     this.message = e.message;
                     this.info = true;
 
@@ -813,13 +794,12 @@
                     this.leave = false;
                     this.exception = false;
 
-                    this.game = {};
+                    this.game = e.game;
                     this.playersVictories = [];
                     this.stopTimer();
                 })
                 .listen('SecondPlayerLeavedGameEvent', (e) => {
                     
-                    // alert('Второй игрок покинул игру.');
                     this.message = e.message;
                     this.info = true;
 
@@ -827,33 +807,28 @@
                     this.leave = false;
                     this.exception = false;
 
-                    this.game = {};
+                    this.game = e.game;
                     this.playersVictories = [];
                     this.stopTimer();
                 })
                 .listen('FirstPlayerMadeMoveEvent', (e) => {
                     
-                    // alert('Первый игрок сделал ход.');
                     this.message = e.message;
                     this.info = true;
                     this.exception = false;
 
                     this.game = e.game;
-                    // console.log(e.game);
                 })
                 .listen('SecondPlayerMadeMoveEvent', (e) => {
                     
-                    // alert('Второй игрок сделал ход.');
                     this.message = e.message;
                     this.info = true;
                     this.exception = false;
 
                     this.game = e.game;
-                    // console.log(e.game);
                 })
                 .listen('RoundTimerRestartEvent', (e) => {
                     
-                    // alert('Игроки не сделали ходов.');
                     this.stopTimer();
 
                     this.message = e.message;
@@ -864,12 +839,9 @@
                     this.startTimer();
 
                     this.game = e.game;
-                    // console.log(e.game);
-                    console.log(e.game.remainingTimeOfRound);
                 }) 
                 .listen('GameRoundFinishedEvent', (e) => {
 
-                    // alert('Раунд завершён!')
                     this.stopTimer();
 
                     this.message = e.message;
@@ -885,14 +857,9 @@
                     this.hideHistoryLastRound();
 
                     this.playersVictories = e.game.playersVictories;
-
-                    // console.log(e.game);
-                    console.log(`Раунд ${e.game.lastFinishedRound.number} завершён`);
-                    console.log( this.historyLastRound);
                 })
                 .listen('GameNewRoundStartEvent', (e) => {
 
-                    // alert('Новый Раунд!')
                     this.timer.totalSeconds = e.game.remainingTimeOfRound;
                     this.startTimer();
 
@@ -901,13 +868,9 @@
                     this.exception = false;
 
                     this.game = e.game;
-                    // console.log(e.game); 
-                    console.log(`Раунд ${this.round} начат.`);
                 })
                 .listen('GameFinishEvent', (e) => {
 
-                    console.log('Игра окончена!');
-                    
                     this.message = e.message;
                     this.info = true;
                     this.exception = false;
@@ -918,12 +881,8 @@
                     this.round = 1;
 
                     this.stopTimer();
-
-                    console.log(this.game);
                 });
-                
         },
-
 }
        
 </script>

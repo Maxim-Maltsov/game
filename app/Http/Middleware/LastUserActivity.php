@@ -25,9 +25,7 @@ class LastUserActivity
     {
         if (Auth::check()) {
  
-            $expireTime = Carbon::now()->addMinute();
-            Cache::put('online'.Auth::id(), true, $expireTime);
-
+            
             User::where('id', Auth::id())->update(['last_activity' => DB::raw('NOW()'), 'online_status' => User::ONLINE]);
 
             $users = User::getOnlineUsersPaginate(4);

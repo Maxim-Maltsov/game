@@ -45,7 +45,7 @@ Route::get('/welcome', function () {
 
     
 
-    $game = Game::where('id', 35)->first();
+    $game = Game::where('id', 42)->first();
 
     
 

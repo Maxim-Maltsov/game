@@ -30,23 +30,23 @@ class UpdateUsersOnlineStatus extends Command
      * @return int
      */
     public function handle()
-    {   
-        $users = User::whereRaw(DB::raw('TIMESTAMPDIFF(MINUTE, last_activity, NOW()) >= ' . env('EXPIRY_TIME_ONLINE_IN_MINUTES')))->get();
-                    
-        if ($users->count() > 0) { 
+    {     
+        DB::table('users')->whereRaw(DB::raw('TIMESTAMPDIFF(MINUTE, last_activity, NOW()) >= ' . env('EXPIRY_TIME_ONLINE_IN_MINUTES')))
+                          ->chunkById(100, function ($users) {
+                            
+                            foreach ($users as $user) {
 
-            foreach ($users as $user) {
-
-                $user->online_status = User::OFFLINE;
-                $user->save();
-            }
-        }
+                                DB::table('users')
+                                    ->where('id', $user->id)
+                                    ->update(['online_status' => User::OFFLINE]);
+                            }
+                          });
+                          
 
         $users = User::getOnlineUsersPaginate(4);
 
         AmountUsersOnlineChangedEvent::dispatch(new UserCollection($users));
 
-        
         return 0;
     }
 }

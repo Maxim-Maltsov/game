@@ -34,6 +34,7 @@ class SecondPlayerLeavedGameEvent implements ShouldBroadcastNow
     {   
         return [
             
+            'game' => $this->game,
             'message' => $this->game->secondPlayer->name . ' leaved the game.',
         ];
     }
