@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ApiTokenServisece;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use App\Services\ApiAuthenticateService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,9 +47,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-         // Sunctum. Autorization token.
-        $token = $user->createToken('API-Token')->plainTextToken;
-        session(['API-Token' => $token]);
+        // Sunctum. Autorization token.
+        ApiAuthenticateService::makeToken(Auth::user());
 
         event(new Registered($user));
 

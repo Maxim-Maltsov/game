@@ -12,6 +12,7 @@ use App\Models\History;
 use App\Models\Move;
 use App\Models\Round;
 use App\Models\User;
+use App\Services\ApiAuthenticateService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -43,17 +44,24 @@ Route::get('/welcome', function () {
 
     // exit();
 
+    $user = User::find(1);
+
+
+    // $token = ApiAuthenticateService::makeToken($user);
+
+    // ApiAuthenticateService::deleteToken($user);
+
+    dd($user);
+
+    // $game = Game::where('id', 42)->first();
+
     
 
-    $game = Game::where('id', 42)->first();
-
+    // $historyLastRound = $game->getHistoryLastRound();
     
+    // $history = $game->getHistoryGame();
 
-    $historyLastRound = $game->getHistoryLastRound();
-    
-    $history = $game->getHistoryGame();
-
-    dd( $historyLastRound, $history);
+    // dd( $historyLastRound, $history);
 
 
     // Получаем последний раунд.

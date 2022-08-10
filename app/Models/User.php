@@ -113,8 +113,8 @@ class User extends Authenticatable
         return true;
     }
 
-
-    public static function updateOnlineStatus($id): void
+    
+    public static function makeUserStatusOffline($id): void
     {
         $user =  User::where('id', $id)->first();
     

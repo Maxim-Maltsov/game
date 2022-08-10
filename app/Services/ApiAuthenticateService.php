@@ -9,6 +9,7 @@ class ApiAuthenticateService extends Model
 {
     use HasFactory;
 
+    
     public static function makeToken($user) 
     {
         $token = $user->createToken('API-Token')->plainTextToken;

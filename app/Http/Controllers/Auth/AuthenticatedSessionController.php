@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\ApiTokenServisece;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use App\Services\ApiAuthenticateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,11 +36,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-         // Sunctum. Autorization token.
-         $token = Auth::user()->createToken('API-Token')->plainTextToken;
-         session(['API-Token' => $token]);
+        // Sunctum. Autorization token.
+        ApiAuthenticateService::makeToken(Auth::user());
        
-        
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
@@ -52,10 +51,10 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request)
     {
         // Sunctum. Autorization token.
-        Auth::user()->tokens()->delete();
-
+        ApiAuthenticateService::deleteToken(Auth::user());
+        
         // Обновляет Онлайн-Статус и Вызвает событие AmountUsersOnlineChangedEven.
-        User::updateOnlineStatus(Auth::id());
+        User::makeUserStatusOffline(Auth::id());
 
 
         Auth::guard('web')->logout();
