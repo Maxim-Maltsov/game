@@ -470,6 +470,8 @@
 
                     this.waiting = false;
                     this.exception = false;
+
+                    this.game = {};
                 })
                 .catch( error => {
 
@@ -506,7 +508,6 @@
                     this.leave = true;
 
                     this.startTimer();
-                    console.log(this.game);
                 })
                 .catch( error => {
 
@@ -541,6 +542,8 @@
 
                     this.offer = false;
                     this.exception = false;
+
+                    this.game = {};
                 })
                 .catch( error => {
 
@@ -650,6 +653,11 @@
 
 
             getWinnerName(winned_player) {
+
+                if (this.game.player_1 == undefined || this.game.player_2 == undefined) {
+
+                    return ' None Data ';
+                }
                 
                 if (winned_player == null) {
 
@@ -759,6 +767,9 @@
                     this.offer = false;
                     this.exception = false;
                     this.game = {};
+
+                    console.log('Сработоло событие FirstPlayerCancelInviteEvent');
+                    console.log(this.game);
                 })
                 .listen('SecondPlayerRejectInviteEvent', (e) => {
                     
@@ -801,8 +812,6 @@
 
                     this.stopTimer();
 
-                    console.log(e.game);
-                    console.log(this.round);
                 })
                 .listen('SecondPlayerLeavedGameEvent', (e) => {
                     
