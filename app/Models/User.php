@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use PhpParser\Node\Expr\Cast\Int_;
 use Illuminate\Http\Response as HttpResponse;
-
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class User extends Authenticatable
 {
@@ -83,13 +83,9 @@ class User extends Authenticatable
     ];
 
 
-    // Relationship.
-
-   
-
     // Methods.
     
-    public static function getOnlineUsersPaginate($amount)
+    public static function getOnlineUsersPaginate($amount): LengthAwarePaginator
     {   
         $users = User::where('online_status', User::ONLINE)->paginate($amount);
         
@@ -279,7 +275,7 @@ class User extends Authenticatable
     }
 
     
-    public static function move(MoveRequest $request)
+    public static function move(MoveRequest $request): MoveResource
     {   
         $player = Auth::user();
         

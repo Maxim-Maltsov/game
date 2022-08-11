@@ -595,8 +595,6 @@
 
             makeMove(figure) {
 
-                console.log(`Сделан ход в раунде ${this.round}`);
-
                 let config = {
 
                     headers: {
@@ -767,9 +765,6 @@
                     this.offer = false;
                     this.exception = false;
                     this.game = {};
-
-                    console.log('Сработоло событие FirstPlayerCancelInviteEvent');
-                    console.log(this.game);
                 })
                 .listen('SecondPlayerRejectInviteEvent', (e) => {
                     
@@ -811,7 +806,6 @@
                     this.playersVictories = [];
 
                     this.stopTimer();
-
                 })
                 .listen('SecondPlayerLeavedGameEvent', (e) => {
                     
@@ -827,9 +821,6 @@
                     this.playersVictories = [];
 
                     this.stopTimer();
-
-                    console.log(e.game);
-                    console.log(this.round);
                 })
                 .listen('FirstPlayerMadeMoveEvent', (e) => {
                     
@@ -877,8 +868,6 @@
                     this.hideHistoryLastRound();
 
                     this.playersVictories = e.game.playersVictories;
-
-                    console.log(`Номер последнего раунда: ${e.game.lastFinishedRoundNumber}`);
                 })
                 .listen('GameNewRoundStartEvent', (e) => {
 

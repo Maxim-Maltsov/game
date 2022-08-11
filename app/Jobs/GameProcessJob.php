@@ -6,9 +6,6 @@ use App\Events\AmountUsersOnlineChangedEvent;
 use App\Events\GameFinishEvent;
 use App\Events\GameNewRoundStartEvent;
 use App\Events\RoundTimerRestartEvent;
-use App\Exceptions\MoveAlreadyMadeException;
-use App\Exceptions\TimerRestartException;
-use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
 use App\Http\Resources\UserCollection;
 use App\Models\Game;
@@ -22,7 +19,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Psy\Exception\BreakException;
 
@@ -52,7 +48,6 @@ class GameProcessJob implements ShouldQueue
     public function handle()
     {
         $roundEndTime = $this->game->getRoundEndTime();
-        echo " - Обработчик игрового процесса запущен. Первоночальный запуск в методе handle() \n";
 
         while (true) {
             
@@ -63,16 +58,13 @@ class GameProcessJob implements ShouldQueue
                 if ($this->canFinishGame()) {
                     
                     $this->finishGame();
-                    echo " - Игра завершена. finishGame() \n";
                     break;
                 }
 
                 if ($this->leavedGame()) {
 
-                    echo " - Игрок покинул игру leavedGame() \n";
                     break;
                 }
-
 
                 if ($this->canStartNewRound($currentTime,  $roundEndTime)) {
 
@@ -82,14 +74,12 @@ class GameProcessJob implements ShouldQueue
                     }
 
                     $this->startNewRound();
-                    
                     break;
                 } 
                 
                 if ($this->needRestartTimer) {
 
                     $this->restartTimer();
-                   
                     break;
                 }
             }
@@ -99,9 +89,8 @@ class GameProcessJob implements ShouldQueue
     }
 
     
-    public function makeMoveIfNeeded()
-    {   echo " - Метод завершения ходов запущен. makeMoveIfNeeded() \n";
-
+    public function makeMoveIfNeeded(): void
+    {   
         // Обновление состояния модели. Метод fresh() загружает новый экземпляр модели из базы данных с обнавлёнными атрибутами.
         $game = $this->game->fresh();
 
@@ -118,8 +107,6 @@ class GameProcessJob implements ShouldQueue
             
             if ($move instanceof Move) {
 
-                echo " - $player->name уже сделал ход в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
-
                 continue;
             }
             
@@ -130,8 +117,6 @@ class GameProcessJob implements ShouldQueue
             $move->figure = Game::FIGURE_NONE;
             $move->save();
 
-            echo " - Сделан ход за $player->name в Раунде:$activeRound->number Игры с id:$game->id. makeMoveIfNeeded() . \n";
-
             $game->finishRoundIfNeeded();
         }
     }
@@ -139,34 +124,27 @@ class GameProcessJob implements ShouldQueue
 
     public function canStartNewRound($currentTime, $endTime): bool 
     {   
-        // Обновление состояния модели. Метод fresh() загружает новый экземпляр модели из базы данных с обнавлёнными атрибутами.
         $game = $this->game->fresh();
         
         $needStartNewRound = $game->need_start_new_round;
 
-        if ($needStartNewRound == Game::YES) { // Разрешение на начало нового раунда, если оба игрока сделали ход.
+        if ($needStartNewRound == Game::YES) { 
             
             $this->endRoundReason = Game::ALL_PLAYERS_MADE_MOVE;
            
             return true;
         }
            
-        if ($currentTime >= $endTime) { // Разрешение на то, чтобы сделать ходы за игроков, если истекло время предыдущего раунда и ход какого-то игрока не сделан.
-
+        if ($currentTime >= $endTime) { 
             if ($game->playersNotMakeMoves()) {
                 
-                echo " - Игроки не cделал ходов. Новый раунд не нужен. Возвращён false. canStartNewRound() \n";
-
-                // Сдеолать метку на перезапуск раунда активной.
                 $this->needRestartTimer = true;
-                echo " - Нужен перезапуск Таймера. Переменная needRestartTimer = true. canStartNewRound() \n";
-                
+               
                 return false;
             }
 
             $this->endRoundReason = Game::ROUND_TIME_IS_UP;
-            echo " - Время раунда вышло  \n";
-
+           
             return true;
         }
 
@@ -174,11 +152,9 @@ class GameProcessJob implements ShouldQueue
     }
 
 
-    public function startNewRound()
+    public function startNewRound(): void
     {   
         if ($this->canFinishGame()) {
-
-            echo " - Побед достаточно. Cоздавать новый раунд не нужно. startNewRound() \n";
 
             $this->finishGame();
 
@@ -187,39 +163,30 @@ class GameProcessJob implements ShouldQueue
 
         $round = new Round();
         $round->game_id = $this->game->id;
-        $round->number = $this->game->getLastFinishedRoundNumber() + 1; // Сделать проверку- Если завершённого раунда ещё нет то возвращать.
+        $round->number = $this->game->getLastFinishedRoundNumber() + 1;
         $round->save();
-
-        echo " - Новый раунд создан. startNewRound() \n";
 
         $game = $this->game->fresh(); // Игра с обновлённым состоянием.
         $game->need_start_new_round = Game::NO;
         $game->save(); 
 
         GameProcessJob::dispatch($game);
-        echo " - GameProcessJob для нового раунда перезапущен. StartNewRound() \n";
         GameNewRoundStartEvent::dispatch(GameResource::make($game));
     }
 
 
-    public function restartTimer()
+    public function restartTimer(): void
     {
         $this->needRestartTimer = false;
 
-        // Обновление состояния модели. Метод fresh() загружает новый экземпляр модели из базы данных с обнавлёнными атрибутами.
         $game = $this->game->fresh();
         
         $activeRound = $game->getActiveRound();
         $activeRound->created_at = Carbon::now();
         $activeRound->save(); 
-        echo " - Время начала раунда обновлено и равно " . Carbon::now() . ". restartTimer() \n";
-    
-        // 5. Запустить GameProcessJob::dispatch($game);
+
         GameProcessJob::dispatch($game);
-        echo " - GameProcessJob для текущего раунда перезапущен. restartTimer() \n";
-        // 6. Запустить событие перезапуска таймера.
         RoundTimerRestartEvent::dispatch(GameResource::make($game));
-        echo " - Таймер перезапущен. restartTimer() \n";
     }
 
 
@@ -243,7 +210,7 @@ class GameProcessJob implements ShouldQueue
     }
 
 
-    public function finishGame()
+    public function finishGame(): void
     {
         $game = $this->game->fresh();
 
@@ -252,7 +219,6 @@ class GameProcessJob implements ShouldQueue
         if ( $winnedPlayer == null) {
 
             Log::error('Failed to define the winner');
-            echo "Не удалось определить победителя \n";
 
             return;
         }

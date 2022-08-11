@@ -193,7 +193,7 @@ class Game extends Model
 
         if ($activeRound == null) {
 
-            return 1;
+            return 0;
         }
 
         $currentTime = Carbon::now();
