@@ -202,7 +202,7 @@ class Game extends Model
 
         $currentTime = Carbon::now();
         $roundStartTime = $activeRound->created_at;
-        $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
+        $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME_IN_SECONDS'));
 
         $remainingTime = $currentTime->diffInSeconds($roundEndTime, false);
 
@@ -214,7 +214,7 @@ class Game extends Model
         return $remainingTime;
     }
 
-
+    
     public function getRoundEndTime(): int 
     {
         $activeRound = $this->getActiveRound();
@@ -225,7 +225,7 @@ class Game extends Model
         }
 
         $roundStartTime = $activeRound->created_at;
-        $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME'));
+        $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME_IN_SECONDS'));
         $roundEndTimeInSeconds = $roundEndTime->secondsSinceMidnight();
 
         return $roundEndTimeInSeconds;
