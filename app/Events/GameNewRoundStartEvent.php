@@ -34,10 +34,12 @@ class GameNewRoundStartEvent implements ShouldBroadcastNow
 
     public function broadcastWith()
     {   
+        $newRoundNumber = $this->game->getLastFinishedRoundNumber() + 1;
+
         return [
             
             'game' => $this->game,
-            'message' => "New Round Started.",
+            'message' => "Round: $newRoundNumber Started.",
         ];
     }
 

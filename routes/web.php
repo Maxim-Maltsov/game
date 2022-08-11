@@ -44,14 +44,15 @@ Route::get('/welcome', function () {
 
     // exit();
 
-    $user = User::find(1);
+    $game = Game::find(94);
 
+    $number = $game->getLastFinishedRoundNumber();
 
     // $token = ApiAuthenticateService::makeToken($user);
 
     // ApiAuthenticateService::deleteToken($user);
 
-    dd($user);
+    dd($number);
 
     // $game = Game::where('id', 42)->first();
 

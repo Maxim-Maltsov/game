@@ -380,7 +380,7 @@
                         else {
 
                             this.game = response.data.data.game;
-                            this.round = response.data.data.game.lastFinishedRound.number + 1;
+                            this.round = response.data.data.game.lastFinishedRoundNumber + 1;
                             this.history = response.data.data.game.history;
                             this.historyLastRound = response.data.data.game.historyLastRound;
                             this.playersVictories = response.data.data.game.playersVictories;
@@ -577,7 +577,8 @@
                     this.leave = false;
                     this.exception = false;
                     
-                    this.game = {}
+                    this.game = response.data.data;
+                    this.round = 1;
                     this.playersVictories = [];
 
                     this.stopTimer();
@@ -795,8 +796,13 @@
                     this.exception = false;
 
                     this.game = e.game;
+                    this.round = 1;
                     this.playersVictories = [];
+
                     this.stopTimer();
+
+                    console.log(e.game);
+                    console.log(this.round);
                 })
                 .listen('SecondPlayerLeavedGameEvent', (e) => {
                     
@@ -808,8 +814,13 @@
                     this.exception = false;
 
                     this.game = e.game;
+                    this.round = 1;
                     this.playersVictories = [];
+
                     this.stopTimer();
+
+                    console.log(e.game);
+                    console.log(this.round);
                 })
                 .listen('FirstPlayerMadeMoveEvent', (e) => {
                     
@@ -849,7 +860,7 @@
                     this.exception = false;
 
                     this.game = e.game;
-                    this.round = e.game.lastFinishedRound.number + 1;
+                    this.round = e.game.lastFinishedRoundNumber + 1;
                     this.history = e.game.history;
 
                     this.historyLastRound = e.game.historyLastRound;
@@ -857,6 +868,8 @@
                     this.hideHistoryLastRound();
 
                     this.playersVictories = e.game.playersVictories;
+
+                    console.log(`Номер последнего раунда: ${e.game.lastFinishedRoundNumber}`);
                 })
                 .listen('GameNewRoundStartEvent', (e) => {
 

@@ -187,7 +187,7 @@ class GameProcessJob implements ShouldQueue
 
         $round = new Round();
         $round->game_id = $this->game->id;
-        $round->number = $this->game->getLastFinishedRound()->number + 1; // Сделать проверку- Если завершённого раунда ещё нет то возвращать.
+        $round->number = $this->game->getLastFinishedRoundNumber() + 1; // Сделать проверку- Если завершённого раунда ещё нет то возвращать.
         $round->save();
 
         echo " - Новый раунд создан. startNewRound() \n";
@@ -233,7 +233,7 @@ class GameProcessJob implements ShouldQueue
         {
             $victories = $victoriesPlayer->victory_count;
            
-            if ($victories == Game::VICTORY_CONDITION){
+            if ($victories == env('VICTORY_CONDITION')){
 
                 return  true;
             }

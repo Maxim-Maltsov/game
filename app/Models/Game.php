@@ -48,10 +48,6 @@ class Game extends Model
     const ROUND_TIME_IS_UP = 0;
     const ALL_PLAYERS_MADE_MOVE = 1;
 
-    // The condition for winning the game.
-    const VICTORY_CONDITION = 3;
-
-
     protected $fillable = [ 'player_2'];
 
 
@@ -274,28 +270,21 @@ class Game extends Model
     }
 
 
-    public function getLastFinishedRound(): ?Round
+    public function getLastFinishedRoundNumber(): int//?Round
     {   
-        $lastRound = $this->rounds()->where('status', Round::FINISHED)->latest()->first(); // $lastRound получен через связь с game по условию.
-        $game =  $this->fresh();
+        $lastFinishedRound = $this->rounds()->where('status', Round::FINISHED)->latest()->first(); // $lastRound получен через связь с game по условию.
+        // $game =  $this->fresh();
         
 
-        if ($lastRound == null  || $game->status == Game::FINISHED ) {
+        if ($lastFinishedRound == null || $this->status == Game::FINISHED) {
 
-            $round = new Round();
-            $round->id = 1;
-            $round->game_id = $this->id;
-            $round->number = 0;
-            $round->status = Round::FINISHED;
-            $round->winned_player = null;
-            $round->draw = Game::NO;
-            $round->created_at = Carbon::now();
-            $round->updated_at = Carbon::now();
+        
+            $number = 0;
 
-            return $round;
+            return $number;
         }
 
-        return $lastRound;
+        return $lastFinishedRound->number;
     }
 
 
@@ -334,8 +323,6 @@ class Game extends Model
             $activeRound->draw = $draw;
             $activeRound->status = Round::FINISHED;
             $activeRound->save();
-
-            // $this->saveHistoryGame($moves, $activeRound, $winnedPlayer, $draw);
 
             GameRoundFinishedEvent::dispatch(GameResource::make($this));
         }
@@ -458,7 +445,7 @@ class Game extends Model
         {
             $victories = $victoriesPlayer->victory_count;
            
-            if ($victories == Game::VICTORY_CONDITION){
+            if ($victories == env('VICTORY_CONDITION')){
 
                 return  $victoriesPlayer->winned_player;
             }
