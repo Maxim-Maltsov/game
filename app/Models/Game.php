@@ -270,15 +270,12 @@ class Game extends Model
     }
 
 
-    public function getLastFinishedRoundNumber(): int//?Round
+    public function getLastFinishedRoundNumber(): int
     {   
         $lastFinishedRound = $this->rounds()->where('status', Round::FINISHED)->latest()->first(); // $lastRound получен через связь с game по условию.
-        // $game =  $this->fresh();
-        
-
+       
         if ($lastFinishedRound == null || $this->status == Game::FINISHED) {
 
-        
             $number = 0;
 
             return $number;
