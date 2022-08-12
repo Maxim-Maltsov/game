@@ -9,7 +9,8 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class UpdateUsersOnlineStatus extends Command
-{
+{   
+    const EXPIRY_TIME_ONLINE_IN_MINUTES = 5;
     /**
      * The name and signature of the console command.
      *
@@ -31,7 +32,7 @@ class UpdateUsersOnlineStatus extends Command
      */
     public function handle()
     {     
-        DB::table('users')->whereRaw(DB::raw('TIMESTAMPDIFF(MINUTE, last_activity, NOW()) >= ' . env('EXPIRY_TIME_ONLINE_IN_MINUTES')))
+        DB::table('users')->whereRaw(DB::raw('TIMESTAMPDIFF(MINUTE, last_activity, NOW()) >= ' . $this::EXPIRY_TIME_ONLINE_IN_MINUTES))
                           ->chunkById(100, function ($users) {
                             
                             foreach ($users as $user) {

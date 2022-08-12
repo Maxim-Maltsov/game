@@ -200,7 +200,7 @@ class GameProcessJob implements ShouldQueue
         {
             $victories = $victoriesPlayer->victory_count;
            
-            if ($victories == env('VICTORY_CONDITION')){
+            if ($victories == Game::VICTORY_CONDITION){
 
                 return  true;
             }

@@ -4,10 +4,7 @@ namespace App\Models;
 
 use App\Events\GameRoundFinishedEvent;
 use App\Exceptions\GameNotFoundException;
-use App\Exceptions\TimerRestartException;
-use App\Http\Requests\MoveRequest;
 use App\Http\Resources\GameResource;
-use App\Jobs\GameProcessJob;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use stdClass;
@@ -24,13 +20,13 @@ class Game extends Model
 {
     use HasFactory;
 
-    // Game status.
+    // Game Status.
 
     const WAITING_PLAYER = 0;
     const IN_PROCESS = 1;
     const FINISHED = 2;
 
-    // Game figure.
+    // Game Figure.
 
     const FIGURE_NONE = 0;
     const FIGURE_ROCK = 1;
@@ -39,7 +35,11 @@ class Game extends Model
     const FIGURE_LIZARD = 4;
     const FIGURE_SPOCK = 5;
 
-    // Boolean value.
+    // Game Settings.
+    const ROUND_TIME_IN_SECONDS = 30;
+    const VICTORY_CONDITION = 5;
+
+    // Boolean Value.
     const YES = 1;
     const NO = 0;
 
@@ -47,6 +47,7 @@ class Game extends Model
 
     const ROUND_TIME_IS_UP = 0;
     const ALL_PLAYERS_MADE_MOVE = 1;
+
 
     protected $fillable = [ 'player_2'];
 
@@ -198,7 +199,7 @@ class Game extends Model
 
         $currentTime = Carbon::now();
         $roundStartTime = $activeRound->created_at;
-        $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME_IN_SECONDS'));
+        $roundEndTime = $roundStartTime->copy()->addSeconds(Game::ROUND_TIME_IN_SECONDS);
 
         $remainingTime = $currentTime->diffInSeconds($roundEndTime, false);
 
@@ -221,7 +222,7 @@ class Game extends Model
         }
 
         $roundStartTime = $activeRound->created_at;
-        $roundEndTime = $roundStartTime->copy()->addSeconds(env('ROUND_TIME_IN_SECONDS'));
+        $roundEndTime = $roundStartTime->copy()->addSeconds(Game::ROUND_TIME_IN_SECONDS);
         $roundEndTimeInSeconds = $roundEndTime->secondsSinceMidnight();
 
         return $roundEndTimeInSeconds;
@@ -256,8 +257,7 @@ class Game extends Model
         if ( $activeRound == null) {
 
             Log::error("Active round in the game with id:$this->id not detected.");
-            echo " - Активный раунд в игре с id:$this->id не обнаружен. return null. getMovePlayerInActiveRound() \n";
-
+            
             return null;
         }
 
@@ -442,7 +442,7 @@ class Game extends Model
         {
             $victories = $victoriesPlayer->victory_count;
            
-            if ($victories == env('VICTORY_CONDITION')){
+            if ($victories == Game::VICTORY_CONDITION){
 
                 return  $victoriesPlayer->winned_player;
             }
