@@ -29,7 +29,6 @@ use Illuminate\Support\Facades\Route;
 require __DIR__.'/auth.php';
 
 
-
 Route::middleware(['auth', 'last-activity'])->group(function () {
 
     Route::get('/', [GameController::class, 'index'])->name('home');
