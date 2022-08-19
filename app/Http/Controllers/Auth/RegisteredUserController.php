@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
         ]);
 
         // Sunctum. Autorization token.
-        ApiAuthenticateService::makeToken(Auth::user());
+        ApiAuthenticateService::makeToken($user);
 
         event(new Registered($user));
 
