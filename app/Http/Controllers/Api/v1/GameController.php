@@ -14,16 +14,17 @@ use App\Http\Requests\MoveRequest;
 use App\Models\Game;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Response as HttpResponse;
 
 class GameController extends Controller
 {
 
     public function inviteToPlay(GameRequest $request)
     {   
-
         try {
 
-            return User::invite($request);
+            $secondPlayerId = $request->player_2;
+            return User::invite($secondPlayerId);
         }
         catch (PlayerNotFoundException $e) {
 
@@ -61,36 +62,44 @@ class GameController extends Controller
         }
     }
 
-
-    public function cancelInvite(Game $game)
+    
+    public function cancelInvite(Game $game) 
     {  
-        return User::cancel($game);
+       if (User::cancel($game)) {
+            return response(null, HttpResponse::HTTP_NO_CONTENT);
+       }
     }
-
-
-    public function acceptInvite(Game $game) {
-
+    
+    
+    public function acceptInvite(Game $game) 
+    {
        return User::play($game);
     }
     
-
-    public function rejectInvite(Game $game)
+    
+    public function rejectInvite(Game $game) 
     {
-       return User::reject($game);
+        if (User::reject($game)) {
+            return response(null, HttpResponse::HTTP_NO_CONTENT);
+        }
     }
+    
 
-
-     public function leaveGame(Game $game)
+    public function leaveGame(Game $game)
     {
        return User::leave($game);
     }
 
-
-    public static function makeMove(MoveRequest $request)
-    {  
+    
+    public static function makeMove(MoveRequest $request) 
+    {
         try {
+            
+            $gameId = $request->game_id;
+            $roundNumber = $request->round_number;
+            $figure = $request->figure;
 
-            return User::move($request);
+            return User::move($gameId, $roundNumber, $figure);
         }
         catch (MoveAlreadyMadeException $e) {
 
@@ -101,8 +110,8 @@ class GameController extends Controller
             ]]);
         }   
     }
-
-
+    
+    
     public function initGame()
     {   
         try {
