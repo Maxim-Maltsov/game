@@ -123,10 +123,10 @@ class User extends Authenticatable
     }
 
 
-    public static function invite(GameRequest $request): GameResource
+    public static function invite(int $secondPlayerId): GameResource  
     {
         $firstPlayer = User::where('id', Auth::id())->first();
-        $secondPlayer = User::where('id', $request->player_2)->first();
+        $secondPlayer = User::where('id', $secondPlayerId)->first();
 
         if ($firstPlayer == null || $secondPlayer == null)
         {   
@@ -136,8 +136,7 @@ class User extends Authenticatable
         if ($firstPlayer->id == $secondPlayer->id) {
 
             throw new YouCannotInviteYourselfException('You cannot invite yourself.');
-        }
-        
+        } 
 
         $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
                     ->where('player_1', $firstPlayer->id)
@@ -147,7 +146,6 @@ class User extends Authenticatable
 
             throw new YouСannotOfferTwoGamesAtOnceException('You have already offered to play to another player. Wait for a response or cancel the game with ' . $game->secondPlayer->name . '.');
         }
-
 
         $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
                     ->where('player_2', $firstPlayer->id)
@@ -163,8 +161,10 @@ class User extends Authenticatable
 
         $secondPlayer->game_status = User::GIVING_REPLY;
         $secondPlayer->save();
-          
-        $game = new Game($request->validated()); // $request->validated() -  saving in game second player 'id'.
+        
+        $attributes = array('player_2' => $secondPlayerId);
+
+        $game = new Game($attributes);
         $game->player_1 = $firstPlayer->id;
         $game->status = Game::WAITING_PLAYER;
         $game->save();
@@ -176,9 +176,9 @@ class User extends Authenticatable
         
         return GameResource::make($game);
     }
-
-
-    public static function cancel(Game $game): HttpResponse | ResponseFactory
+    
+    
+    public static function cancel(Game $game): bool
     {
         $firstPlayer = $game->firstPlayer;
         $firstPlayer->game_status = User::FREE;
@@ -190,10 +190,10 @@ class User extends Authenticatable
         
         $users = User::getOnlineUsersPaginate(4);
         AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
-        
-        return response(null, HttpResponse::HTTP_NO_CONTENT);
-    }
 
+        return true;
+    }
+    
 
     public static function play(Game $game): GameResource
     {
@@ -221,7 +221,7 @@ class User extends Authenticatable
     }
 
 
-    public static function reject(Game $game): HttpResponse | ResponseFactory
+    public static function reject(Game $game): bool
     {   
         $firstPlayer = $game->firstPlayer;
         $firstPlayer->game_status = User::FREE;
@@ -234,9 +234,9 @@ class User extends Authenticatable
         $users = User::getOnlineUsersPaginate(4);
         AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
 
-        return response(null, HttpResponse::HTTP_NO_CONTENT);
+        return true;
     }
-
+    
     
     public static function leave(Game $game): GameResource
     {   
@@ -250,13 +250,11 @@ class User extends Authenticatable
 
         $leaving_player = Auth::id();
         $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
-
         
         $activeRound = $game->getActiveRound();
         $activeRound->status = Round::FINISHED;
         $activeRound->winned_player = $winned_player;
         $activeRound->save();
-
 
         $game->status = Game::FINISHED;
         $game->end = Carbon::now();
@@ -275,13 +273,13 @@ class User extends Authenticatable
     }
 
     
-    public static function move(MoveRequest $request): MoveResource
+    public static function move(int $gameId, int $roundNumber, int $figure): MoveResource
     {   
         $player = Auth::user();
         
-        $move = Move::where('game_id', $request->game_id)
+        $move = Move::where('game_id', $gameId)
                     ->where('player_id', $player->id )
-                    ->where('round_number', $request->round_number)
+                    ->where('round_number', $roundNumber)
                     ->first();
 
         if ($move instanceof Move) {
@@ -289,16 +287,22 @@ class User extends Authenticatable
           throw new MoveAlreadyMadeException('You have already made a move in this round.');
         }
 
-        $move = new Move($request->validated()); // $request->validated() - saving in table moves 'game_id', 'round_number' and 'figure'.
+        $attributes = array(     
+            'game_id' =>   $gameId,
+            'round_number' => $roundNumber,
+            'figure' => $figure,
+        );
+
+        $move = new Move($attributes);
         $move->player_id = $player->id;
         $move->save();
 
-        $game = Game::where('id', $request->game_id)->first();
+        $game = Game::where('id', $gameId)->first();
         
         FirstPlayerMadeMoveEvent::dispatch(GameResource::make($game));
         SecondPlayerMadeMoveEvent::dispatch(GameResource::make($game));
 
-        $game->finishRoundIfNeeded($request);
+        $game->finishRoundIfNeeded();
 
         return MoveResource::make($move);
     }
