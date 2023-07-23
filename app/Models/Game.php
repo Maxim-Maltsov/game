@@ -311,15 +311,15 @@ class Game extends Model
             $draw = ($winner_id == Game::NO_WINNER)? Game::YES : Game::NO;
             
             $activeRound = $this->getActiveRound();
-
             $game = $activeRound->game;
-            $game->need_start_new_round = Game::YES;
-            $game->save();
 
             $activeRound->winned_player = $winnedPlayer;
             $activeRound->draw = $draw;
             $activeRound->status = Round::FINISHED;
             $activeRound->save();
+
+            $game->need_start_new_round = Game::YES;
+            $game->save();
 
             GameRoundFinishedEvent::dispatch(GameResource::make($this));
         }
