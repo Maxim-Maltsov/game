@@ -41,7 +41,7 @@
                 <!-- pagination -->
                 <nav aria-label="Page navigation example" class="mt-3">
                     <ul class="pagination pagination-lg">
-                        <li  class="page-item" :class="{disabled: !Boolean(pagination.prev)}" v-on:click.prevent="getUsers(pagination.prev)">
+                        <li  class="page-item" :class="{disabled: !Boolean(pagination.prev)}" v-on:click.prevent="getOnlineUsersWithPaginated(pagination.prev)">
                             <a class="page-link text-success" href="#"> &laquo;  </a>
                         </li>
 
@@ -49,7 +49,7 @@
                             <a class="page-link text-secondary" href="javascript:void(0)"> <span class="text-secondary">{{pagination.current_page}} из {{pagination.last_page}}</span> </a>
                         </li>
                     
-                        <li class="page-item" :class="{disabled: !Boolean(pagination.next)}" v-on:click.prevent="getUsers(pagination.next)">
+                        <li class="page-item" :class="{disabled: !Boolean(pagination.next)}" v-on:click.prevent="getOnlineUsersWithPaginated(pagination.next)">
                             <a class="page-link text-success"  href="#" > &raquo; </a>
                         </li>
                     </ul>
@@ -304,6 +304,29 @@
         },
         
         methods: {
+            
+            getTests() {  // После теста удалить.
+
+                let config = {
+
+                    headers: {
+                        
+                        Authorization: "Bearer " + this.token,
+                    }
+                }
+                
+                axios
+                    .get( 'api/v1/tests', config)
+                    .then( response =>  {
+                        //console.log(response.data);
+                        console.log('Получены тестовые данные!');
+                    })
+                    .catch( error => {
+                        
+                        console.log(error);
+                    });
+            },
+
 
             makePagination(data) {
 
@@ -319,7 +342,7 @@
             },
 
 
-            getUsers(page_url) {
+            getOnlineUsersWithPaginated(page_url) {
 
                 this.loading_users = true;
                 
@@ -371,31 +394,21 @@
                 axios
                     .get( 'api/v1/init-game', config)
                     .then( response => {
-
-                        if (response.data.data.exception) {
+ 
+                        this.game = response.data.data.game;
+                        this.round = response.data.data.game.lastFinishedRoundNumber + 1;
+                        this.history = response.data.data.game.history;
+                        this.historyLastRound = response.data.data.game.historyLastRound;
+                        this.playersVictories = response.data.data.game.playersVictories;
+                        this.finished = response.data.data.game.finished;
                         
-                            // this.message = response.data.data.message;
-                            // this.exception = true;
-                        }
-                        else {
+                        this.waiting = response.data.data.waiting;
+                        this.offer = response.data.data.offer;
+                        this.play = response.data.data.play;
+                        this.leave = response.data.data.leave;
 
-                            this.game = response.data.data.game;
-                            this.round = response.data.data.game.lastFinishedRoundNumber + 1;
-                            this.history = response.data.data.game.history;
-                            this.historyLastRound = response.data.data.game.historyLastRound;
-                            this.playersVictories = response.data.data.game.playersVictories;
-                            this.finished = response.data.data.game.finished;
-                            
-
-                            this.waiting = response.data.data.waiting;
-                            this.offer = response.data.data.offer;
-                            this.play = response.data.data.play;
-                            this.leave = response.data.data.leave;
-
-                            
-                            this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
-                            this.startTimer();
-                        }
+                        this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
+                        this.startTimer();    
                     })
                     .catch( error => {
                         
@@ -418,7 +431,7 @@
                 axios.post('api/v1/invite-play', {
 
                    player_2: id,
-                    
+
                 }, config)
                 .then( response => {
 
@@ -739,8 +752,10 @@
                 
         mounted() {
             
-            this.getUsers();
+            this.getOnlineUsersWithPaginated();
             this.initGame();
+            
+            this.getTests();  // После теста удалить.
 
 
             Echo.channel('allAuthUsers')

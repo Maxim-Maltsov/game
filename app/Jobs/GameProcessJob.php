@@ -12,6 +12,7 @@ use App\Models\Game;
 use App\Models\Move;
 use App\Models\Round;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -26,7 +27,6 @@ class GameProcessJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $game;
     public $endRoundReason;
     public $needRestartTimer = false;
 
@@ -35,10 +35,7 @@ class GameProcessJob implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(Game $game)
-    {
-        $this->game = $game;
-    }
+    public function __construct(public Game $game) {}
 
     /**
      * Execute the job.
@@ -239,7 +236,9 @@ class GameProcessJob implements ShouldQueue
 
         GameFinishEvent::dispatch(GameResource::make($game));
 
-        $users = User::getOnlineUsersPaginate(4);
+        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
+        $userRepository = new UserRepository;
+        $users = $userRepository->getEveryoneWhoOnlineWithPaginated(4);
         AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
     }
 

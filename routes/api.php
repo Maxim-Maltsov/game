@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\v1\GameController;
+use App\Http\Controllers\Api\v1\TestController;
 use App\Http\Controllers\Api\v1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,8 @@ Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
 
         'users' => UserController::class,
         'games' => GameController::class,
+
+        'tests' => TestController::class,  // После тестирования удалить.
     ]);
 
 });
