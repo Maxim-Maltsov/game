@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\AmountUsersOnlineChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Models\ApiTokenServisece;
+use App\Http\Resources\UserCollection;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use App\Repositories\UserRepository;
 use App\Services\ApiAuthenticateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 
 class AuthenticatedSessionController extends Controller
-{
+{   
+
+    public function __construct(private UserRepository $userRepository) {}
+
     /**
      * Display the login view.
      *
@@ -49,18 +54,20 @@ class AuthenticatedSessionController extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Request $request)
-    {
-        // Sunctum. Autorization token.
-        ApiAuthenticateService::deleteToken(Auth::user());
-        
-        // Обновляет Онлайн-Статус и Вызвает событие AmountUsersOnlineChangedEven.
-        User::makeUserStatusOffline(Auth::id());
+    {   
+        // Updates the user's status to "offline".
+        $user = $request->user();
+        $user->makeUserStatusOffline();
 
+        // Sunctum. Destroy the authorization token.
+        ApiAuthenticateService::deleteToken($user);
+        
+        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
+        $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4);
+        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
 
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

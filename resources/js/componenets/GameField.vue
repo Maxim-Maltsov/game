@@ -1,7 +1,7 @@
 
 <template>
     
-    <!-- /// Side Bar /// --> 
+    <!-- Side Bar --> 
     <div id="side-bar" class="col-4 position-relative">
 
         <!-- alert error -->
@@ -41,7 +41,7 @@
                 <!-- pagination -->
                 <nav aria-label="Page navigation example" class="mt-3">
                     <ul class="pagination pagination-lg">
-                        <li  class="page-item" :class="{disabled: !Boolean(pagination.prev)}" v-on:click.prevent="getUsers(pagination.prev)">
+                        <li  class="page-item" :class="{disabled: !Boolean(pagination.prev)}" v-on:click.prevent="getOnlineUsersWithPaginated(pagination.prev)">
                             <a class="page-link text-success" href="#"> &laquo;  </a>
                         </li>
 
@@ -49,7 +49,7 @@
                             <a class="page-link text-secondary" href="javascript:void(0)"> <span class="text-secondary">{{pagination.current_page}} из {{pagination.last_page}}</span> </a>
                         </li>
                     
-                        <li class="page-item" :class="{disabled: !Boolean(pagination.next)}" v-on:click.prevent="getUsers(pagination.next)">
+                        <li class="page-item" :class="{disabled: !Boolean(pagination.next)}" v-on:click.prevent="getOnlineUsersWithPaginated(pagination.next)">
                             <a class="page-link text-success"  href="#" > &raquo; </a>
                         </li>
                     </ul>
@@ -68,7 +68,7 @@
 
     <div  class="col-8 text-center flex-column justify-content-center align-items-center">
         
-        <!-- offer card -->
+        <!-- Offer card -->
         <section v-if="offer" class="d-flex flex-column align-items-center">
             <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                 <div class="card-body bg-dark opacity-75" style="border-radius: 4px">
@@ -87,7 +87,7 @@
             </div>
         </section>
 
-        <!-- response card -->
+        <!-- Response card -->
          <section v-if="waiting" class="d-flex flex-column align-items-center">
             <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                 <div class="card-body bg-dark opacity-75" style="border-radius: 4px">
@@ -105,7 +105,7 @@
             </div>
         </section>
 
-        <!-- alert exception -->
+        <!-- Alert exception -->
         <section v-if="exception" class="d-flex flex-column align-items-center">
             <div class="card-exception shadow" style="width: 100%">
                 <div class="alert alert-warning mb-0 p-y-1" role="alert">
@@ -114,7 +114,7 @@
             </div>
         </section>
 
-         <!-- alert info -->
+         <!-- Alert info -->
         <section v-if="info" class="d-flex flex-column align-items-center">
             <div class="card-info shadow" style="width: 100%">
                 <div class="alert alert-success mb-0 p-y-1" role="alert">
@@ -125,7 +125,7 @@
         
         <section v-show="play" id="playing-field">
 
-            <!-- alert error -->
+            <!-- Alert error -->
             <section v-if="errored" class="d-flex flex-column align-items-center">
                 <div class="card-info" style="width: 80%">
                     <div class="alert  text-center" role="alert">
@@ -134,7 +134,7 @@
                 </div>
             </section>
             
-            <!-- alert loading -->
+            <!-- Alert loading -->
             <section v-if="loading">
                 <div class="card-info mt-5 d-flex flex-column align-items-center" >
                     <div class="spinner-border m-3" role="status" style="width: 2rem; height: 2rem;" >
@@ -144,19 +144,19 @@
                 </div>
             </section>
 
-            <!--playing field cards -->
+            <!-- Playing field cards -->
             <section v-else >
                 <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                     <div class="card-body bg-dark opacity-75" style="border-radius: 4px">
 
-                        <!-- timer -->
+                        <!-- Timer -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex justify-content-between align-items-center">
                             <h6 class="h6 card-title text-secondary"><i class="text-success"> Round Time:</i> {{ (timer.display)? timer.display : '00:00' }} sec. </h6>
                             </div>
                         </div>
 
-                        <!-- figures -->
+                        <!-- Figures -->
                         <div class="card text-center mt-1">
                             <div class="btn-group p-3" role="group" aria-label="Figures" style="width: 100%">
                                 <button :disabled="finished" v-on:click="makeMove(ROCK)" class="btn btn-outline-success hover-shadow" style="width: 50%">Rock</button>
@@ -167,7 +167,7 @@
                             </div>
                         </div>
 
-                        <!-- round results -->
+                        <!-- Round results -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex flex-column justify-content-start align-items-start" style="height: 11.5rem">
                                 <h6 class="h6 card-title text-success py-3"><i>Round Results</i></h6>
@@ -179,7 +179,7 @@
                             </div>
                         </div>
                         
-                        <!-- score users -->
+                        <!-- Score users -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex flex-column justify-content-start align-items-start" style="height: 10rem">
                                 <h6 class="h6 card-title text-success py-3"><i>Score</i></h6>
@@ -187,7 +187,7 @@
                             </div>
                         </div>
 
-                        <!-- game history -->
+                        <!-- Game history -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex flex-column justify-content-start align-items-start">
                                 <h6 class="h6 card-title text-success pt-3 pb-1"><i>Game History </i></h6>
@@ -208,7 +208,7 @@
                 </div>
             </section>
 
-        </section> <!-- playing_field -->
+        </section> <!-- #playing-field -->
         
 
     </div> <!-- .col-8 -->
@@ -304,7 +304,7 @@
         },
         
         methods: {
-
+            
             makePagination(data) {
 
                 let pagination = {
@@ -319,7 +319,7 @@
             },
 
 
-            getUsers(page_url) {
+            getOnlineUsersWithPaginated(page_url) {
 
                 this.loading_users = true;
                 
@@ -371,31 +371,21 @@
                 axios
                     .get( 'api/v1/init-game', config)
                     .then( response => {
-
-                        if (response.data.data.exception) {
+ 
+                        this.game = response.data.data.game;
+                        this.round = response.data.data.game.lastFinishedRoundNumber + 1;
+                        this.history = response.data.data.game.history;
+                        this.historyLastRound = response.data.data.game.historyLastRound;
+                        this.playersVictories = response.data.data.game.playersVictories;
+                        this.finished = response.data.data.game.finished;
                         
-                            // this.message = response.data.data.message;
-                            // this.exception = true;
-                        }
-                        else {
+                        this.waiting = response.data.data.waiting;
+                        this.offer = response.data.data.offer;
+                        this.play = response.data.data.play;
+                        this.leave = response.data.data.leave;
 
-                            this.game = response.data.data.game;
-                            this.round = response.data.data.game.lastFinishedRoundNumber + 1;
-                            this.history = response.data.data.game.history;
-                            this.historyLastRound = response.data.data.game.historyLastRound;
-                            this.playersVictories = response.data.data.game.playersVictories;
-                            this.finished = response.data.data.game.finished;
-                            
-
-                            this.waiting = response.data.data.waiting;
-                            this.offer = response.data.data.offer;
-                            this.play = response.data.data.play;
-                            this.leave = response.data.data.leave;
-
-                            
-                            this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
-                            this.startTimer();
-                        }
+                        this.timer.totalSeconds = response.data.data.game.remainingTimeOfRound;
+                        this.startTimer();    
                     })
                     .catch( error => {
                         
@@ -418,7 +408,7 @@
                 axios.post('api/v1/invite-play', {
 
                    player_2: id,
-                    
+
                 }, config)
                 .then( response => {
 
@@ -739,9 +729,8 @@
                 
         mounted() {
             
-            this.getUsers();
+            this.getOnlineUsersWithPaginated();
             this.initGame();
-
 
             Echo.channel('allAuthUsers')
                 .listen('AmountUsersOnlineChangedEvent', (e) => {

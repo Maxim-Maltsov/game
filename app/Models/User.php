@@ -60,7 +60,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'online_status'
+        'online_status',
+        'last_activity',
     ];
 
     /**
@@ -109,17 +110,17 @@ class User extends Authenticatable
         return true;
     }
 
-    
-    public static function makeUserStatusOffline($id): void
+    /**
+     * Updates the user's status to "offline".
+     */
+    public function makeUserStatusOffline(): void
     {
-        $user =  User::where('id', $id)->first();
+        $user =  User::where('id', $this->id)->first();
     
         $user->online_status = User::OFFLINE;
         $user->save();
 
-        $users = User::getOnlineUsersPaginate(4);
-
-        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
     }
 
 
@@ -171,8 +172,7 @@ class User extends Authenticatable
 
         InviteToPlayEvent::dispatch( GameResource::make($game));
 
-        $users = User::getOnlineUsersPaginate(4);
-        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
         
         return GameResource::make($game);
     }
@@ -188,8 +188,7 @@ class User extends Authenticatable
         
         FirstPlayerCancelInviteEvent::dispatch(GameResource::make($game));
         
-        $users = User::getOnlineUsersPaginate(4);
-        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
 
         return true;
     }
@@ -231,8 +230,7 @@ class User extends Authenticatable
         
         SecondPlayerRejectInviteEvent::dispatch(GameResource::make($game));
         
-        $users = User::getOnlineUsersPaginate(4);
-        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
 
         return true;
     }
@@ -266,8 +264,7 @@ class User extends Authenticatable
         FirstPlayerLeavedGameEvent::dispatch(GameResource::make($game));
         SecondPlayerLeavedGameEvent::dispatch(GameResource::make($game));
 
-        $users = User::getOnlineUsersPaginate(4);
-        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
 
         return GameResource::make($game);
     }

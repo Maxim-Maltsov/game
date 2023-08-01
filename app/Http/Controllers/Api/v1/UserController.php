@@ -2,23 +2,29 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Http\Resources\UserCollection;
-use App\Http\Resources\UserResource;
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Repositories\UserRepository;
 
-class UserController extends Controller
+/**
+ * User management.
+ * 
+ * @package  App\Http\Controllers\Api\v1
+ */
+class UserController extends ApiController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    
+    public function __construct(private UserRepository $userRepository)
     {   
-        
-        $users = User::getOnlineUsersPaginate(4);
+        parent::__construct();
+    }
+
+    /**
+     * Passes a list of all users who are "online"  to the client side for further rendering. 
+     */
+    public function index() :UserCollection
+    {  
+        $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4);
 
         return new UserCollection($users);
     }
