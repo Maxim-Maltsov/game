@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Events\GameRoundFinishedEvent;
 use App\Exceptions\GameNotFoundException;
 use App\Http\Resources\GameResource;
+use App\Services\GameFieldManagementService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -87,19 +88,19 @@ class Game extends Model
 
     // Methods.
 
-    public static function showWaitingBlock(): bool
-    {
-        $game = Game::where('status', Game::WAITING_PLAYER)
-                    ->where('player_1', Auth::id())
-                    ->first();
+    // public static function showWaitingBlock(): bool
+    // {
+    //     $game = Game::where('status', Game::WAITING_PLAYER)
+    //                 ->where('player_1', Auth::id())
+    //                 ->first();
         
-        if ($game instanceof Game) {
+    //     if ($game instanceof Game) {
 
-            return true;
-        }
+    //         return true;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
 
     public static function showOfferBlock(): bool
@@ -151,19 +152,6 @@ class Game extends Model
     }
 
 
-    public function checkingFinishGame(): bool
-    {
-        $game = Game::where('id', $this->id)->first();
-
-        if ($game->status == Game::FINISHED) {
-            
-            return true;
-        }
-        
-        return false;
-    }
-
-
     public static function init(): JsonResponse
     {   
         $game = Game::where(function ($query)  {
@@ -180,13 +168,25 @@ class Game extends Model
         return response()->json([ 'data' => [
 
             'game' => GameResource::make($game),
-            'waiting' => Game::showWaitingBlock(),
-            'offer' => Game::showOfferBlock(),
-            'play' => Game::showGameplayBlock(),
-            'leave' => Game::showButtonLeaveGame(),
+            'waiting' => GameFieldManagementService::needShowPlayerWaitingBlock(),
+            'offer' => Game::showOfferBlock(),      // Заменить на needShowBlockWithOfferToPlay()
+            'play' => Game::showGameplayBlock(),    // Заменить на needShowGameFieldBlock()
+            'leave' => Game::showButtonLeaveGame(), // Заменить на needShowButtonLeaveGame()
         ]]);
     }
 
+    
+    public function checkingFinishGame(): bool
+    {
+        $game = Game::where('id', $this->id)->first();
+
+        if ($game->status == Game::FINISHED) {
+            
+            return true;
+        }
+        
+        return false;
+    }
 
     public function getRemainingTimeOfRound(): int               
     {
