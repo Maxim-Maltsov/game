@@ -1,7 +1,7 @@
 
 <template>
     
-    <!-- /// Side Bar /// --> 
+    <!-- Side Bar --> 
     <div id="side-bar" class="col-4 position-relative">
 
         <!-- alert error -->
@@ -68,7 +68,7 @@
 
     <div  class="col-8 text-center flex-column justify-content-center align-items-center">
         
-        <!-- offer card -->
+        <!-- Offer card -->
         <section v-if="offer" class="d-flex flex-column align-items-center">
             <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                 <div class="card-body bg-dark opacity-75" style="border-radius: 4px">
@@ -87,7 +87,7 @@
             </div>
         </section>
 
-        <!-- response card -->
+        <!-- Response card -->
          <section v-if="waiting" class="d-flex flex-column align-items-center">
             <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                 <div class="card-body bg-dark opacity-75" style="border-radius: 4px">
@@ -105,7 +105,7 @@
             </div>
         </section>
 
-        <!-- alert exception -->
+        <!-- Alert exception -->
         <section v-if="exception" class="d-flex flex-column align-items-center">
             <div class="card-exception shadow" style="width: 100%">
                 <div class="alert alert-warning mb-0 p-y-1" role="alert">
@@ -114,7 +114,7 @@
             </div>
         </section>
 
-         <!-- alert info -->
+         <!-- Alert info -->
         <section v-if="info" class="d-flex flex-column align-items-center">
             <div class="card-info shadow" style="width: 100%">
                 <div class="alert alert-success mb-0 p-y-1" role="alert">
@@ -125,7 +125,7 @@
         
         <section v-show="play" id="playing-field">
 
-            <!-- alert error -->
+            <!-- Alert error -->
             <section v-if="errored" class="d-flex flex-column align-items-center">
                 <div class="card-info" style="width: 80%">
                     <div class="alert  text-center" role="alert">
@@ -134,7 +134,7 @@
                 </div>
             </section>
             
-            <!-- alert loading -->
+            <!-- Alert loading -->
             <section v-if="loading">
                 <div class="card-info mt-5 d-flex flex-column align-items-center" >
                     <div class="spinner-border m-3" role="status" style="width: 2rem; height: 2rem;" >
@@ -144,19 +144,19 @@
                 </div>
             </section>
 
-            <!--playing field cards -->
+            <!-- Playing field cards -->
             <section v-else >
                 <div class="card shadow p-3 mb-5 bg-body rounded" style="width: 100%">
                     <div class="card-body bg-dark opacity-75" style="border-radius: 4px">
 
-                        <!-- timer -->
+                        <!-- Timer -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex justify-content-between align-items-center">
                             <h6 class="h6 card-title text-secondary"><i class="text-success"> Round Time:</i> {{ (timer.display)? timer.display : '00:00' }} sec. </h6>
                             </div>
                         </div>
 
-                        <!-- figures -->
+                        <!-- Figures -->
                         <div class="card text-center mt-1">
                             <div class="btn-group p-3" role="group" aria-label="Figures" style="width: 100%">
                                 <button :disabled="finished" v-on:click="makeMove(ROCK)" class="btn btn-outline-success hover-shadow" style="width: 50%">Rock</button>
@@ -167,7 +167,7 @@
                             </div>
                         </div>
 
-                        <!-- round results -->
+                        <!-- Round results -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex flex-column justify-content-start align-items-start" style="height: 11.5rem">
                                 <h6 class="h6 card-title text-success py-3"><i>Round Results</i></h6>
@@ -179,7 +179,7 @@
                             </div>
                         </div>
                         
-                        <!-- score users -->
+                        <!-- Score users -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex flex-column justify-content-start align-items-start" style="height: 10rem">
                                 <h6 class="h6 card-title text-success py-3"><i>Score</i></h6>
@@ -187,7 +187,7 @@
                             </div>
                         </div>
 
-                        <!-- game history -->
+                        <!-- Game history -->
                         <div class="card text-center mt-1">
                             <div class="card-body d-flex flex-column justify-content-start align-items-start">
                                 <h6 class="h6 card-title text-success pt-3 pb-1"><i>Game History </i></h6>
@@ -208,7 +208,7 @@
                 </div>
             </section>
 
-        </section> <!-- playing_field -->
+        </section> <!-- #playing-field -->
         
 
     </div> <!-- .col-8 -->
@@ -305,29 +305,6 @@
         
         methods: {
             
-            getTests() {  // После теста удалить.
-
-                let config = {
-
-                    headers: {
-                        
-                        Authorization: "Bearer " + this.token,
-                    }
-                }
-                
-                axios
-                    .get( 'api/v1/tests', config)
-                    .then( response =>  {
-                        //console.log(response.data);
-                        console.log('Получены тестовые данные!');
-                    })
-                    .catch( error => {
-                        
-                        console.log(error);
-                    });
-            },
-
-
             makePagination(data) {
 
                 let pagination = {
@@ -754,9 +731,6 @@
             
             this.getOnlineUsersWithPaginated();
             this.initGame();
-            
-            this.getTests();  // После теста удалить.
-
 
             Echo.channel('allAuthUsers')
                 .listen('AmountUsersOnlineChangedEvent', (e) => {
