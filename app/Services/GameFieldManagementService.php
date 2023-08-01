@@ -68,4 +68,21 @@ class GameFieldManagementService extends Model
     }
 
 
+    public static function needShowButtonLeaveGame(): bool
+    {   
+        // Перенести запрос в класс "gameRepository". Получаем последнюю игру со статусом 'IN_PROCESS' в которой аутентифицированный пользователь является 1-ым или 2-ым игроком. 
+        $game = Game::where('status', Game::IN_PROCESS)
+                    ->where(function ($query)  {
+                        $query->where('player_1', Auth::id());
+                        $query->orWhere('player_2', Auth::id());
+                    })->latest()->first();
+
+        if ($game->isEmpty()) {       
+            return false;
+        }
+
+        return true;
+    }
+
+
 }
