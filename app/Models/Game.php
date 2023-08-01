@@ -118,21 +118,21 @@ class Game extends Model
     // }
 
 
-    public static function showGameplayBlock(): bool
-    {   
-        $game = Game::whereIn('status', [Game::IN_PROCESS, Game::IN_PROCESS])
-                    ->where(function ($query)  {
-                        $query->where('player_1', Auth::id());
-                        $query->orWhere('player_2', Auth::id());
-                    })->latest()->first();
+    // public static function showGameplayBlock(): bool
+    // {   
+    //     $game = Game::whereIn('status', [Game::IN_PROCESS, Game::IN_PROCESS])
+    //                 ->where(function ($query)  {
+    //                     $query->where('player_1', Auth::id());
+    //                     $query->orWhere('player_2', Auth::id());
+    //                 })->latest()->first();
                 
-        if ($game instanceof Game) {
+    //     if ($game instanceof Game) {
 
-            return true;
-        }
+    //         return true;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
 
     public static function showButtonLeaveGame(): bool
