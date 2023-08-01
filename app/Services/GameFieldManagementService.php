@@ -24,7 +24,7 @@ class GameFieldManagementService extends Model
                     ->where('player_1', Auth::id())
                     ->first();
         
-        if ($game->isEmpty()) {
+        if (!$game) {
             return false;
         }
 
@@ -41,7 +41,7 @@ class GameFieldManagementService extends Model
                     ->where('player_2', Auth::id())
                     ->first();
        
-        if ($game->isEmpty()) {       
+        if (!$game) {       
             return false;
         }
 
@@ -60,7 +60,7 @@ class GameFieldManagementService extends Model
                         $query->orWhere('player_2', Auth::id());
                     })->latest()->first();
                 
-        if ($game->isEmpty()) {       
+        if (!$game) {       
             return false;
         }
 
@@ -77,7 +77,7 @@ class GameFieldManagementService extends Model
                         $query->orWhere('player_2', Auth::id());
                     })->latest()->first();
 
-        if ($game->isEmpty()) {       
+        if (!$game) {       
             return false;
         }
 
