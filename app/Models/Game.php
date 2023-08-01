@@ -103,19 +103,19 @@ class Game extends Model
     // }
 
 
-    public static function showOfferBlock(): bool
-    {
-        $game = Game::where('status', Game::WAITING_PLAYER)
-                    ->where('player_2', Auth::id())
-                    ->first();
+    // public static function showOfferBlock(): bool
+    // {
+    //     $game = Game::where('status', Game::WAITING_PLAYER)
+    //                 ->where('player_2', Auth::id())
+    //                 ->first();
        
-        if ($game instanceof Game) {
+    //     if ($game instanceof Game) {
 
-            return true;
-        }
+    //         return true;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
 
     public static function showGameplayBlock(): bool
@@ -169,7 +169,7 @@ class Game extends Model
 
             'game' => GameResource::make($game),
             'waiting' => GameFieldManagementService::needShowPlayerWaitingBlock(),
-            'offer' => Game::showOfferBlock(),      // Заменить на needShowBlockWithOfferToPlay()
+            'offer' => GameFieldManagementService::needShowBlockWithOfferToPlay(),
             'play' => Game::showGameplayBlock(),    // Заменить на needShowGameFieldBlock()
             'leave' => Game::showButtonLeaveGame(), // Заменить на needShowButtonLeaveGame()
         ]]);
