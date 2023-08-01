@@ -170,7 +170,7 @@ class Game extends Model
             'game' => GameResource::make($game),
             'waiting' => GameFieldManagementService::needShowPlayerWaitingBlock(),
             'offer' => GameFieldManagementService::needShowBlockWithOfferToPlay(),
-            'play' => Game::showGameplayBlock(),    // Заменить на needShowGameFieldBlock()
+            'play' => GameFieldManagementService::needShowGameFieldBlock(),
             'leave' => Game::showButtonLeaveGame(), // Заменить на needShowButtonLeaveGame()
         ]]);
     }
