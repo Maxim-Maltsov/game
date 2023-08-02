@@ -8,7 +8,9 @@ window.Alpine = Alpine;
 
 Alpine.start();
 
-const app = createApp({});
+let app = createApp({});
 
-app.mount('#app');
 app.component('game-field', GameField);
+app.mount('#app');
+
+

@@ -59,8 +59,8 @@ class AuthenticatedSessionController extends Controller
         $user = $request->user();
         $user->makeUserStatusOffline();
 
-        // Sunctum. Destroy the authorization token.
-        ApiAuthenticateService::deleteToken($user);
+        // Sunctum. Revoke the authorization tokens.
+        ApiAuthenticateService::deleteTokens($user);
         
         // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
         $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4);

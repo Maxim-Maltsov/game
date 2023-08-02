@@ -86,14 +86,7 @@ class User extends Authenticatable
 
     // Methods.
     
-    public static function getOnlineUsersPaginate($amount): LengthAwarePaginator
-    {   
-        $users = User::where('online_status', User::ONLINE)->paginate($amount);
-        
-        return $users;
-    }
-
-
+    
     public function canPlay(): bool
     {   
         $game = Game::whereIn('status', [Game::WAITING_PLAYER, Game::IN_PROCESS])
