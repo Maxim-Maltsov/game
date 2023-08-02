@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\v1\CancelGameInviteController;
 use App\Http\Controllers\Api\v1\GameController;
 use App\Http\Controllers\Api\v1\UserController;
 use Illuminate\Http\Request;
@@ -35,7 +36,8 @@ Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
 Route::middleware(['auth:sanctum', 'last-activity'])->group(function () {
 
     Route::post('invite-play', [GameController::class, 'inviteToPlay'])->name('invite-play');
-    Route::delete('cancel-invite/{game}', [GameController::class, 'cancelInvite'])->name('cancel-invite');
+    // Route::delete('cancel-invite/{game}', [GameController::class, 'cancelInvite'])->name('cancel-invite');
+    Route::delete('cancel-invite/{game}', [CancelGameInviteController::class, '__invoke'])->name('cancel-invite');
 
     Route::put('accept-invite/{game}', [GameController::class, 'acceptInvite'])->name('accept-invite');
     Route::delete('reject-invite/{game}', [GameController::class, 'rejectInvite'])->name('reject-invite');
