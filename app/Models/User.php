@@ -171,22 +171,6 @@ class User extends Authenticatable
     }
     
     
-    public static function cancel(Game $game): bool
-    {
-        $firstPlayer = $game->firstPlayer;
-        $firstPlayer->game_status = User::FREE;
-        $firstPlayer->save();
-
-        $game->delete();
-        
-        FirstPlayerCancelInviteEvent::dispatch(GameResource::make($game));
-        
-        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
-
-        return true;
-    }
-    
-
     public static function play(Game $game): GameResource
     {
         $firstPlayer = $game->firstPlayer;
