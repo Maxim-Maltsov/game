@@ -213,38 +213,38 @@ class User extends Authenticatable
     // }
     
     
-    public static function leave(Game $game): GameResource
-    {   
-        $firstPlayer = $game->firstPlayer;
-        $firstPlayer->game_status = User::FREE;
-        $firstPlayer->save();
+    // public static function leave(Game $game): GameResource
+    // {   
+    //     $firstPlayer = $game->firstPlayer;
+    //     $firstPlayer->game_status = User::FREE;
+    //     $firstPlayer->save();
 
-        $secondPlayer = $game->secondPlayer;
-        $secondPlayer->game_status = User::FREE;
-        $secondPlayer->save();
+    //     $secondPlayer = $game->secondPlayer;
+    //     $secondPlayer->game_status = User::FREE;
+    //     $secondPlayer->save();
 
-        $leaving_player = Auth::id();
-        $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
+    //     $leaving_player = Auth::id();
+    //     $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
         
-        $activeRound = $game->getActiveRound();
-        $activeRound->status = Round::FINISHED;
-        $activeRound->winned_player = $winned_player;
-        $activeRound->save();
+    //     $activeRound = $game->getActiveRound();
+    //     $activeRound->status = Round::FINISHED;
+    //     $activeRound->winned_player = $winned_player;
+    //     $activeRound->save();
 
-        $game->status = Game::FINISHED;
-        $game->end = Carbon::now();
-        $game->winned_player = $winned_player;
-        $game->leaving_player = $leaving_player;
-        $game->need_start_new_round = Game::NO;
-        $game->save();
+    //     $game->status = Game::FINISHED;
+    //     $game->end = Carbon::now();
+    //     $game->winned_player = $winned_player;
+    //     $game->leaving_player = $leaving_player;
+    //     $game->need_start_new_round = Game::NO;
+    //     $game->save();
 
-        FirstPlayerLeavedGameEvent::dispatch(GameResource::make($game));
-        SecondPlayerLeavedGameEvent::dispatch(GameResource::make($game));
+    //     FirstPlayerLeavedGameEvent::dispatch(GameResource::make($game));
+    //     SecondPlayerLeavedGameEvent::dispatch(GameResource::make($game));
 
-        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
+    //     // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
 
-        return GameResource::make($game);
-    }
+    //     return GameResource::make($game);
+    // }
 
     
     public static function move(int $gameId, int $roundNumber, int $figure): MoveResource
