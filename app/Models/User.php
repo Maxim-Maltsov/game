@@ -197,20 +197,20 @@ class User extends Authenticatable
     }
 
 
-    public static function reject(Game $game): bool
-    {   
-        $firstPlayer = $game->firstPlayer;
-        $firstPlayer->game_status = User::FREE;
-        $firstPlayer->save();
+    // public static function reject(Game $game): bool
+    // {   
+    //     $firstPlayer = $game->firstPlayer;
+    //     $firstPlayer->game_status = User::FREE;
+    //     $firstPlayer->save();
 
-        $game->delete();
+    //     $game->delete();
         
-        SecondPlayerRejectInviteEvent::dispatch(GameResource::make($game));
+    //     SecondPlayerRejectInviteEvent::dispatch(GameResource::make($game));
         
-        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
+    //     // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
 
-        return true;
-    }
+    //     return true;
+    // }
     
     
     public static function leave(Game $game): GameResource
