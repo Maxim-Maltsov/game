@@ -80,17 +80,17 @@ class GameController extends Controller
     }
     
     
-    public function rejectInvite(Game $game) 
-    {
-        if (User::reject($game)) {
+    // public function rejectInvite(Game $game) 
+    // {
+    //     if (User::reject($game)) {
 
-            // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
-            $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4); 
-            AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+    //         // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
+    //         $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4); 
+    //         AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
 
-            return response(null, HttpResponse::HTTP_NO_CONTENT);
-        }
-    }
+    //         return response(null, HttpResponse::HTTP_NO_CONTENT);
+    //     }
+    // }
     
 
     public function leaveGame(Game $game)
