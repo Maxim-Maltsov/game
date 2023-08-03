@@ -10,7 +10,7 @@ use App\Repositories\UserRepository;
 use Illuminate\Http\Response;
 
 /**
- * Processes the request to cancel the invitation to the game.
+ * Handles a request to cancel the invitation to the game.
  */
 class CancelGameInviteController 
 {
