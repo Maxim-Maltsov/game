@@ -12,7 +12,7 @@ use Illuminate\Http\Response;
 /**
  * Processes the request to reject the invitation to the game.
  */
-class CancelGameInviteController 
+class RejectGameInviteController 
 {
     public function __invoke(Game $game, RejectGameInviteAction $rejectGameInvite, UserRepository $userRepository)
     {
