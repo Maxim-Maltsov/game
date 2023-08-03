@@ -164,7 +164,7 @@ class Game extends Model
         return $roundEndTimeInSeconds;
     }
 
-   
+    // Перенести метод получения активного раунда в класс "RoundRepository".
     public function getActiveRound(): ?Round
     {
         $activeRound = Round::where('game_id', $this->id)
