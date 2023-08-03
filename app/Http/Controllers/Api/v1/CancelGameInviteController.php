@@ -9,6 +9,9 @@ use App\Models\Game;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Response;
 
+/**
+ * Processes the request to cancel the invitation to the game.
+ */
 class CancelGameInviteController 
 {
     public function __invoke(Game $game, CancelGameInviteAction $action, UserRepository $userRepository)
