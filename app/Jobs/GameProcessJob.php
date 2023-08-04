@@ -2,17 +2,16 @@
 
 namespace App\Jobs;
 
-use App\Events\AmountUsersOnlineChangedEvent;
+
 use App\Events\GameFinishEvent;
 use App\Events\GameNewRoundStartEvent;
 use App\Events\RoundTimerRestartEvent;
 use App\Http\Resources\GameResource;
-use App\Http\Resources\UserCollection;
 use App\Models\Game;
 use App\Models\Move;
 use App\Models\Round;
 use App\Models\User;
-use App\Repositories\UserRepository;
+use App\Services\UserService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -236,10 +235,8 @@ class GameProcessJob implements ShouldQueue
 
         GameFinishEvent::dispatch(GameResource::make($game));
 
-        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
-        $userRepository = new UserRepository;
-        $users = $userRepository->getEveryoneWhoOnlineWithPaginated(4);
-        AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
+        $userService = new UserService();
+        $userService->updateUserList();
     }
 
 

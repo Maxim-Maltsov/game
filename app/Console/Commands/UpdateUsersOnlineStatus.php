@@ -2,20 +2,21 @@
 
 namespace App\Console\Commands;
 
-use App\Events\AmountUsersOnlineChangedEvent;
-use App\Http\Resources\UserCollection;
 use App\Models\User;
-use App\Repositories\UserRepository;
+use App\Services\UserService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Changes the online status of users to "offline" after being idle for a certain amount of time.
+ */
 class UpdateUsersOnlineStatus extends Command
 {   
     /**
      *  UpdateUsersOnlineStatus command constructor.
      */
-    public function __construct(private UserRepository $userRepository) {
-        
+    public function __construct(private UserService $userService)
+    {
         parent::__construct();
     }
 
@@ -56,12 +57,7 @@ class UpdateUsersOnlineStatus extends Command
                             }
                           });
         
-        // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.                  
-        $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4);
-
-        if ($users->isNotEmpty()) {
-            AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
-        }
+        $this->userService->updateUserList();
 
         return 0;
     }
