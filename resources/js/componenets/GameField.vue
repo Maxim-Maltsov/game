@@ -78,7 +78,7 @@
                             <h6 class="h6" ><i class="text-success"> {{  (game.player_1.name)? game.player_1.name : ''  }} </i> offers to play the game!</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
                                 <button v-on:click="acceptInvite(game)" class="btn btn-outline-success btn-sm hover-shadow" style="width: 25%">Ok</button>
-                                <button v-on:click="rejectInvite(game)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
+                                <button v-on:click="rejectInvite(game)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Reject</button>
                             </div>
                         </div>  
                     </div> 
@@ -96,7 +96,7 @@
                         <div class="alert alert-light m-0" role="alert">
                             <h6 class="h6" > Waiting for a response from <i class="text-success"> {{  (game.player_2.name)? game.player_2.name : '' }} </i> ...</h6>
                             <div class="card-body d-flex justify-content-center align-items-center mt-3">
-                                <button v-on:click="cancelInvite(game)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cencel</button>
+                                <button v-on:click="cancelInvite(game)" class="btn btn-outline-danger btn-sm hover-shadow ml-2" style="width: 20%">Cancel</button>
                             </div>
                         </div>  
                     </div>
