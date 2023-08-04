@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
@@ -19,7 +18,6 @@ class UserResource extends JsonResource
 
             'id'=> $this->id,
             'name' => $this->name,
-            'email' => $this->email,
             'online_status' => $this->online_status,
             'game_status' => $this->game_status,
             'can_play' => $this->canPlay(),
