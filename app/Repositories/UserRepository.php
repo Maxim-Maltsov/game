@@ -21,7 +21,7 @@ class UserRepository extends CoreRepository
     /**
      * Get a list of users who are online using pagination.
      */
-    public function getEveryoneWhoOnlineWithPaginated(int $perPage = null) :LengthAwarePaginator 
+    public function getEveryoneWhoOnlineWithPaginated(int $perPage = null): LengthAwarePaginator 
     {   
         $columns = ['id', 'name', 'online_status', 'game_status'];
        
