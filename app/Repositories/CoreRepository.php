@@ -5,21 +5,14 @@ namespace App\Repositories;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class CoreRepository
+ * Repository for working with the entity. Can output datasets. Cannot create/modify entities.
  * 
  * @package App\Repositories
- * 
- * Repository for working with the entity.
- * Can output datasets.
- * Cannot create/modify entities.
  */
-
 abstract class CoreRepository
 {
-    /**
-     * @var Model
-     */
-    protected $model;
+   
+    protected Model $model;
     
     /**
      * CoreRepository constructor.
