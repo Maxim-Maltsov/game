@@ -14,7 +14,7 @@ use Illuminate\Http\Response;
  */
 class RejectGameInviteController
 {
-    public function __invoke(Game $game, RejectGameInviteAction $rejectGameInvite, UserRepository $userRepository)
+    public function __invoke(Game $game, RejectGameInviteAction $rejectGameInvite, UserRepository $userRepository): Response
     {
         $rejectGameInvite->handle($game);
 

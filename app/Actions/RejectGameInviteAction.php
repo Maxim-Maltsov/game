@@ -5,7 +5,7 @@ namespace App\Actions;
 use App\Events\SecondPlayerRejectInviteEvent;
 use App\Http\Resources\GameResource;
 use App\Models\Game;
-use App\Models\User;
+use App\Services\UserService;
 
 /**
  * Rejects the invitation to the game.
@@ -15,12 +15,15 @@ class RejectGameInviteAction
     /**
     * Triggers the action to reject the invitation to the game.
     */
-    public function handle(Game $game)
+    public function handle(Game $game): void
     {   
-        // Перенести логику обновления "игрового статуса" 1-го игрока в класс "UserService".
+        $userService = new UserService;
+
         $firstPlayer = $game->firstPlayer;
-        $firstPlayer->game_status = User::FREE;
-        $firstPlayer->save();
+        $secondPlayer = $game->secondPlayer;
+        
+        $userService->makeUserFree($firstPlayer);
+        $userService->makeUserFree($secondPlayer);
 
         $game->delete();
         
