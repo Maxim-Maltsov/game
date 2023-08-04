@@ -17,7 +17,7 @@ class CancelGameInviteAction
     */
     public function handle(Game $game): void
     {   
-        $userService = new UserService;
+        $userService = new UserService();
 
         $firstPlayer = $game->firstPlayer;
         $secondPlayer = $game->secondPlayer;
