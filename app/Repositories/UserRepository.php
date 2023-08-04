@@ -5,6 +5,9 @@ namespace App\Repositories;
 use App\Models\User as Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
+/**
+ * Repository for working with the users. Can output datasets. Cannot create/modify entities.
+ */
 class UserRepository extends CoreRepository
 {
     /**
@@ -20,7 +23,7 @@ class UserRepository extends CoreRepository
      */
     public function getEveryoneWhoOnlineWithPaginated(int $perPage = null) :LengthAwarePaginator 
     {   
-        $columns = ['id', 'name', 'email', 'online_status', 'game_status'];
+        $columns = ['id', 'name', 'online_status', 'game_status'];
        
         $result = $this->startConditions()
                       ->where('online_status', Model::ONLINE)
