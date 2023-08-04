@@ -6,7 +6,7 @@ use App\Models\User as Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
- * Repository for working with the users. Can output datasets. Cannot create/modify entities.
+ * Repository for working with the user. Can output datasets. Cannot create/modify users.
  */
 class UserRepository extends CoreRepository
 {
