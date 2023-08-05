@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-
 use App\Models\Round;
 use App\Repositories\RoundRepository;
 
@@ -12,7 +11,7 @@ use App\Repositories\RoundRepository;
 class RoundService 
 {   
     /**
-     * Finishes the round in case of early exit of one of the players from the game.
+     * Finishes the round if one of the players leaves the game early.
      */
     public function finishRoundEarly(Round $activeRound, array $players): void
     {
