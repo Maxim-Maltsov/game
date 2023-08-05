@@ -6,9 +6,9 @@ use App\Events\FirstPlayerLeavedGameEvent;
 use App\Events\SecondPlayerLeavedGameEvent;
 use App\Http\Resources\GameResource;
 use App\Models\Game;
-use App\Models\Round;
 use App\Repositories\RoundRepository;
 use App\Services\RefereeService;
+use App\Services\RoundService;
 use App\Services\UserService;
 use Carbon\Carbon;
 
@@ -20,7 +20,10 @@ class LeaveGameAction
     /**
      * LeaveGameAction constructor.
      */
-    public function __construct(private UserService $userService, private RefereeService $referee, private RoundRepository $roundRepository){}
+    public function __construct( private UserService $userService, 
+                                 private RefereeService $referee, 
+                                 private RoundRepository $roundRepository,
+                                 private RoundService $roundService ){}
     
     /**
      * Triggers the action that allows you to leave the game before it ends.
@@ -36,12 +39,8 @@ class LeaveGameAction
         $players = $this->referee->defineWinnerAndLoser($game);
         
         $activeRound = $this->roundRepository->getActiveRound($game->id);
-
-        // Перенести метод обновления данных активного раунда в класс "RoundService".
-        $activeRound->status = Round::FINISHED;
-        $activeRound->winned_player = $players['winned_player']; 
-        $activeRound->save();
-
+        $this->roundService->finishRoundEarly($activeRound, $players);
+   
         // Перенести логику обновления "статуса игры" и других её данных в класс "GameService".
         $game->status = Game::FINISHED;
         $game->end = Carbon::now();
