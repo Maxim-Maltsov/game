@@ -8,6 +8,7 @@ use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Models\Round;
 use App\Models\User;
+use App\Services\UserService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,23 +22,21 @@ class LeaveGameAction
     */
     public function handle(Game $game)
     {   
-        // Перенести логику обновления "игрового статуса" 1-го игрока в класс "UserService".
+        $userService = new UserService();
+
         $firstPlayer = $game->firstPlayer;
-        $firstPlayer->game_status = User::FREE;
-        $firstPlayer->save();
-
-        // Перенести логику обновления "игрового статуса" 2-го игрока в класс "UserService".
         $secondPlayer = $game->secondPlayer;
-        $secondPlayer->game_status = User::FREE;
-        $secondPlayer->save();
+       
+        $userService->makeUserFree($firstPlayer);
+        $userService->makeUserFree($secondPlayer);
 
-        // Перенести логику определения победителя в игре при досрочном её завершении в класс "GameService".
+        // Перенести логику определения победителя в игре при досрочном её завершении в класс "RefereeService".
         $leaving_player = Auth::id();
         $winned_player = ($leaving_player == $game->player_1)? $game->player_2 : $game->player_1;
         
         // Перенести метод получения активного раунда в класс "RoundRepository".
         $activeRound = $game->getActiveRound();
-
+       
         // Перенести метод обновления данных активного раунда в класс "RoundService".
         $activeRound->status = Round::FINISHED;
         $activeRound->winned_player = $winned_player;
