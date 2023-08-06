@@ -13,17 +13,20 @@ use App\Services\UserService;
 class RejectGameInviteAction
 {   
     /**
+     * CancelGameAction constructor.
+     */
+    public function __construct(private UserService $userService) {}
+
+    /**
     * Triggers the action to reject the invitation to the game.
     */
     public function handle(Game $game): void
     {   
-        $userService = new UserService();
-
         $firstPlayer = $game->firstPlayer;
         $secondPlayer = $game->secondPlayer;
         
-        $userService->makeUserFree($firstPlayer);
-        $userService->makeUserFree($secondPlayer);
+        $this->userService->makeUserFree($firstPlayer);
+        $this->userService->makeUserFree($secondPlayer);
 
         $game->delete();
         
