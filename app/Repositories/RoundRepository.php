@@ -19,7 +19,7 @@ class RoundRepository extends CoreRepository
     }
 
     /**
-     * Get an active round of the game.
+     * Gets an active round of the game.
      */
     public function getActiveRound(int $gameId): ?Model
     {   
