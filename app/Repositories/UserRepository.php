@@ -19,7 +19,7 @@ class UserRepository extends CoreRepository
     }
 
     /**
-     * Get a list of users who are online using pagination.
+     * Gets a list of users who are online using pagination.
      */
     public function getEveryoneWhoOnlineWithPaginated(int $perPage = null): LengthAwarePaginator 
     {   
@@ -29,6 +29,21 @@ class UserRepository extends CoreRepository
                        ->where('online_status', Model::ONLINE)
                        ->select($columns)
                        ->paginate($perPage);
+       
+        return $result;
+    }
+
+    /**
+     * Gets user by Id.
+     */
+    public function getUserById(int $id): ?Model
+    {
+        $columns = ['id', 'name', 'online_status', 'game_status'];
+       
+        $result = $this->startConditions()
+                       ->where('id', $id)
+                       ->select($columns)
+                       ->first();
        
         return $result;
     }
