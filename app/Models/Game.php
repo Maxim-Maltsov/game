@@ -50,7 +50,7 @@ class Game extends Model
     const ALL_PLAYERS_MADE_MOVE = 1;
 
 
-    protected $fillable = [ 'player_2'];
+    protected $fillable = [ 'player_1', 'player_2'];
 
 
     // Relationship.
