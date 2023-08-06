@@ -11,6 +11,18 @@ use Carbon\Carbon;
 class GameService
 {   
     /**
+     * Creates a new game.
+     */
+    public function createGame(array $attributes): Game
+    {
+        $game = new Game($attributes);
+        $game->status = Game::WAITING_PLAYER;
+        $game->save();
+
+        return $game;
+    }
+
+    /**
      * Finishes the game if one of the players leaves the game early.
      */
     public function finishGameEarly(Game $game, array $players): void
