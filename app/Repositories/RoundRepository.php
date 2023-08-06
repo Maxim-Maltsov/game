@@ -21,7 +21,7 @@ class RoundRepository extends CoreRepository
     /**
      * Get an active round of the game.
      */
-    public function getActiveRound(int $gameId): Model
+    public function getActiveRound(int $gameId): ?Model
     {   
         $columns = ['id', 'game_id', 'number', 'status', 'winned_player', 'draw'];
        
