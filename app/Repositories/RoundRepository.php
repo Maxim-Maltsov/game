@@ -3,7 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Round as Model;
-use App\Models\Round;
+
 
 /**
  * Repository for working with the round. Can output datasets. Cannot create/modify rounds.
@@ -21,7 +21,7 @@ class RoundRepository extends CoreRepository
     /**
      * Get an active round of the game.
      */
-    public function getActiveRound(int $gameId): Round
+    public function getActiveRound(int $gameId): Model
     {   
         $columns = ['id', 'game_id', 'number', 'status', 'winned_player', 'draw'];
        
