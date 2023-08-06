@@ -23,56 +23,6 @@ class GameController extends Controller
 {
     public function __construct(private UserRepository $userRepository) {}
 
-
-    public function inviteToPlay(GameRequest $request)
-    {   
-        try {
-
-            $secondPlayerId = $request->player_2;
-            $game = User::invite($secondPlayerId);
-            
-            // Getting a list of "online" users and passing it through the "AmountUsersOnlineChangedEven" event to the client side for further rendering.
-            $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4); 
-            AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
-           
-            return $game;
-        }
-        catch (PlayerNotFoundException $e) {
-
-            Log::info($e->getMessage());
-
-            return response()->json([ 'data' => [
-                
-                'message' => $e->getMessage(),
-                'exception' => true,
-            ]]);
-        }
-        catch (YouCannotInviteYourselfException $e) {
-
-            return response()->json([ 'data' => [
-
-                'message' => $e->getMessage(),
-                'exception' => true,
-            ]]);
-        }
-        catch (YouСannotOfferTwoGamesAtOnceException $e) {
-
-            return response()->json([ 'data' => [
-
-                'message' => $e->getMessage(),
-                'exception' => true,
-            ]]);
-        }
-        catch (YouСannotAgreeTwoGamesAtOnceException $e) {
-
-            return response()->json([ 'data' => [
-
-                'message' => $e->getMessage(),
-                'exception' => true,
-            ]]);
-        }
-    }
- 
     
     public function acceptInvite(Game $game) 
     {
