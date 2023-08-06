@@ -24,7 +24,7 @@ class LeaveGameAction
                                  private RefereeService $referee, 
                                  private RoundRepository $roundRepository,
                                  private RoundService $roundService,
-                                 private GameService $gameService ){}
+                                 private GameService $gameService ) {}
     
     /**
      * Triggers the action that allows you to leave the game before it ends.
