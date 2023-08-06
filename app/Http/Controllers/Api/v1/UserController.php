@@ -22,7 +22,7 @@ class UserController extends ApiController
     /**
      * Passes a list of all users who are "online"  to the client side for further rendering. 
      */
-    public function index() :UserCollection
+    public function index(): UserCollection
     {  
         $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4);
 
