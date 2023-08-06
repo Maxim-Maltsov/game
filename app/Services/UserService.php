@@ -20,10 +20,19 @@ class UserService
     /**
      * Updates the user's game status to free.
      */
-    public function makeUserFree($Player): void
+    public function makeUserFree($player): void
     {
-        $Player->game_status = User::FREE;
-        $Player->save();
+        $player->game_status = User::FREE;
+        $player->save();
+    }
+
+    /**
+     * Updates the user's game status to waiting player.
+     */
+    public function putUserInStandbyMode($player): void
+    {
+        $player->game_status = User::WAITING_PLAYER;
+        $player->save();
     }
 
     /**
