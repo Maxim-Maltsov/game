@@ -13,7 +13,12 @@ use App\Repositories\UserRepository;
 class UserService 
 {   
     /**
-     * Update the user's game status to free.
+     * UserService constructor.
+     */
+    public function __construct(private UserRepository $userRepository){}
+    
+    /**
+     * Updates the user's game status to free.
      */
     public function makeUserFree($Player): void
     {
@@ -22,12 +27,11 @@ class UserService
     }
 
     /**
-     * Update the list of users who are online.
+     * Updates the list of users who are online.
      */
     public function updateUserList(): void
     {   
-        $userRepository = new UserRepository();
-        $users = $userRepository->getEveryoneWhoOnlineWithPaginated(4);
+        $users = $this->userRepository->getEveryoneWhoOnlineWithPaginated(4);
 
         if ($users->isNotEmpty()) {
             AmountUsersOnlineChangedEvent::dispatch(UserCollection::make($users));
